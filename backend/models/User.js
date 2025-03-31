@@ -7,7 +7,7 @@ const userSchema = new mongoose.Schema({
   name: { type: String, require: true },
   password: { type: String, require: true },
   email: { type: String, require: true, unique: true },
-  role: { type: mongoose.Schema.Types.ObjectId, ref: "Role", required: true },
+  role: [{ type: mongoose.Schema.Types.ObjectId, ref: "Role", required: true }],
 });
 
 userSchema.statics.register = async function (name, email, password) {
@@ -29,15 +29,19 @@ userSchema.statics.register = async function (name, email, password) {
     throw Error(`Email ${email} already in use!`);
   }
 
-  const salt = await bcrypt.genSalt(10);
+  const salt = await bcrypt.genSalt(15);
   const hash = await bcrypt.hash(password, salt);
   const userRole = await Role.findOne({ name: "REVIEWER" });
+
+  if (!userRole) {
+    throw Error('Role REVIEWER not found');
+  }
 
   const user = await this.create({
     name,
     email,
     password: hash,
-    role: userRole._id,
+    role: [userRole._id],
   });
 
   return user;

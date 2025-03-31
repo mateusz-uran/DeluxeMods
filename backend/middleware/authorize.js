@@ -32,9 +32,14 @@ export const authorize = (requiredPermissions) => async (req, res, next) => {
   try {
     const decodedAccessToken = jwt.verify(token, process.env.TOKEN_SECRET);
 
-    const permissions = await fetchPermissions(decodedAccessToken.role);
+    const allPermissions = [];
+    for (const roleName of decodedAccessToken.roles) {
+      const permissions = await fetchPermissions(roleName);
+      allPermissions.push(...permissions);
+    }
+
     const hasPermission = requiredPermissions.some((perm) =>
-      permissions.includes(perm)
+      allPermissions.includes(perm)
     );
 
     if (!hasPermission) {
@@ -71,6 +76,8 @@ export const authorize = (requiredPermissions) => async (req, res, next) => {
         return res.status(403).json({ message: "Invalid refresh token" });
       }
     } else {
+      console.error(`Token error: ${error.message}`);
+      
       res.status(401).json({ message: "Invalid token" });
     }
   }

@@ -6,7 +6,7 @@ export const createAccessToken = (user) => {
     {
       _id: user._id,
       name: user.name,
-      role: user.role.name,
+      roles: user.role.map(r => r.name),
     },
     process.env.TOKEN_SECRET,
     { expiresIn: "15m" }
