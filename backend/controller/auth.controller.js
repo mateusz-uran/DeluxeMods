@@ -7,10 +7,9 @@ export const createAccessToken = (user) => {
       _id: user._id,
       name: user.name,
       role: user.role.name,
-      permissions: user.role.permissions,
     },
     process.env.TOKEN_SECRET,
-    { expiresIn: "10s" }
+    { expiresIn: "15m" }
   );
 };
 
@@ -20,7 +19,7 @@ const createRefreshToken = (user) => {
       _id: user._id,
     },
     process.env.REFRESH_SECRET,
-    { expiresIn: "20s" }
+    { expiresIn: "7d" }
   );
 };
 
