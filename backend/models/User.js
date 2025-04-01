@@ -7,7 +7,7 @@ const userSchema = new mongoose.Schema({
   name: { type: String, require: true },
   password: { type: String, require: true },
   email: { type: String, require: true, unique: true },
-  role: [{ type: mongoose.Schema.Types.ObjectId, ref: "Role", required: true }],
+  roles: [{ type: mongoose.Schema.Types.ObjectId, ref: "Role", required: true }],
 });
 
 userSchema.statics.register = async function (name, email, password) {
@@ -41,7 +41,7 @@ userSchema.statics.register = async function (name, email, password) {
     name,
     email,
     password: hash,
-    role: [userRole._id],
+    roles: [userRole._id],
   });
 
   return user;
@@ -52,7 +52,7 @@ userSchema.statics.login = async function (email, password) {
     throw Error("All field must be filled!");
   }
 
-  const user = await this.findOne({ email }).populate("role");
+  const user = await this.findOne({ email }).populate("roles").exec();
 
   if (!user) {
     throw Error(`Email ${email} is incorrect!`);

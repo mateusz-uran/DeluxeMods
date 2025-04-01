@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
-import { createAccessToken } from "../controller/auth.controller.js";
 import Role from "../models/Role.js";
+import { createAccessToken } from "../utils/auth.utils.js";
 
 const roleCache = new Map();
 
@@ -56,7 +56,7 @@ export const authorize = (requiredPermissions) => async (req, res, next) => {
           process.env.REFRESH_SECRET
         );
         const user = await User.findById(decodedRefreshToken._id).populate(
-          "role"
+          "roles"
         );
 
         if (!user) {

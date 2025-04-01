@@ -12,6 +12,6 @@ export const registerUser = async (req, res) => {
 };
 
 export const getUser = async (req, res) => {
-  let users = await User.find().populate("role", "name");
+  let users = await User.find().populate("roles", "name");
   res.json(users);
 };
