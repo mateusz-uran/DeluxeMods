@@ -1,9 +1,9 @@
-import User from "../models/User.js";
-import { expect } from "chai";
+import validator from "validator";
 import sinon from "sinon";
 import bcrypt from "bcrypt";
+import { expect } from "chai";
 import Role from "../models/Role.js";
-import validator from "validator";
+import User from "../models/User.js";
 
 const sandbox = sinon.createSandbox();
 
