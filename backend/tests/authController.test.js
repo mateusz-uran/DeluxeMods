@@ -26,7 +26,7 @@ describe("Auth Controller Integration Tests", () => {
     sinon.restore();
   });
 
-  it("should log in a user and return an access token", async () => {
+  it("POST /login", async () => {
     const response = await request(app)
       .post("/login")
       .send({ email, password })
@@ -43,7 +43,7 @@ describe("Auth Controller Integration Tests", () => {
     expect(loginStub.calledOnce).to.be.true;
   });
 
-  it("should logout a user and return message", async () => {
+  it("POST /logout", async () => {
     const response = await request(app)
       .post("/logout")
       .set("Cookie", "refreshToken=mockedToken")

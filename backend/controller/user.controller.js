@@ -11,6 +11,17 @@ export const registerUser = async (req, res) => {
   }
 };
 
+export const updateUserRole = async (req, res) => {
+  const { email, newRole, oldRole } = req.body;
+
+  try {
+    const user = await User.updateRole(email, newRole, oldRole);
+    res.status(200).json({ success: true, user });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
 export const getUser = async (req, res) => {
   let users = await User.find().populate("roles", "name");
   res.json(users);

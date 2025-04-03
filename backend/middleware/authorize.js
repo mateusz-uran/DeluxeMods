@@ -66,10 +66,7 @@ export const authorize = (requiredPermissions) => async (req, res, next) => {
         const newAccessToken = createAccessToken(user);
         res.setHeader("Authorization", `Bearer ${newAccessToken}`);
 
-        req.user = jwt.verify(
-            newAccessToken,
-            process.env.TOKEN_SECRET
-          );;
+        req.user = jwt.verify(newAccessToken, process.env.TOKEN_SECRET);
         next();
       } catch (error) {
         res.clearCookie("refreshToken");
@@ -77,7 +74,7 @@ export const authorize = (requiredPermissions) => async (req, res, next) => {
       }
     } else {
       console.error(`Token error: ${error.message}`);
-      
+
       res.status(401).json({ message: "Invalid token" });
     }
   }

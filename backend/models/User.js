@@ -7,8 +7,30 @@ const userSchema = new mongoose.Schema({
   name: { type: String, require: true },
   password: { type: String, require: true },
   email: { type: String, require: true, unique: true },
-  roles: [{ type: mongoose.Schema.Types.ObjectId, ref: "Role", required: true }],
+  roles: [
+    { type: mongoose.Schema.Types.ObjectId, ref: "Role", required: true },
+  ],
 });
+
+userSchema.statics.login = async function (email, password) {
+  if (!password || !email) {
+    throw Error("All field must be filled!");
+  }
+
+  const user = await this.findOne({ email }).populate("roles").exec();
+
+  if (!user) {
+    throw Error(`Email ${email} is incorrect!`);
+  }
+
+  const match = await bcrypt.compare(password, user.password);
+
+  if (!match) {
+    throw Error("Incorrect password!");
+  }
+
+  return user;
+};
 
 userSchema.statics.register = async function (name, email, password) {
   if (!name || !password || !email) {
@@ -34,7 +56,7 @@ userSchema.statics.register = async function (name, email, password) {
   const userRole = await Role.findOne({ name: "REVIEWER" });
 
   if (!userRole) {
-    throw Error('Role REVIEWER not found');
+    throw Error("Role REVIEWER not found");
   }
 
   const user = await this.create({
@@ -47,24 +69,44 @@ userSchema.statics.register = async function (name, email, password) {
   return user;
 };
 
-userSchema.statics.login = async function (email, password) {
-  if (!password || !email) {
-    throw Error("All field must be filled!");
+userSchema.statics.updateRole = async function (
+  email,
+  newRole = null,
+  oldRole = null
+) {
+  if (!email) {
+    throw new Error("Email must be filled!");
   }
 
   const user = await this.findOne({ email }).populate("roles").exec();
-
   if (!user) {
-    throw Error(`Email ${email} is incorrect!`);
+    throw new Error(`Email ${email} is incorrect!`);
   }
 
-  const match = await bcrypt.compare(password, user.password);
+  if (oldRole) {
+    const userRoleToRemove = await Role.findOne({ name: oldRole });
 
-  if (!match) {
-    throw Error("Incorrect password!");
+    if (userRoleToRemove) {
+      user.roles = user.roles.filter(
+        (r) => r._id.toString() !== userRoleToRemove._id.toString()
+      );
+    }
   }
 
-  return user;
+  if (newRole) {
+    const userRoleToAdd = await Role.findOne({ name: newRole });
+    if (!userRoleToAdd) {
+      throw new Error(`Role ${newRole} does not exist!`);
+    }
+
+    if (
+      !user.roles.some((r) => r._id.toString() === userRoleToAdd._id.toString())
+    ) {
+      user.roles.push(userRoleToAdd._id);
+    }
+  }
+
+  return await user.save();
 };
 
 const User = mongoose.model("User", userSchema);

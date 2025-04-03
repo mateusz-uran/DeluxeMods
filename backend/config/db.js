@@ -3,7 +3,7 @@ import Role from "../models/Role.js";
 
 async function initializeRoles() {
   const roles = [
-    { name: "ADMIN", permissions: ["ADD_USER", "READ_USERS"] },
+    { name: "ADMIN", permissions: ["ADD_USER", "READ_USERS", "UPDATE_USER"] },
     { name: "EDITOR", permissions: ["ACCEPT_REVIEW"] },
     { name: "REVIEWER", permissions: ["ADD_REVIEW"] },
   ];
