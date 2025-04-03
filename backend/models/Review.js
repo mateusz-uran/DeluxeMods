@@ -27,5 +27,33 @@ reviewSchema.statics.createReview = async function (authorId, reviewText) {
   return review;
 };
 
+reviewSchema.statics.updateReviewText = async function (
+  authorId,
+  reviewId,
+  reviewText
+) {
+  if (!authorId) {
+    throw Error("User not found!");
+  }
+  if (!reviewId) {
+    throw Error("Review id cannot be empty!");
+  }
+
+  if (!reviewText || reviewText === "" || reviewText.length === 0) {
+    throw Error("Review must contain text!");
+  }
+
+  const updatedReview = await this.findByIdAndUpdate(reviewId, {
+    text: reviewText,
+    new: true,
+  });
+
+  if (!updatedReview) {
+    throw Error("Review not found!");
+  }
+
+  return updatedReview;
+};
+
 const Review = mongoose.model("Review", reviewSchema);
 export default Review;
