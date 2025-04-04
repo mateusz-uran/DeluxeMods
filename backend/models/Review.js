@@ -5,9 +5,10 @@ const reviewSchema = new mongoose.Schema({
   text: { type: String, required: true },
   status: {
     type: String,
-    enum: ["CREATED", "REVIEWED", "DECLINED"],
+    enum: ["CREATED", "REVIEWED", "DECLINED", "UPDATED"],
     default: "CREATED",
   },
+  author: { type: mongoose.Schema.Types.ObjectId, ref: "Mod", required: true },
 });
 
 reviewSchema.statics.createReview = async function (authorId, reviewText) {
@@ -15,7 +16,7 @@ reviewSchema.statics.createReview = async function (authorId, reviewText) {
     throw Error("User not found!");
   }
 
-  if (!reviewText) {
+  if (!reviewText || reviewText === "" || reviewText.length === 0) {
     throw Error("Review must contain text!");
   }
 
@@ -45,6 +46,7 @@ reviewSchema.statics.updateReviewText = async function (
 
   const updatedReview = await this.findByIdAndUpdate(reviewId, {
     text: reviewText,
+    status: "UPDATED",
     new: true,
   });
 

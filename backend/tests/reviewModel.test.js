@@ -22,6 +22,7 @@ describe("Review model unit test", () => {
       _id: reviewId,
       author: userId,
       text: updatedText,
+      status: "UPDATED",
       save: sandbox.stub().resolves(),
     });
 
@@ -67,6 +68,7 @@ describe("Review model unit test", () => {
       );
 
       expect(result.text).to.equal(updatedText);
+      expect(result.status).to.equal("UPDATED");
     });
 
     it("should throw error then authorId or reviewId is incorrect or reviewId is missing", async () => {
