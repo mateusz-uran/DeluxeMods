@@ -8,7 +8,12 @@ const reviewSchema = new mongoose.Schema({
     enum: ["CREATED", "REVIEWED", "DECLINED", "UPDATED"],
     default: "CREATED",
   },
-  author: { type: mongoose.Schema.Types.ObjectId, ref: "Mod", required: true },
+  mod: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Mod",
+    required: true,
+    unique: true,
+  },
 });
 
 reviewSchema.statics.createReview = async function (authorId, reviewText) {
