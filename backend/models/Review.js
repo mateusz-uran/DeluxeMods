@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import Mod from "./Mod.js";
 
 const reviewSchema = new mongoose.Schema({
   author: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
@@ -16,7 +17,11 @@ const reviewSchema = new mongoose.Schema({
   },
 });
 
-reviewSchema.statics.createReview = async function (authorId, reviewText) {
+reviewSchema.statics.createReview = async function (
+  authorId,
+  reviewText,
+  modData
+) {
   if (!authorId) {
     throw Error("User not found!");
   }
@@ -25,9 +30,12 @@ reviewSchema.statics.createReview = async function (authorId, reviewText) {
     throw Error("Review must contain text!");
   }
 
+  const mod = await Mod.createMod(modData);
+
   const review = await this.create({
     author: authorId,
     text: reviewText,
+    mod,
   });
 
   return review;

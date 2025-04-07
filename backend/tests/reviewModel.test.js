@@ -2,17 +2,33 @@ import mongoose from "mongoose";
 import sinon from "sinon";
 import Review from "../models/Review.js";
 import { expect } from "chai";
+import Mod from "../models/Mod.js";
 
 const sandbox = sinon.createSandbox();
 
 describe("Review model unit test", () => {
-  let sampleReview, updateReview, reviewStub;
+  let sampleReview, updateReview, reviewStub, modStub, dummyMod;
   const userId = new mongoose.Types.ObjectId("507f1f77bcf86cd799439011");
   const reviewId = new mongoose.Types.ObjectId("507f1f77bcf86cd799439022");
   const reviewText = "review text";
   const updatedText = "Updated review text";
 
   beforeEach(async () => {
+    dummyMod = {
+      _id: new mongoose.Types.ObjectId(),
+      name: "Test Mod",
+      previewPhoto: "url",
+      specification: {
+        isDeluxe: false,
+        name: "Spec Name",
+        link: "http://example.com",
+        authorName: "Author",
+      },
+      categories: [],
+      isPublished: false,
+    };
+    modStub = sandbox.stub(Mod, "createMod").resolves(dummyMod);
+
     sampleReview = new Review({
       author: userId,
       text: reviewText,
@@ -28,7 +44,9 @@ describe("Review model unit test", () => {
 
     sampleReview.save = sandbox.stub().resolves(sampleReview);
     sandbox.stub(Review, "create").resolves(sampleReview);
-    reviewStub = sandbox.stub(Review, "findByIdAndUpdate").resolves(updateReview);
+    reviewStub = sandbox
+      .stub(Review, "findByIdAndUpdate")
+      .resolves(updateReview);
   });
 
   afterEach(() => {
@@ -37,7 +55,7 @@ describe("Review model unit test", () => {
 
   describe("Add new review", () => {
     it("should create review with default status", async () => {
-      const result = await Review.createReview(userId, reviewText);
+      const result = await Review.createReview(userId, reviewText, dummyMod);
       expect(result.text).to.equal(reviewText);
       expect(result.status).to.equal("CREATED");
     });
