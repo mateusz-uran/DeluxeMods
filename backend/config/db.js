@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import Role from "../models/Role.js";
-import ModSpecification from "../models/ModSpecification.js";
+import ModCategories from "../models/ModCategories.js";
 
 async function initializeRoles() {
   const roles = [
@@ -83,11 +83,11 @@ async function initializeModCategories() {
 
   try {
     for (const category of categories) {
-      const existingCategory = await ModSpecification.findOne({
+      const existingCategory = await ModCategories.findOne({
         name: category.name,
       });
       if (!existingCategory) {
-        await new ModSpecification({
+        await new ModCategories({
           name: category.name,
           subCategory: category.subCategory,
         }).save();

@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import cloudinary from "../config/cloudinary.js";
 
 const modSchema = new mongoose.Schema({
   name: { type: String, required: true },
@@ -20,11 +21,29 @@ const modSchema = new mongoose.Schema({
 });
 
 modSchema.statics.createMod = async function (mod) {
-  const { name, previewPhoto, specification, categoryId } = mod;
+  const { name, previewPhoto, specification, categories } = mod;
 
-  // get previewPhoto url passed by user and upload to cloudinary
-  // create Mod object with given data
-  // save Mod in databse and return result
+  const uploadResult = await new Promise((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      { folder: "mods/previews", allowed_formats: ["jpg", "jpeg", "png"] },
+      (error, result) => {
+        if (error) return reject(error);
+        resolve(result);
+      }
+    );
+    uploadStream.end(previewPhoto.secure_url);
+  });
+
+  const secureUrl = uploadResult.secure_url;
+
+  const createMod = await this.create({
+    name,
+    previewPhoto: secureUrl,
+    specification,
+    categories,
+  });
+
+  return createMod;
 };
 
 const Mod = mongoose.model("Mod", modSchema);
