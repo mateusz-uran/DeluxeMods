@@ -17,11 +17,14 @@ const reviewSchema = new mongoose.Schema({
   },
 });
 
-reviewSchema.statics.createReview = async function (
+reviewSchema.statics.createReview = async function ({
   authorId,
   reviewText,
-  modData
-) {
+  name,
+  specification,
+  categories,
+  previewPhoto,
+}) {
   if (!authorId) {
     throw Error("User not found!");
   }
@@ -30,22 +33,26 @@ reviewSchema.statics.createReview = async function (
     throw Error("Review must contain text!");
   }
 
-  const mod = await Mod.createMod(modData);
+  const mod = await Mod.createMod({
+    name,
+    previewPhoto,
+    specification,
+    categories,
+  });
 
   const review = await this.create({
     author: authorId,
     text: reviewText,
-    mod,
+    mod: mod._id,
   });
-
   return review;
 };
 
-reviewSchema.statics.updateReviewText = async function (
+reviewSchema.statics.updateReviewText = async function ({
   authorId,
   reviewId,
-  reviewText
-) {
+  reviewText,
+}) {
   if (!authorId) {
     throw Error("User not found!");
   }

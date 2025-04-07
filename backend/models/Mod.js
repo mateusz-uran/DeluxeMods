@@ -7,9 +7,8 @@ const modSchema = new mongoose.Schema(
     previewPhoto: { type: String, required: true },
     specification: {
       isDeluxe: { type: Boolean, required: true, default: false },
-      name: { type: String, required: true },
       link: { type: String, required: true },
-      authorName: { type: String, required: true },
+      modAuthor: { type: String, required: true },
     },
     isPublished: { type: Boolean, required: true, default: false },
     categories: [
@@ -25,9 +24,12 @@ const modSchema = new mongoose.Schema(
   }
 );
 
-modSchema.statics.createMod = async function (mod) {
-  const { name, previewPhoto, specification, categories } = mod;
-
+modSchema.statics.createMod = async function ({
+  name,
+  previewPhoto,
+  specification,
+  categories,
+}) {
   const uploadResult = await new Promise((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
       { folder: "mods/previews", allowed_formats: ["jpg", "jpeg", "png"] },
@@ -36,7 +38,7 @@ modSchema.statics.createMod = async function (mod) {
         resolve(result);
       }
     );
-    uploadStream.end(previewPhoto.secure_url);
+    uploadStream.end(previewPhoto.buffer);
   });
 
   const secureUrl = uploadResult.secure_url;
