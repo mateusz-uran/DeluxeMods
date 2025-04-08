@@ -10,12 +10,13 @@ describe("Review model unit test", () => {
   let sampleReview, updateReview, reviewStub, modStub, dummyMod;
   const userId = new mongoose.Types.ObjectId("507f1f77bcf86cd799439011");
   const reviewId = new mongoose.Types.ObjectId("507f1f77bcf86cd799439022");
+  const modId = new mongoose.Types.ObjectId("507f1f77bcf86cd799439011");
   const reviewText = "review text";
   const updatedText = "Updated review text";
 
   beforeEach(async () => {
     dummyMod = {
-      _id: new mongoose.Types.ObjectId(),
+      _id: modId,
       name: "Test Mod",
       previewPhoto: "url",
       specification: {
@@ -113,6 +114,57 @@ describe("Review model unit test", () => {
         await Review.updateReviewText(userId, reviewId, updatedText);
       } catch (error) {
         expect(error.message).to.equal("Review not found!");
+      }
+    });
+  });
+
+  describe("Should return single mod", () => {
+    it("should return single mod asigned to review with user", async () => {
+      const review = new Review({
+        _id: reviewId,
+        author: userId,
+        text: "random review text",
+        status: "CREATED",
+        save: sandbox.stub().resolves(),
+        mod: modId,
+      });
+      const reviewFindStub = sandbox.stub(Review, "findOne").resolves(review);
+      const modFindStub = sandbox.stub(Mod, "findById").resolves(dummyMod);
+
+      const result = await Review.getModFromReviewByUser({ userId });
+
+      expect(reviewFindStub.calledOnceWithExactly({ author: userId })).to.be
+        .true;
+      expect(modFindStub.calledOnceWithExactly(modId)).to.be.true;
+
+      expect(result).to.deep.equal(dummyMod);
+    });
+
+    it("should throw error if review not found", async () => {
+      sandbox.stub(Review, "findOne").resolves(null);
+
+      try {
+        await Review.getModFromReviewByUser({ userId });
+      } catch (error) {
+        expect(error.message).to.equal("Review for given user not found!");
+      }
+    });
+
+    it("should throw error if mod not found", async () => {
+      sandbox.stub(Review, "findOne").resolves({
+        _id: reviewId,
+        author: userId,
+        text: "random review text",
+        status: "CREATED",
+        mod: modId,
+      });
+
+      sandbox.stub(Mod, "findById").resolves(null);
+
+      try {
+        await Review.getModFromReviewByUser({ userId });
+      } catch (error) {
+        expect(error.message).to.equal("Mod not found!");
       }
     });
   });

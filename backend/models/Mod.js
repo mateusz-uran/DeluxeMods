@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import cloudinary from "../config/cloudinary.js";
+import ModCategories from "./ModCategories.js";
 
 const modSchema = new mongoose.Schema(
   {
@@ -51,6 +52,75 @@ modSchema.statics.createMod = async function ({
   });
 
   return createMod;
+};
+
+modSchema.statics.getLastTenMods = async function () {
+  const mods = await this.find(
+    { isPublished: true },
+    "name previewPhoto specification.isDeluxe"
+  )
+    .sort({ createdAt: -1 })
+    .limit(10);
+  return mods;
+};
+
+modSchema.statics.getModsNotPublishedPagingAndSorting = async function ({
+  page = 1,
+  limit = 10,
+}) {
+  const mods = await this.find({ isPublished: false })
+    .limit(limit * 1)
+    .skip((page - 1) * limit)
+    .sort({ createdAt: -1 });
+
+  return mods;
+};
+
+modSchema.statics.getModsByCategorie = async function ({
+  subCategory,
+  page,
+  limit,
+}) {
+  const categories = await ModCategories.find({ subCategory: subCategory });
+
+  if (!categories.length) {
+    throw new Error(`No categories found with subCategory: ${subCategory}`);
+  }
+
+  const mods = await this.find({
+    isPublished: true,
+    categories: { $in: categories.map((cat) => cat._id) },
+  })
+    .limit(limit * 1)
+    .skip((page - 1) * limit)
+    .sort({ createdAt: -1 });
+
+  return mods;
+};
+
+modSchema.statics.getModByParameters = async function ({
+  isPublished,
+  isDeluxe,
+  subCategory,
+  page,
+  limit,
+}) {
+  const categories = await ModCategories.find({ subCategory: subCategory });
+
+  if (!categories.length) {
+    throw new Error(`No categories found with subCategory: ${subCategory}`);
+  }
+
+  const mods = await this.find({
+    isPublished,
+    isDeluxe,
+    categories: { $in: categories.map((cat) => cat._id) },
+  })
+    .limit(limit * 1)
+    .skip((page - 1) * limit)
+    .sort({ createdAt: -1 });
+
+  return mods;
 };
 
 const Mod = mongoose.model("Mod", modSchema);

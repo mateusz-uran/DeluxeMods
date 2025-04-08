@@ -3,6 +3,7 @@ import sinon from "sinon";
 import mongoose from "mongoose";
 import cloudinary from "../config/cloudinary.js";
 import Mod from "../models/Mod.js";
+import ModCategories from "../models/ModCategories.js";
 
 const sandbox = sinon.createSandbox();
 
@@ -24,7 +25,7 @@ describe("Mod model test", () => {
       .stub(Mod, "create")
       .callsFake((obj) => Promise.resolve(obj));
 
-    uploadStub = sandbox
+    sandbox
       .stub(cloudinary.uploader, "upload_stream")
       .callsFake((options, callback) => {
         process.nextTick(() => callback(uploadError, uploadResult));
@@ -62,6 +63,228 @@ describe("Mod model test", () => {
       } catch (err) {
         expect(err).to.equal(uploadError);
       }
+    });
+  });
+
+  describe("get last 10 mods", () => {
+    it("should return last 10 created mods with isPublished=true", async () => {
+      const fakeMods = Array.from({ length: 10 }, (_, i) => ({
+        name: `Mod ${i}`,
+        previewPhoto: `url_${i}`,
+        specification: { isDeluxe: false },
+        categories: [],
+        createdAt: new Date(Date.now() - i * 1000),
+        isPublished: true,
+      }));
+
+      const findStub = sandbox.stub(Mod, "find").returns({
+        sort: sandbox.stub().returnsThis(),
+        limit: sandbox.stub().returns(Promise.resolve(fakeMods)),
+      });
+
+      const result = await Mod.getLastTenMods();
+
+      expect(
+        findStub.calledOnceWithExactly(
+          { isPublished: true },
+          "name previewPhoto specification.isDeluxe"
+        )
+      ).to.be.true;
+
+      expect(result).to.be.an("array").that.has.lengthOf(10);
+      expect(result[0].name).to.equal("Mod 0");
+    });
+  });
+
+  describe("get not published mods with pagination", () => {
+    it("should return unpublished mods paginated and sorted", async () => {
+      const page = 1;
+      const limit = 5;
+      const fakeMods = Array.from({ length: limit }, (_, i) => ({
+        name: `Mod ${i}`,
+        isPublished: false,
+        createdAt: new Date(Date.now() - i * 1000),
+      }));
+
+      const findStub = sandbox.stub(Mod, "find").returns({
+        limit: sandbox.stub().returnsThis(),
+        skip: sandbox.stub().returnsThis(),
+        sort: sandbox.stub().returns(Promise.resolve(fakeMods)),
+      });
+
+      const result = await Mod.getModsNotPublishedPagingAndSorting({
+        page,
+        limit,
+      });
+
+      expect(result).to.be.an("array").with.lengthOf(limit);
+      expect(findStub.calledOnceWithExactly({ isPublished: false })).to.be.true;
+    });
+  });
+
+  describe("get not published mods with pagination", () => {
+    const categoryId = new mongoose.Types.ObjectId("507f1f77bcf86cd799439011");
+    const page = 1;
+    const limit = 5;
+
+    it("should return sorted not published mods", async () => {
+      sandbox.stub(ModCategories, "find").resolves([
+        {
+          _id: categoryId,
+          name: "Bailing",
+          subCategory: ["Baler", "Wrapper"],
+        },
+      ]);
+
+      const fakeMods = Array.from({ length: limit }, (_, i) => ({
+        name: `Mod ${i}`,
+        isPublished: true,
+        categories: [categoryId],
+        createdAt: new Date(Date.now() - i * 1000),
+      }));
+
+      sandbox.stub(Mod, "find").returns({
+        limit: sandbox.stub().returnsThis(),
+        skip: sandbox.stub().returnsThis(),
+        sort: sandbox.stub().returns(Promise.resolve(fakeMods)),
+      });
+
+      const result = await Mod.getModsByCategorie({
+        subCategory: "Baler",
+        page,
+        limit,
+      });
+
+      expect(result).to.be.an("array").that.has.lengthOf(limit);
+      expect(result[0].name).to.equal("Mod 0");
+      expect(result[0].isPublished).to.equal(true);
+    });
+
+    it("should throw error when categories not found", async () => {
+      let subcategory = "Baler";
+      sandbox.stub(ModCategories, "find").resolves([]);
+      try {
+        await Mod.getModsByCategorie({
+          subCategory: subcategory,
+          page,
+          limit,
+        });
+      } catch (err) {
+        expect(err.message).to.equal(
+          `No categories found with subCategory: ${subcategory}`
+        );
+      }
+    });
+  });
+
+  describe("Uber ultra query with params for mods", () => {
+    const categoryId = new mongoose.Types.ObjectId("507f1f77bcf86cd799439011");
+    const page = 1;
+    const limit = 5;
+    it("should return mods with isDeluxe=true, isPublished=true and category", async () => {
+      sandbox.stub(ModCategories, "find").resolves([
+        {
+          _id: categoryId,
+          name: "Bailing",
+          subCategory: ["Baler", "Wrapper"],
+        },
+      ]);
+
+      const fakeMods = Array.from({ length: limit }, (_, i) => ({
+        name: `Mod ${i}`,
+        isPublished: true,
+        specification: { isDeluxe: true },
+        categories: [categoryId],
+        createdAt: new Date(Date.now() - i * 1000),
+      }));
+
+      sandbox.stub(Mod, "find").returns({
+        limit: sandbox.stub().returnsThis(),
+        skip: sandbox.stub().returnsThis(),
+        sort: sandbox.stub().returns(Promise.resolve(fakeMods)),
+      });
+
+      const result = await Mod.getModByParameters({
+        subCategory: "Baler",
+        page,
+        limit,
+      });
+
+      expect(result).to.be.an("array").that.has.lengthOf(limit);
+      expect(result[0].name).to.equal("Mod 0");
+      expect(result[0].isPublished).to.equal(true);
+      expect(result[0].specification.isDeluxe).to.equal(true);
+    });
+
+    it("should return mods with isDeluxe=false, isPublished=false and category", async () => {
+      sandbox.stub(ModCategories, "find").resolves([
+        {
+          _id: categoryId,
+          name: "Bailing",
+          subCategory: ["Baler", "Wrapper"],
+        },
+      ]);
+
+      const fakeMods = Array.from({ length: limit }, (_, i) => ({
+        name: `Mod ${i}`,
+        isPublished: false,
+        specification: { isDeluxe: false },
+        categories: [categoryId],
+        createdAt: new Date(Date.now() - i * 1000),
+      }));
+
+      sandbox.stub(Mod, "find").returns({
+        limit: sandbox.stub().returnsThis(),
+        skip: sandbox.stub().returnsThis(),
+        sort: sandbox.stub().returns(Promise.resolve(fakeMods)),
+      });
+
+      const result = await Mod.getModByParameters({
+        subCategory: "Baler",
+        page,
+        limit,
+      });
+
+      expect(result).to.be.an("array").that.has.lengthOf(limit);
+      expect(result[0].name).to.equal("Mod 0");
+      expect(result[0].isPublished).to.equal(false);
+      expect(result[0].specification.isDeluxe).to.equal(false);
+    });
+
+    it("should return mods with isDeluxe=false, isPublished=false and wthout assigned category", async () => {
+      sandbox.stub(ModCategories, "find").resolves([
+        {
+          _id: categoryId,
+          name: "Bailing",
+          subCategory: ["Baler", "Wrapper"],
+        },
+      ]);
+
+      const fakeMods = Array.from({ length: limit }, (_, i) => ({
+        name: `Mod ${i}`,
+        isPublished: false,
+        specification: { isDeluxe: false },
+        categories: [],
+        createdAt: new Date(Date.now() - i * 1000),
+      }));
+
+      sandbox.stub(Mod, "find").returns({
+        limit: sandbox.stub().returnsThis(),
+        skip: sandbox.stub().returnsThis(),
+        sort: sandbox.stub().returns(Promise.resolve(fakeMods)),
+      });
+
+      const result = await Mod.getModByParameters({
+        subCategory: "Baler",
+        page,
+        limit,
+      });
+
+      expect(result).to.be.an("array").that.has.lengthOf(limit);
+      expect(result[0].name).to.equal("Mod 0");
+      expect(result[0].isPublished).to.equal(false);
+      expect(result[0].specification.isDeluxe).to.equal(false);
+      expect(result[0].categories).to.be.an("array").that.has.lengthOf(0);;
     });
   });
 });

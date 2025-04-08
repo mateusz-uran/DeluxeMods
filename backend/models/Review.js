@@ -77,5 +77,21 @@ reviewSchema.statics.updateReviewText = async function ({
   return updatedReview;
 };
 
+reviewSchema.statics.getModFromReviewByUser = async function ({ userId }) {
+  const review = await this.findOne({ author: userId });
+
+  if (!review) {
+    throw new Error("Review for given user not found!");
+  }
+
+  const mod = await Mod.findById(review.mod);
+
+  if (!mod) {
+    throw new Error("Mod not found!");
+  }
+
+  return mod;
+};
+
 const Review = mongoose.model("Review", reviewSchema);
 export default Review;
