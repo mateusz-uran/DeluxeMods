@@ -99,23 +99,25 @@ modSchema.statics.getModsByCategorie = async function ({
 };
 
 modSchema.statics.getModByParameters = async function ({
-  isPublished,
-  isDeluxe,
+  isPublished = true,
+  isDeluxe = false,
   subCategory,
   page,
   limit,
 }) {
-  const categories = await ModCategories.find({ subCategory: subCategory });
+  let query = { isPublished, isDeluxe };
 
-  if (!categories.length) {
-    throw new Error(`No categories found with subCategory: ${subCategory}`);
+  if (subCategory) {
+    const categories = await ModCategories.find({ subCategory: subCategory });
+
+    if (categories.length > 0) {
+      query.categories = { $in: categories.map((cat) => cat._id) };
+    } else {
+      return [];
+    }
   }
 
-  const mods = await this.find({
-    isPublished,
-    isDeluxe,
-    categories: { $in: categories.map((cat) => cat._id) },
-  })
+  const mods = await this.find(query)
     .limit(limit * 1)
     .skip((page - 1) * limit)
     .sort({ createdAt: -1 });
