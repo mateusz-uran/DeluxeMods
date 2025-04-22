@@ -54,6 +54,31 @@ modSchema.statics.createMod = async function ({
   return createMod;
 };
 
+modSchema.statics.updateModText = async function ({
+  modId,
+  specification,
+  categories,
+}) {
+  if (!modId) {
+    throw Error("Mod id must be provided!");
+  }
+
+  const updatedMod = await this.findByIdAndUpdate(
+    modId,
+    {
+      specification,
+      categories,
+    },
+    { new: true }
+  );
+
+  if (!updatedMod) {
+    throw Error("Mod not found!");
+  }
+
+  return updatedMod;
+};
+
 modSchema.statics.getLastTenMods = async function () {
   const mods = await this.find(
     { isPublished: true },

@@ -64,11 +64,14 @@ reviewSchema.statics.updateReviewText = async function ({
     throw Error("Review must contain text!");
   }
 
-  const updatedReview = await this.findByIdAndUpdate(reviewId, {
-    text: reviewText,
-    status: "UPDATED",
-    new: true,
-  });
+  const updatedReview = await this.findByIdAndUpdate(
+    reviewId,
+    {
+      text: reviewText,
+      status: "UPDATED",
+    },
+    { new: true }
+  );
 
   if (!updatedReview) {
     throw Error("Review not found!");

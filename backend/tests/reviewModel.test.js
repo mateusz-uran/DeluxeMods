@@ -56,14 +56,21 @@ describe("Review model unit test", () => {
 
   describe("Add new review", () => {
     it("should create review with default status", async () => {
-      const result = await Review.createReview(userId, reviewText, dummyMod);
+      const result = await Review.createReview({
+        authorId: userId,
+        reviewText,
+        name: dummyMod.name,
+        specification: dummyMod.specification,
+        categories: dummyMod.categories,
+        previewPhoto: dummyMod.previewPhoto,
+      });
       expect(result.text).to.equal(reviewText);
       expect(result.status).to.equal("CREATED");
     });
 
     it("should throw error when userId is missing", async () => {
       try {
-        await Review.createReview(null, reviewText);
+        await Review.createReview({ authorId: null });
       } catch (err) {
         expect(err.message).to.equal("User not found!");
       }
@@ -71,7 +78,7 @@ describe("Review model unit test", () => {
 
     it("should throw error when review text is empty", async () => {
       try {
-        await Review.createReview(userId, null);
+        await Review.createReview({ authorId: userId, reviewText: null });
       } catch (err) {
         expect(err.message).to.equal("Review must contain text!");
       }
@@ -80,11 +87,11 @@ describe("Review model unit test", () => {
 
   describe("Update review", () => {
     it("should update review text and returen updated version", async () => {
-      const result = await Review.updateReviewText(
-        userId,
+      const result = await Review.updateReviewText({
+        authorId: userId,
         reviewId,
-        updatedText
-      );
+        reviewText: updatedText,
+      });
 
       expect(result.text).to.equal(updatedText);
       expect(result.status).to.equal("UPDATED");
@@ -92,17 +99,21 @@ describe("Review model unit test", () => {
 
     it("should throw error then authorId or reviewId is incorrect or reviewId is missing", async () => {
       try {
-        await Review.updateReviewText("incorrectUserId", reviewId, updatedText);
+        await Review.updateReviewText({
+          authroId: "incorrectUserId",
+          reviewId,
+          reviewText: updatedText,
+        });
       } catch (error) {
         expect(error.message).to.equal("User not found!");
       }
       try {
-        await Review.updateReviewText(userId, null, updatedText);
+        await Review.updateReviewText({authorId: userId, reviewId: null, reviewText: updatedText});
       } catch (error) {
         expect(error.message).to.equal("Review id cannot be empty!");
       }
       try {
-        await Review.updateReviewText(userId, reviewId, "");
+        await Review.updateReviewText({authorId: userId, reviewId, reviewText: ""});
       } catch (error) {
         expect(error.message).to.equal("Review must contain text!");
       }
@@ -111,7 +122,7 @@ describe("Review model unit test", () => {
     it("should throw an error when review was not found", async () => {
       reviewStub.resolves(null);
       try {
-        await Review.updateReviewText(userId, reviewId, updatedText);
+        await Review.updateReviewText({authorId: userId, reviewId, reviewText: updatedText});
       } catch (error) {
         expect(error.message).to.equal("Review not found!");
       }

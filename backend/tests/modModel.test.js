@@ -8,14 +8,15 @@ import ModCategories from "../models/ModCategories.js";
 const sandbox = sinon.createSandbox();
 
 describe("Mod model test", () => {
-  let modInput, uploadResult, uploadError, saveStub;
+  let modInput, uploadResult, uploadError, saveStub, updateStub, updateMod;
+  const modId = new mongoose.Types.ObjectId("507f1f77bcf86cd799439022");
+
   beforeEach(() => {
     modInput = {
       name: "Test Mod",
       previewPhoto: { secure_url: "dummy_url" },
       specification: {
         isDeluxe: false,
-        name: "Test Specification",
         link: "http://example.com",
         authorName: "Test Author",
       },
@@ -46,7 +47,6 @@ describe("Mod model test", () => {
       expect(result.previewPhoto).to.equal(uploadResult.secure_url);
       expect(saveStub.calledOnce).to.be.true;
       expect(saveStub.firstCall.args[0]).to.deep.include({
-        name: modInput.name,
         previewPhoto: uploadResult.secure_url,
         specification: modInput.specification,
         categories: modInput.categories,
@@ -63,6 +63,35 @@ describe("Mod model test", () => {
       } catch (err) {
         expect(err).to.equal(uploadError);
       }
+    });
+  });
+
+  describe("update mod data", () => {
+    it("should return updated mod", async () => {
+      updateMod = new Mod({
+        _id: modId,
+        previewPhoto: "",
+        specification: {
+          isDeluxe: false,
+          link: "http://update-link.com",
+          modAuthor: "John Doe",
+        },
+        isPublished: true,
+        categories: [new mongoose.Types.ObjectId()],
+      });
+
+      updateStub = sandbox.stub(Mod, "findByIdAndUpdate").resolves(updateMod);
+      const spec = {
+        isDeluxe: true,
+        link: "http://update-link.com",
+        modAuthor: "John Doe",
+      };
+
+      const result = await Mod.updateModText({ modId, specification: spec, categories: [] });
+
+      expect(result.specification.link).to.equal("http://update-link.com");
+      expect(result.specification.modAuthor).to.equal("John Doe");
+      // expect(result.status).to.equal("UPDATED");
     });
   });
 
@@ -284,7 +313,7 @@ describe("Mod model test", () => {
       expect(result[0].name).to.equal("Mod 0");
       expect(result[0].isPublished).to.equal(false);
       expect(result[0].specification.isDeluxe).to.equal(false);
-      expect(result[0].categories).to.be.an("array").that.has.lengthOf(0);;
+      expect(result[0].categories).to.be.an("array").that.has.lengthOf(0);
     });
   });
 });
