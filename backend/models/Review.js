@@ -49,18 +49,15 @@ reviewSchema.statics.createReview = async function ({
 };
 
 reviewSchema.statics.updateReviewText = async function ({
-  authorId,
   reviewId,
   reviewText,
 }) {
-  if (!authorId) {
-    throw Error("User not found!");
-  }
   if (!reviewId) {
     throw Error("Review id cannot be empty!");
   }
 
   if (!reviewText || reviewText === "" || reviewText.length === 0) {
+    console.log("No reviewText provided");
     throw Error("Review must contain text!");
   }
 
@@ -94,6 +91,89 @@ reviewSchema.statics.getModFromReviewByUser = async function ({ userId }) {
   }
 
   return mod;
+};
+
+reviewSchema.statics.getLastTenReviews = async function ({ userId }) {
+  if (!userId) {
+    throw new Error("User ID must be provided.");
+  }
+
+  const reviews = await this.find({ author: userId })
+    .populate("mod")
+    .sort({ createdAt: -1 })
+    .limit(10);
+
+  return reviews;
+};
+
+reviewSchema.statics.getLastTenReviewsWithSpecificStatus = async function ({
+  userId,
+  status,
+}) {
+  if (!userId) {
+    throw new Error("User ID must be provided.");
+  }
+
+  if (!status) {
+    throw new Error("Status must be provided.");
+  }
+
+  const reviews = await this.find({ author: userId, status })
+    .populate("mod")
+    .sort({ createdAt: -1 })
+    .limit(10);
+
+  return reviews;
+};
+
+reviewSchema.statics.getReviewByUserAndModName = async function ({
+  userId,
+  modName,
+}) {
+  if (!userId) {
+    throw new Error("User ID must be provided.");
+  }
+
+  if (!modName) {
+    throw new Error("Mod name must be provided.");
+  }
+
+  const mod = await Mod.findOne({ name: modName });
+
+  if (!mod) {
+    throw new Error("Mod not found!");
+  }
+
+  const reviews = await this.findOne({ author: userId, mod: mod._id }).populate(
+    "mod"
+  );
+
+  return reviews;
+};
+
+reviewSchema.statics.getLastTenCreatedReviews = async function () {
+  const reviews = await this.find({ status: "CREATED" }).populate("mod");
+
+  return reviews;
+};
+
+reviewSchema.statics.updateReviewStatus = async function ({
+  reviewId,
+  status,
+}) {
+  const updatedReview = await this.findByIdAndUpdate(
+    reviewId,
+    {
+      status,
+    },
+    { new: true }
+  );
+
+  if (!updatedReview) {
+    throw Error("Review not found!");
+  }
+
+  return updatedReview;
 };
 
 const Review = mongoose.model("Review", reviewSchema);

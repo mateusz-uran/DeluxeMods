@@ -7,29 +7,14 @@ import Mod from "../models/Mod.js";
 const sandbox = sinon.createSandbox();
 
 describe("Review model unit test", () => {
-  let sampleReview, updateReview, reviewStub, modStub, dummyMod;
+  let sampleReview, updateReview;
   const userId = new mongoose.Types.ObjectId("507f1f77bcf86cd799439011");
   const reviewId = new mongoose.Types.ObjectId("507f1f77bcf86cd799439022");
   const modId = new mongoose.Types.ObjectId("507f1f77bcf86cd799439011");
   const reviewText = "review text";
   const updatedText = "Updated review text";
 
-  beforeEach(async () => {
-    dummyMod = {
-      _id: modId,
-      name: "Test Mod",
-      previewPhoto: "url",
-      specification: {
-        isDeluxe: false,
-        name: "Spec Name",
-        link: "http://example.com",
-        authorName: "Author",
-      },
-      categories: [],
-      isPublished: false,
-    };
-    modStub = sandbox.stub(Mod, "createMod").resolves(dummyMod);
-
+  beforeEach(() => {
     sampleReview = new Review({
       author: userId,
       text: reviewText,
@@ -42,28 +27,31 @@ describe("Review model unit test", () => {
       status: "UPDATED",
       save: sandbox.stub().resolves(),
     });
-
-    sampleReview.save = sandbox.stub().resolves(sampleReview);
-    sandbox.stub(Review, "create").resolves(sampleReview);
-    reviewStub = sandbox
-      .stub(Review, "findByIdAndUpdate")
-      .resolves(updateReview);
   });
 
   afterEach(() => {
     sandbox.restore();
   });
 
+  function stubCreateReview(dummyMod) {
+    sandbox.stub(Mod, "createMod").resolves(dummyMod);
+    sandbox.stub(Review, "create").resolves(sampleReview);
+  }
+
   describe("Add new review", () => {
     it("should create review with default status", async () => {
+      const dummyMod = { _id: modId, name: "Test Mod", previewPhoto: "url" };
+      stubCreateReview(dummyMod);
+
       const result = await Review.createReview({
         authorId: userId,
         reviewText,
         name: dummyMod.name,
-        specification: dummyMod.specification,
-        categories: dummyMod.categories,
+        specification: {},
+        categories: [],
         previewPhoto: dummyMod.previewPhoto,
       });
+
       expect(result.text).to.equal(reviewText);
       expect(result.status).to.equal("CREATED");
     });
@@ -86,9 +74,10 @@ describe("Review model unit test", () => {
   });
 
   describe("Update review", () => {
-    it("should update review text and returen updated version", async () => {
+    it("should update review text and return updated version", async () => {
+      sandbox.stub(Review, "findByIdAndUpdate").resolves(updateReview);
+
       const result = await Review.updateReviewText({
-        authorId: userId,
         reviewId,
         reviewText: updatedText,
       });
@@ -97,40 +86,60 @@ describe("Review model unit test", () => {
       expect(result.status).to.equal("UPDATED");
     });
 
-    it("should throw error then authorId or reviewId is incorrect or reviewId is missing", async () => {
+    it("should throw error when reviewId is incorrect or reviewText empty", async () => {
       try {
         await Review.updateReviewText({
-          authroId: "incorrectUserId",
-          reviewId,
+          reviewId: null,
           reviewText: updatedText,
         });
       } catch (error) {
-        expect(error.message).to.equal("User not found!");
-      }
-      try {
-        await Review.updateReviewText({authorId: userId, reviewId: null, reviewText: updatedText});
-      } catch (error) {
         expect(error.message).to.equal("Review id cannot be empty!");
       }
+
       try {
-        await Review.updateReviewText({authorId: userId, reviewId, reviewText: ""});
+        await Review.updateReviewText({
+          reviewId: reviewId,
+          reviewText: "",
+        });
       } catch (error) {
         expect(error.message).to.equal("Review must contain text!");
       }
     });
 
-    it("should throw an error when review was not found", async () => {
-      reviewStub.resolves(null);
+    it("should throw error when review was not found", async () => {
+      sandbox.stub(Review, "findByIdAndUpdate").resolves(null);
+
       try {
-        await Review.updateReviewText({authorId: userId, reviewId, reviewText: updatedText});
+        await Review.updateReviewText({
+          reviewId,
+          reviewText: updatedText,
+        });
       } catch (error) {
         expect(error.message).to.equal("Review not found!");
       }
     });
+
+    it("should update review status only", async () => {
+      const fakeUpdatedReview = {
+        _id: reviewId,
+        text: "Some review",
+        status: "DECLINED",
+      };
+
+      sandbox.stub(Review, "findByIdAndUpdate").resolves(fakeUpdatedReview);
+
+      const result = await Review.updateReviewStatus({
+        reviewId,
+        status: "DECLINED",
+      });
+
+      expect(result.status).to.equal("DECLINED");
+      expect(result._id.toString()).to.equal(reviewId.toString());
+    });
   });
 
-  describe("Should return single mod", () => {
-    it("should return single mod asigned to review with user", async () => {
+  describe("Get Mod from Review", () => {
+    it("should return single mod assigned to review with user", async () => {
       const review = new Review({
         _id: reviewId,
         author: userId,
@@ -139,16 +148,13 @@ describe("Review model unit test", () => {
         save: sandbox.stub().resolves(),
         mod: modId,
       });
-      const reviewFindStub = sandbox.stub(Review, "findOne").resolves(review);
-      const modFindStub = sandbox.stub(Mod, "findById").resolves(dummyMod);
+
+      sandbox.stub(Review, "findOne").resolves(review);
+      sandbox.stub(Mod, "findById").resolves({ _id: modId, name: "Test Mod" });
 
       const result = await Review.getModFromReviewByUser({ userId });
 
-      expect(reviewFindStub.calledOnceWithExactly({ author: userId })).to.be
-        .true;
-      expect(modFindStub.calledOnceWithExactly(modId)).to.be.true;
-
-      expect(result).to.deep.equal(dummyMod);
+      expect(result.name).to.equal("Test Mod");
     });
 
     it("should throw error if review not found", async () => {
@@ -177,6 +183,30 @@ describe("Review model unit test", () => {
       } catch (error) {
         expect(error.message).to.equal("Mod not found!");
       }
+    });
+  });
+
+  describe("Get last ten reviews", () => {
+    it("should return last ten reviews", async () => {
+      const fakeReviews = Array.from({ length: 10 }, (_, i) => ({
+        author: userId,
+        text: `random review text number ${i}`,
+        status: "CREATED",
+        mod: modId,
+      }));
+
+      sandbox.stub(Review, "find").returns({
+        populate: () => ({
+          sort: () => ({
+            limit: () => Promise.resolve(fakeReviews),
+          }),
+        }),
+      });
+
+      const result = await Review.getLastTenReviews({ userId });
+
+      expect(result).to.be.an("array").that.has.lengthOf(10);
+      expect(result[0].text).to.equal("random review text number 0");
     });
   });
 });

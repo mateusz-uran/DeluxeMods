@@ -150,5 +150,26 @@ modSchema.statics.getModByParameters = async function ({
   return mods;
 };
 
+modSchema.statics.updateModDeluxeStatus = async function ({ modId }) {
+  const mod = await this.findById(modId);
+  if (!mod) {
+    throw Error("Mod not found!");
+  }
+
+  const updatedMod = await this.findByIdAndUpdate(
+    modId,
+    {
+      isDeluxe: !mod.specification.isDeluxe,
+    },
+    { new: true }
+  );
+
+  if (!updatedMod) {
+    throw Error("Mod not found!");
+  }
+
+  return updatedMod;
+};
+
 const Mod = mongoose.model("Mod", modSchema);
 export default Mod;
