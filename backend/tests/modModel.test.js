@@ -1,38 +1,41 @@
 import { expect } from "chai";
 import sinon from "sinon";
 import mongoose from "mongoose";
-import cloudinary from "../config/cloudinary.js";
 import Mod from "../models/Mod.js";
 import ModCategories from "../models/ModCategories.js";
+import * as cloudinaryUtil from "../utils/cloudinaryUpload.util.js";
 
 const sandbox = sinon.createSandbox();
 
 describe("Mod model test", () => {
-  let modInput, uploadResult, uploadError, saveStub, updateStub, updateMod;
+  let modInput, saveStub, updateStub, updateMod, uploadStub, findStub;
   const modId = new mongoose.Types.ObjectId("507f1f77bcf86cd799439022");
 
   beforeEach(() => {
     modInput = {
       name: "Test Mod",
-      previewPhoto: { secure_url: "dummy_url" },
+      previewPhoto: { buffer: Buffer.from("fake-image") },
       specification: {
         isDeluxe: false,
         link: "http://example.com",
         authorName: "Test Author",
       },
-      categories: ["cat1", "cat2"],
+      slugs: ["small", "medium"],
     };
 
     saveStub = sandbox
       .stub(Mod, "create")
       .callsFake((obj) => Promise.resolve(obj));
 
-    sandbox
-      .stub(cloudinary.uploader, "upload_stream")
-      .callsFake((options, callback) => {
-        process.nextTick(() => callback(uploadError, uploadResult));
-        return { end: sinon.stub() };
-      });
+    findStub = sandbox.stub(ModCategories, "find").callsFake(async () => [
+      {
+        name: "Some category",
+        subCategory: [
+          { name: "Small", slug: "small" },
+          { name: "Medium", slug: "medium" },
+        ],
+      },
+    ]);
   });
 
   afterEach(() => {
@@ -40,55 +43,44 @@ describe("Mod model test", () => {
   });
 
   describe("createMod", () => {
-    it("should successfully create a mod with a secure URL from Cloudinary", async () => {
-      uploadResult = { secure_url: "secure_url_from_cloudinary" };
-      uploadError = null;
+    it("should successfully create a mod with Cloudinary upload", async () => {
+      const fakeUpload = sandbox.stub().resolves("fake_secure_url");
 
-      sandbox
-        .stub(ModCategories, "find")
-        .callsFake(async ({ "subCategory.slug": { $in: slugs } }) => {
-          return slugs.map(() => ({
-            _id: new mongoose.Types.ObjectId("507f1f77bcf86cd799439022"),
-            name: "Tractor",
-            subCategory: [
-              { name: "Small", slug: "small" },
-              { name: "Medium", slug: "medium" },
-              { name: "Big", slug: "big" },
-            ],
-          }));
-        });
+      const result = await Mod.createMod(modInput, fakeUpload);
 
-      let mod = {
-        name: "Test Mod",
-        previewPhoto: { secure_url: "dummy_url" },
-        specification: {
-          isDeluxe: false,
-          link: "http://example.com",
-          authorName: "Test Author",
-        },
-        slugs: ["small", "medium"],
-      };
+      sinon.assert.calledOnceWithExactly(
+        fakeUpload,
+        modInput.previewPhoto.buffer
+      );
 
-      const result = await Mod.createMod(mod);
-
-      expect(result.previewPhoto).to.equal(uploadResult.secure_url);
-      expect(saveStub.calledOnce).to.be.true;
-      expect(saveStub.firstCall.args[0]).to.deep.include({
-        previewPhoto: uploadResult.secure_url,
-        specification: modInput.specification,
-      });
-      expect(saveStub.firstCall.args[0].categories).to.be.an("array");
+      sinon.assert.calledOnce(saveStub);
+      const saved = saveStub.firstCall.args[0];
+      expect(saved.previewPhoto).to.equal("fake_secure_url");
+      expect(saved.categories).to.deep.equal(["small", "medium"]);
     });
 
     it("should throw an error if Cloudinary upload fails", async () => {
-      uploadResult = null;
-      uploadError = new Error("Upload failed");
+      const fakeUpload = sandbox.stub().rejects(new Error("Upload failed"));
 
       try {
-        await Mod.createMod(modInput);
+        await Mod.createMod(modInput, fakeUpload);
         expect.fail("Expected createMod to throw an error");
       } catch (err) {
-        expect(err).to.equal(uploadError);
+        expect(err.message).to.equal("Upload failed");
+      }
+    });
+
+    it("should throw an error if no category slugs match", async () => {
+      findStub.resolves([]);
+      const fakeUpload = sandbox.stub().resolves("whatever");
+
+      try {
+        await Mod.createMod(modInput, fakeUpload);
+        expect.fail("Expected createMod to throw an error");
+      } catch (err) {
+        expect(err.message).to.equal(
+          "No valid subCategory slugs found for provided slugs."
+        );
       }
     });
   });
@@ -320,7 +312,7 @@ describe("Mod model test", () => {
       expect(
         findByIdAndUpdateStub.calledOnceWith(
           modId,
-          { isDeluxe: !modBefore.specification.isDeluxe },
+          { $set: { "specification.isDeluxe": true } },
           { new: true }
         )
       ).to.be.true;
@@ -335,7 +327,9 @@ describe("Mod model test", () => {
         await Mod.updateModDeluxeStatus({ modId });
         expect.fail("Expected error was not thrown");
       } catch (err) {
-        expect(err.message).to.equal("Mod not found!");
+        expect(err.message).to.equal(
+          "Error while updating mod: Mod not found!"
+        );
       }
     });
   });

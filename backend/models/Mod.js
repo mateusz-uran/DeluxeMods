@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
-import cloudinary from "../config/cloudinary.js";
 import ModCategories from "./ModCategories.js";
+import { uploadImageToCloudinary } from "../utils/cloudinaryUpload.util.js";
 
 const modSchema = new mongoose.Schema(
   {
@@ -29,19 +29,8 @@ modSchema.statics.createMod = async function ({
   previewPhoto,
   specification,
   slugs,
-}) {
-  const uploadResult = await new Promise((resolve, reject) => {
-    const uploadStream = cloudinary.uploader.upload_stream(
-      { folder: "mods/previews", allowed_formats: ["jpg", "jpeg", "png"] },
-      (error, result) => {
-        if (error) return reject(error);
-        resolve(result);
-      }
-    );
-    uploadStream.end(previewPhoto.buffer);
-  });
-
-  const secureUrl = uploadResult.secure_url;
+}, uploadFn = uploadImageToCloudinary) {
+  const secureUrl = await uploadFn(previewPhoto.buffer);
 
   const categories = await ModCategories.find({
     "subCategory.slug": { $in: slugs },
