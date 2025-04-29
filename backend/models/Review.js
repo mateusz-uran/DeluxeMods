@@ -71,23 +71,6 @@ reviewSchema.statics.updateReviewText = async function ({
   return updatedReview;
 };
 
-// TODO: fix or remove cuz user can have many reviews
-reviewSchema.statics.getModFromReviewByUser = async function ({ userId }) {
-  const review = await this.findOne({ author: userId });
-
-  if (!review) {
-    throw new Error("Review for given user not found!");
-  }
-
-  const mod = await Mod.findById(review.mod);
-
-  if (!mod) {
-    throw new Error("Mod not found!");
-  }
-
-  return mod;
-};
-
 reviewSchema.statics.getLastTenReviews = async function ({ userId }) {
   if (!userId) {
     throw new Error("User ID must be provided.");

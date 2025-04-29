@@ -38,7 +38,7 @@ describe("Review model unit test", () => {
     sandbox.stub(Review, "create").resolves(sampleReview);
   }
 
-  describe("Add new review", () => {
+  describe("createReview", () => {
     it("should create review with default status", async () => {
       const dummyMod = { _id: modId, name: "Test Mod", previewPhoto: "url" };
       stubCreateReview(dummyMod);
@@ -73,7 +73,7 @@ describe("Review model unit test", () => {
     });
   });
 
-  describe("Update review", () => {
+  describe("updateReviewText", () => {
     it("should update review text and return updated version", async () => {
       sandbox.stub(Review, "findByIdAndUpdate").resolves(updateReview);
 
@@ -138,55 +138,7 @@ describe("Review model unit test", () => {
     });
   });
 
-  describe("Get Mod from Review", () => {
-    it("should return single mod assigned to review with user", async () => {
-      const review = new Review({
-        _id: reviewId,
-        author: userId,
-        text: "random review text",
-        status: "CREATED",
-        save: sandbox.stub().resolves(),
-        mod: modId,
-      });
-
-      sandbox.stub(Review, "findOne").resolves(review);
-      sandbox.stub(Mod, "findById").resolves({ _id: modId, name: "Test Mod" });
-
-      const result = await Review.getModFromReviewByUser({ userId });
-
-      expect(result.name).to.equal("Test Mod");
-    });
-
-    it("should throw error if review not found", async () => {
-      sandbox.stub(Review, "findOne").resolves(null);
-
-      try {
-        await Review.getModFromReviewByUser({ userId });
-      } catch (error) {
-        expect(error.message).to.equal("Review for given user not found!");
-      }
-    });
-
-    it("should throw error if mod not found", async () => {
-      sandbox.stub(Review, "findOne").resolves({
-        _id: reviewId,
-        author: userId,
-        text: "random review text",
-        status: "CREATED",
-        mod: modId,
-      });
-
-      sandbox.stub(Mod, "findById").resolves(null);
-
-      try {
-        await Review.getModFromReviewByUser({ userId });
-      } catch (error) {
-        expect(error.message).to.equal("Mod not found!");
-      }
-    });
-  });
-
-  describe("Get last ten reviews", () => {
+  describe("getLastTenReviews", () => {
     it("should return last ten reviews", async () => {
       const fakeReviews = Array.from({ length: 10 }, (_, i) => ({
         author: userId,
