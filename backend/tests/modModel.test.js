@@ -20,7 +20,7 @@ describe("Mod model test", () => {
         link: "http://example.com",
         authorName: "Test Author",
       },
-      categories: [new mongoose.Types.ObjectId()],
+      categories: ["cat1", "cat2"],
     };
 
     saveStub = sandbox
@@ -44,15 +44,40 @@ describe("Mod model test", () => {
       uploadResult = { secure_url: "secure_url_from_cloudinary" };
       uploadError = null;
 
-      const result = await Mod.createMod(modInput);
+      sandbox
+        .stub(ModCategories, "find")
+        .callsFake(async ({ "subCategory.slug": { $in: slugs } }) => {
+          return slugs.map(() => ({
+            _id: new mongoose.Types.ObjectId("507f1f77bcf86cd799439022"),
+            name: "Tractor",
+            subCategory: [
+              { name: "Small", slug: "small" },
+              { name: "Medium", slug: "medium" },
+              { name: "Big", slug: "big" },
+            ],
+          }));
+        });
+
+      let mod = {
+        name: "Test Mod",
+        previewPhoto: { secure_url: "dummy_url" },
+        specification: {
+          isDeluxe: false,
+          link: "http://example.com",
+          authorName: "Test Author",
+        },
+        slugs: ["small", "medium"],
+      };
+
+      const result = await Mod.createMod(mod);
 
       expect(result.previewPhoto).to.equal(uploadResult.secure_url);
       expect(saveStub.calledOnce).to.be.true;
       expect(saveStub.firstCall.args[0]).to.deep.include({
         previewPhoto: uploadResult.secure_url,
         specification: modInput.specification,
-        categories: modInput.categories,
       });
+      expect(saveStub.firstCall.args[0].categories).to.be.an("array");
     });
 
     it("should throw an error if Cloudinary upload fails", async () => {
@@ -90,10 +115,9 @@ describe("Mod model test", () => {
         modAuthor: "John Doe",
       };
 
-      const result = await Mod.updateModText({
+      const result = await Mod.updateModSpecification({
         modId,
         specification: spec,
-        categories: [],
       });
 
       expect(result.specification.link).to.equal("http://update-link.com");
@@ -101,7 +125,7 @@ describe("Mod model test", () => {
     });
   });
 
-  describe("getLastTenMods", () => {
+  describe("getLastTenPublishedMods", () => {
     it("should return last 10 created mods with isPublished=true", async () => {
       const fakeMods = Array.from({ length: 10 }, (_, i) => ({
         name: `Mod ${i}`,
@@ -117,7 +141,7 @@ describe("Mod model test", () => {
         limit: sandbox.stub().returns(Promise.resolve(fakeMods)),
       });
 
-      const result = await Mod.getLastTenMods();
+      const result = await Mod.getLastTenPublishedMods();
 
       expect(
         findStub.calledOnceWithExactly(
@@ -157,24 +181,16 @@ describe("Mod model test", () => {
     });
   });
 
-  describe("getModsByCategorie", () => {
+  describe("getModsByCategories", () => {
     const categoryId = new mongoose.Types.ObjectId("507f1f77bcf86cd799439011");
     const page = 1;
     const limit = 5;
 
     it("should return sorted not published mods", async () => {
-      sandbox.stub(ModCategories, "find").resolves([
-        {
-          _id: categoryId,
-          name: "Bailing",
-          subCategory: ["Baler", "Wrapper"],
-        },
-      ]);
-
       const fakeMods = Array.from({ length: limit }, (_, i) => ({
         name: `Mod ${i}`,
         isPublished: true,
-        categories: [categoryId],
+        categories: ["baler"],
         createdAt: new Date(Date.now() - i * 1000),
       }));
 
@@ -194,23 +210,6 @@ describe("Mod model test", () => {
       expect(result[0].name).to.equal("Mod 0");
       expect(result[0].isPublished).to.equal(true);
     });
-
-    it("should throw error when categories not found", async () => {
-      let subcategory = "Baler";
-      sandbox.stub(ModCategories, "find").resolves([]);
-
-      try {
-        await Mod.getModsByCategorie({
-          subCategory: subcategory,
-          page,
-          limit,
-        });
-      } catch (err) {
-        expect(err.message).to.equal(
-          `No categories found with subCategory: ${subcategory}`
-        );
-      }
-    });
   });
 
   describe("getModByParameters", () => {
@@ -221,9 +220,12 @@ describe("Mod model test", () => {
     it("should return mods with isDeluxe=true, isPublished=true and category", async () => {
       sandbox.stub(ModCategories, "find").resolves([
         {
-          _id: categoryId,
+          _id: new mongoose.Types.ObjectId(),
           name: "Bailing",
-          subCategory: ["Baler", "Wrapper"],
+          subCategory: [
+            { name: "Baler", slug: "baler" },
+            { name: "Wrapper", slug: "wrapper" },
+          ],
         },
       ]);
 

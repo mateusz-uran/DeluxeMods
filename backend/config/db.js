@@ -5,8 +5,14 @@ import ModCategories from "../models/ModCategories.js";
 async function initializeRoles() {
   const roles = [
     { name: "ADMIN", permissions: ["ADD_USER", "READ_USERS", "UPDATE_USER"] },
-    { name: "EDITOR", permissions: ["ACCEPT_REVIEW"] },
-    { name: "REVIEWER", permissions: ["ADD_REVIEW"] },
+    {
+      name: "EDITOR",
+      permissions: ["ACCEPT_REVIEW", "READ_ALL_REVIEWS", "UPDATE_REVIEW"],
+    },
+    {
+      name: "REVIEWER",
+      permissions: ["ADD_REVIEW", "EDIT_REVIEW", "READ_REVIEW"],
+    },
   ];
 
   try {
@@ -20,6 +26,23 @@ async function initializeRoles() {
         console.log(
           `Role ${role.name} with permissions: ${role.permissions} created.`
         );
+      } else {
+        const currentPermissions = new Set(existingRole.permissions);
+        const newPermissions = role.permissions.filter(
+          (p) => !currentPermissions.has(p)
+        );
+
+        if (newPermissions.length > 0) {
+          existingRole.permissions.push(...newPermissions);
+          await existingRole.save();
+          console.log(
+            `Role ${
+              role.name
+            } updated with new permissions: ${newPermissions.join(", ")}`
+          );
+        } else {
+          console.log(`Role ${role.name} already up to date.`);
+        }
       }
     }
   } catch (error) {
@@ -27,8 +50,18 @@ async function initializeRoles() {
   }
 }
 
+function createSlug(name) {
+  return name
+    .toLowerCase()
+    .replace(/\s+/g, "-") // replace spaces with -
+    .replace(/\//g, "-") // replace slashes with -
+    .replace(/[^\w\-]+/g, "") // remove non-word characters except -
+    .replace(/\-\-+/g, "-") // replace multiple -- with single -
+    .trim();
+}
+
 async function initializeModCategories() {
-  const categories = [
+  const rawCategories = [
     { name: "Tractors", subCategory: ["Small", "Medium", "Big"] },
     { name: "Harvesters", subCategory: ["Combine", "Forage"] },
     {
@@ -82,17 +115,28 @@ async function initializeModCategories() {
   ];
 
   try {
-    for (const category of categories) {
+    for (const category of rawCategories) {
       const existingCategory = await ModCategories.findOne({
         name: category.name,
       });
+
       if (!existingCategory) {
+        const subCategoriesWithSlugs = category.subCategory.map((sub) => ({
+          name: sub,
+          slug: createSlug(sub),
+        }));
+
         await new ModCategories({
           name: category.name,
-          subCategory: category.subCategory,
+          subCategory: subCategoriesWithSlugs,
         }).save();
+
         console.log(
-          `Category ${category.name} with subcategories: ${category.subCategory} created.`
+          `Category ${
+            category.name
+          } with subcategories: ${subCategoriesWithSlugs
+            .map((s) => `${s.name} (${s.slug})`)
+            .join(", ")} created.`
         );
       }
     }

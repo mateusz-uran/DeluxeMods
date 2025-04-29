@@ -14,8 +14,7 @@ const modSchema = new mongoose.Schema(
     isPublished: { type: Boolean, required: true, default: false },
     categories: [
       {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "ModCategories",
+        type: String,
         required: true,
       },
     ],
@@ -29,7 +28,7 @@ modSchema.statics.createMod = async function ({
   name,
   previewPhoto,
   specification,
-  categories,
+  slugs,
 }) {
   const uploadResult = await new Promise((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
@@ -44,20 +43,33 @@ modSchema.statics.createMod = async function ({
 
   const secureUrl = uploadResult.secure_url;
 
+  const categories = await ModCategories.find({
+    "subCategory.slug": { $in: slugs },
+  });
+
+  const categorySlugs = categories.flatMap((cat) =>
+    cat.subCategory
+      .filter((sub) => slugs.includes(sub.slug))
+      .map((sub) => sub.slug)
+  );
+
+  if (categorySlugs.length === 0) {
+    throw Error("No valid subCategory slugs found for provided slugs.");
+  }
+
   const createMod = await this.create({
     name,
     previewPhoto: secureUrl,
     specification,
-    categories,
+    categories: categorySlugs,
   });
 
   return createMod;
 };
 
-modSchema.statics.updateModText = async function ({
+modSchema.statics.updateModSpecification = async function ({
   modId,
   specification,
-  categories,
 }) {
   if (!modId) {
     throw Error("Mod id must be provided!");
@@ -67,7 +79,6 @@ modSchema.statics.updateModText = async function ({
     modId,
     {
       specification,
-      categories,
     },
     { new: true }
   );
@@ -79,7 +90,7 @@ modSchema.statics.updateModText = async function ({
   return updatedMod;
 };
 
-modSchema.statics.getLastTenMods = async function () {
+modSchema.statics.getLastTenPublishedMods = async function () {
   const mods = await this.find(
     { isPublished: true },
     "name previewPhoto specification.isDeluxe"
@@ -103,18 +114,14 @@ modSchema.statics.getModsNotPublishedPagingAndSorting = async function ({
 
 modSchema.statics.getModsByCategorie = async function ({
   subCategory,
-  page,
-  limit,
+  page = 1,
+  limit = 10,
 }) {
-  const categories = await ModCategories.find({ subCategory: subCategory });
-
-  if (!categories.length) {
-    throw new Error(`No categories found with subCategory: ${subCategory}`);
-  }
+  console.log(`slug: ${subCategory}`);
 
   const mods = await this.find({
     isPublished: true,
-    categories: { $in: categories.map((cat) => cat._id) },
+    categories: { $in: [subCategory] },
   })
     .limit(limit * 1)
     .skip((page - 1) * limit)
@@ -133,10 +140,12 @@ modSchema.statics.getModByParameters = async function ({
   let query = { isPublished, isDeluxe };
 
   if (subCategory) {
-    const categories = await ModCategories.find({ subCategory: subCategory });
+    const categories = await ModCategories.find({
+      "subCategory.slug": subCategory,
+    });
 
     if (categories.length > 0) {
-      query.categories = { $in: categories.map((cat) => cat._id) };
+      query.categories = { $in: categories.map((cat) => cat.subCategory.slug) };
     } else {
       return [];
     }
@@ -151,24 +160,27 @@ modSchema.statics.getModByParameters = async function ({
 };
 
 modSchema.statics.updateModDeluxeStatus = async function ({ modId }) {
-  const mod = await this.findById(modId);
-  if (!mod) {
-    throw Error("Mod not found!");
+  try {
+    const mod = await this.findById(modId);
+    
+    if (!mod) {
+      throw new Error("Mod not found!");
+    }
+
+    const updatedMod = await this.findByIdAndUpdate(
+      modId,
+      {
+        $set: {
+          "specification.isDeluxe": !mod.specification.isDeluxe
+        }
+      },
+      { new: true }
+    );
+
+    return updatedMod;
+  } catch (error) {
+    throw new Error(`Error while updating mod: ${error.message}`);
   }
-
-  const updatedMod = await this.findByIdAndUpdate(
-    modId,
-    {
-      isDeluxe: !mod.specification.isDeluxe,
-    },
-    { new: true }
-  );
-
-  if (!updatedMod) {
-    throw Error("Mod not found!");
-  }
-
-  return updatedMod;
 };
 
 const Mod = mongoose.model("Mod", modSchema);

@@ -22,30 +22,25 @@ reviewSchema.statics.createReview = async function ({
   reviewText,
   name,
   specification,
-  categories,
+  slugs,
   previewPhoto,
 }) {
-  if (!authorId) {
-    throw Error("User not found!");
-  }
+  if (!authorId) throw Error("User not found!");
 
-  if (!reviewText || reviewText === "" || reviewText.length === 0) {
-    throw Error("Review must contain text!");
-  }
+  if (!reviewText?.trim()) throw Error("Review must contain text!");
 
   const mod = await Mod.createMod({
     name,
     previewPhoto,
     specification,
-    categories,
+    slugs,
   });
 
-  const review = await this.create({
+  return this.create({
     author: authorId,
     text: reviewText,
     mod: mod._id,
   });
-  return review;
 };
 
 reviewSchema.statics.updateReviewText = async function ({
@@ -57,7 +52,6 @@ reviewSchema.statics.updateReviewText = async function ({
   }
 
   if (!reviewText || reviewText === "" || reviewText.length === 0) {
-    console.log("No reviewText provided");
     throw Error("Review must contain text!");
   }
 
@@ -77,6 +71,7 @@ reviewSchema.statics.updateReviewText = async function ({
   return updatedReview;
 };
 
+// TODO: fix or remove cuz user can have many reviews
 reviewSchema.statics.getModFromReviewByUser = async function ({ userId }) {
   const review = await this.findOne({ author: userId });
 
@@ -118,7 +113,9 @@ reviewSchema.statics.getLastTenReviewsWithSpecificStatus = async function ({
     throw new Error("Status must be provided.");
   }
 
-  const reviews = await this.find({ author: userId, status })
+  let fixedStatus = status.trim().toUpperCase();
+
+  const reviews = await this.find({ author: userId, status: fixedStatus })
     .populate("mod")
     .sort({ createdAt: -1 })
     .limit(10);
