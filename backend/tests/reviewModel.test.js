@@ -161,4 +161,73 @@ describe("Review model unit test", () => {
       expect(result[0].text).to.equal("random review text number 0");
     });
   });
+
+  describe("getLastTenReviewsWithSpecificStatus", () => {
+    it("should return last ten reviews with specific status", async () => {
+      const fakeReviews = Array.from({ length: 5 }, (_, i) => ({
+        author: userId,
+        text: `random review text number ${i}`,
+        status: "CREATED",
+        mod: modId,
+      }));
+
+      sandbox.stub(Review, "find").returns({
+        populate: () => ({
+          sort: () => ({
+            limit: () => Promise.resolve(fakeReviews),
+          }),
+        }),
+      });
+
+      const result = await Review.getLastTenReviewsWithSpecificStatus({ userId, status: "CREATED" });
+
+      expect(result).to.be.an("array").that.has.lengthOf(5);
+      expect(result[0].text).to.equal("random review text number 0");
+    });
+  });
+
+  describe("getLastTenCreatedReviews", () => {
+    it("should return last ten reviews with specific status", async () => {
+      const fakeReviews = Array.from({ length: 10 }, (_, i) => ({
+        author: userId,
+        text: `random review text number ${i}`,
+        status: "CREATED",
+        mod: modId,
+      }));
+
+      sandbox.stub(Review, "find").returns({
+        populate: () => ({
+          sort: () => ({
+            limit: () => Promise.resolve(fakeReviews),
+          }),
+        }),
+      });
+
+      const result = await Review.getLastTenCreatedReviews();
+
+      expect(result).to.be.an("array").that.has.lengthOf(10);
+      expect(result[0].text).to.equal("random review text number 0");
+    });
+  });
+
+  describe("updateReviewStatus", () => {
+    it("should return last ten reviews with specific status", async () => {
+      let review = new Review({
+        _id: reviewId,
+        author: userId,
+        text: "some text",
+        status: "DECLINED",
+        save: sandbox.stub().resolves(),
+      });
+
+      sandbox.stub(Review, "findByIdAndUpdate").resolves(review);
+
+      const result = await Review.updateReviewStatus({
+        reviewId,
+        status: "DECLINED",
+      });
+
+      expect(result.status).to.equal("DECLINED");
+    });
+  });
 });

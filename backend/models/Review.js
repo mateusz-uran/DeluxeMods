@@ -107,7 +107,10 @@ reviewSchema.statics.getLastTenReviewsWithSpecificStatus = async function ({
 };
 
 reviewSchema.statics.getLastTenCreatedReviews = async function () {
-  const reviews = await this.find({ status: "CREATED" }).populate("mod");
+  const reviews = await this.find({ status: "CREATED" })
+    .populate("mod")
+    .sort({ createdAt: -1 })
+    .limit(10);
 
   return reviews;
 };
