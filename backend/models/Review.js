@@ -106,31 +106,6 @@ reviewSchema.statics.getLastTenReviewsWithSpecificStatus = async function ({
   return reviews;
 };
 
-reviewSchema.statics.getReviewByUserAndModName = async function ({
-  userId,
-  modName,
-}) {
-  if (!userId) {
-    throw new Error("User ID must be provided.");
-  }
-
-  if (!modName) {
-    throw new Error("Mod name must be provided.");
-  }
-
-  const mod = await Mod.findOne({ name: modName });
-
-  if (!mod) {
-    throw new Error("Mod not found!");
-  }
-
-  const reviews = await this.findOne({ author: userId, mod: mod._id }).populate(
-    "mod"
-  );
-
-  return reviews;
-};
-
 reviewSchema.statics.getLastTenCreatedReviews = async function () {
   const reviews = await this.find({ status: "CREATED" }).populate("mod");
 

@@ -109,31 +109,6 @@ export const getTenReviewsByUserAndStatus = async (req, res) => {
   }
 };
 
-// TODO: replace mod name with something else maybe OR REMOVE FUNCTION?
-export const getTenReviewsByUserAndModname = async (req, res) => {
-  const { userId, modName } = req.params;
-
-  try {
-    if (!userId) {
-      return res.status(400).json({ error: "User id must be provided!" });
-    }
-
-    if (!modName) {
-      return res.status(400).json({ error: "Mod name must be provided!" });
-    }
-
-    const review = await Review.getReviewByUserAndModName({ userId, modName });
-
-    if (!review) {
-      return res.status(404).json({ error: "Reviews not found!" });
-    }
-
-    return res.status(200).json(review);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
 export const getLastTenReviews = async (req, res) => {
   try {
     const review = await Review.getLastTenCreatedReviews();
