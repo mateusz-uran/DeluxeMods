@@ -24,12 +24,10 @@ const modSchema = new mongoose.Schema(
   }
 );
 
-modSchema.statics.createMod = async function ({
-  name,
-  previewPhoto,
-  specification,
-  slugs,
-}, uploadFn = uploadImageToCloudinary) {
+modSchema.statics.createMod = async function (
+  { name, previewPhoto, specification, slugs },
+  uploadFn = uploadImageToCloudinary
+) {
   const secureUrl = await uploadFn(previewPhoto.buffer);
 
   const categories = await ModCategories.find({
@@ -151,7 +149,7 @@ modSchema.statics.getModByParameters = async function ({
 modSchema.statics.updateModDeluxeStatus = async function ({ modId }) {
   try {
     const mod = await this.findById(modId);
-    
+
     if (!mod) {
       throw new Error("Mod not found!");
     }
@@ -160,8 +158,8 @@ modSchema.statics.updateModDeluxeStatus = async function ({ modId }) {
       modId,
       {
         $set: {
-          "specification.isDeluxe": !mod.specification.isDeluxe
-        }
+          "specification.isDeluxe": !mod.specification.isDeluxe,
+        },
       },
       { new: true }
     );
@@ -169,6 +167,32 @@ modSchema.statics.updateModDeluxeStatus = async function ({ modId }) {
     return updatedMod;
   } catch (error) {
     throw new Error(`Error while updating mod: ${error.message}`);
+  }
+};
+
+modSchema.statics.updatePreviewPhoto = async function (
+  { modId, previewPhoto },
+  uploadFn = uploadImageToCloudinary
+) {
+  try {
+    const secureUrl = await uploadFn(previewPhoto.buffer);
+
+    const updatedMod = await this.findByIdAndUpdate(
+      modId,
+      {
+        previewPhoto: secureUrl,
+      },
+      { new: true }
+    );
+
+    if (!updatedMod) {
+      throw new Error("Mod not found!");
+    }
+
+    return updatedMod;
+  } catch (error) {
+    if (error.message === "Mod not found!") throw error;
+    throw new Error(`Error while updating preview photo: ${error.message}`);
   }
 };
 

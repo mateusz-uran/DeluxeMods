@@ -333,4 +333,49 @@ describe("Mod model test", () => {
       }
     });
   });
+
+  describe("updatePreviewPhoto", () => {
+    const modId = new mongoose.Types.ObjectId("507f1f77bcf86cd799439011");
+    const fakeBuffer = Buffer.from("fake-image-bytes");
+    const previewPhoto = { buffer: fakeBuffer };
+
+    it("should upload new preview photo and replace secure_url", async () => {
+      const fakeUpload = sandbox.stub().resolves("new_secure_url");
+      const updatedDoc = { _id: modId, previewPhoto: "new_secure_url" };
+
+      const findByIdAndUpdateStub = sandbox
+        .stub(Mod, "findByIdAndUpdate")
+        .resolves(updatedDoc);
+
+      const result = await Mod.updatePreviewPhoto(
+        { modId, previewPhoto },
+        fakeUpload
+      );
+
+      expect(fakeUpload.calledOnce).to.be.true;
+      expect(fakeUpload.firstCall.args[0]).to.equal(fakeBuffer);
+
+      expect(findByIdAndUpdateStub.calledOnce).to.be.true;
+      expect(findByIdAndUpdateStub.firstCall.args).to.deep.equal([
+        modId,
+        { previewPhoto: "new_secure_url" },
+        { new: true },
+      ]);
+
+      expect(result).to.deep.equal(updatedDoc);
+    });
+
+    it("should throw an error if the mod is not found", async () => {
+      const fakeUpload = sandbox.stub().resolves("new_secure_url");
+      sandbox.stub(Mod, "findByIdAndUpdate").resolves(null);
+
+      try {
+        await Mod.updatePreviewPhoto({ modId, previewPhoto }, fakeUpload);
+        expect.fail("Expected updatePreviewPhoto to throw");
+      } catch (err) {
+        expect(err).to.be.an("error");
+        expect(err.message).to.equal("Mod not found!");
+      }
+    });
+  });
 });

@@ -7,7 +7,7 @@ async function initializeRoles() {
     { name: "ADMIN", permissions: ["ADD_USER", "READ_USERS", "UPDATE_USER"] },
     {
       name: "EDITOR",
-      permissions: ["ACCEPT_REVIEW", "READ_ALL_REVIEWS", "UPDATE_REVIEW"],
+      permissions: ["ACCEPT_REVIEW", "READ_ALL_REVIEWS", "UPDATE_REVIEW", "UPDATE_MOD"],
     },
     {
       name: "REVIEWER",

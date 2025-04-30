@@ -236,3 +236,25 @@ export const toggleIsDeluxeStatus = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+export const updatePreviewPhoto = async (req, res) => {
+  const { modId } = req.params;
+
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: "Preview photo file is required." });
+    }
+    if (!modId) {
+      return res.status(400).json({ error: "Missing mod ID." });
+    }
+
+    const mod = await Mod.updatePreviewPhoto({
+      modId,
+      previewPhoto: req.file,
+    });
+
+    return res.status(201).json(mod);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
