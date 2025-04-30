@@ -71,13 +71,17 @@ reviewSchema.statics.updateReviewText = async function ({
   return updatedReview;
 };
 
-reviewSchema.statics.getLastTenReviews = async function ({ userId }) {
+reviewSchema.statics.getLastTenReviewsByUser = async function ({ userId }) {
   if (!userId) {
     throw new Error("User ID must be provided.");
   }
 
   const reviews = await this.find({ author: userId })
-    .populate("mod")
+    .select("-_id author text status")
+    .populate({
+      path: "mod",
+      select: "-_id name previewPhoto isDeluxe specification.modAuthor",
+    })
     .sort({ createdAt: -1 })
     .limit(10);
 
@@ -99,7 +103,11 @@ reviewSchema.statics.getLastTenReviewsWithSpecificStatus = async function ({
   let fixedStatus = status.trim().toUpperCase();
 
   const reviews = await this.find({ author: userId, status: fixedStatus })
-    .populate("mod")
+    .select("-_id author text status")
+    .populate({
+      path: "mod",
+      select: "-_id name previewPhoto isDeluxe specification.modAuthor",
+    })
     .sort({ createdAt: -1 })
     .limit(10);
 
@@ -108,7 +116,11 @@ reviewSchema.statics.getLastTenReviewsWithSpecificStatus = async function ({
 
 reviewSchema.statics.getLastTenCreatedReviews = async function () {
   const reviews = await this.find({ status: "CREATED" })
-    .populate("mod")
+    .select("-_id author text status")
+    .populate({
+      path: "mod",
+      select: "-_id name previewPhoto isDeluxe specification.modAuthor",
+    })
     .sort({ createdAt: -1 })
     .limit(10);
 
@@ -122,10 +134,10 @@ reviewSchema.statics.updateReviewStatus = async function ({
   const updatedReview = await this.findByIdAndUpdate(
     reviewId,
     {
-      status,
+      $set: { status },
     },
     { new: true }
-  );
+  ).select("-_id text status");
 
   if (!updatedReview) {
     throw Error("Review not found!");

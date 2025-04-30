@@ -136,7 +136,7 @@ describe("Review model unit test", () => {
     });
   });
 
-  describe("getLastTenReviews", () => {
+  describe("getLastTenReviewsByUser", () => {
     it("should return last ten reviews", async () => {
       const fakeReviews = Array.from({ length: 10 }, (_, i) => ({
         author: userId,
@@ -145,18 +145,25 @@ describe("Review model unit test", () => {
         mod: modId,
       }));
 
-      sandbox.stub(Review, "find").returns({
-        populate: () => ({
-          sort: () => ({
-            limit: () => Promise.resolve(fakeReviews),
-          }),
-        }),
-      });
+      const limitStub = sandbox.stub().returns(Promise.resolve(fakeReviews));
+      const sortStub = sandbox.stub().returns({ limit: limitStub });
+      const populateStub = sandbox.stub().returns({ sort: sortStub });
+      const selectStub = sandbox.stub().returns({ populate: populateStub });
+      sandbox.stub(Review, "find").returns({ select: selectStub });
 
-      const result = await Review.getLastTenReviews({ userId });
+      const result = await Review.getLastTenReviewsByUser({ userId });
 
       expect(result).to.be.an("array").that.has.lengthOf(10);
       expect(result[0].text).to.equal("random review text number 0");
+
+      expect(selectStub.calledOnceWithExactly("-_id author text status")).to.be
+        .true;
+      expect(
+        populateStub.calledOnceWithExactly({
+          path: "mod",
+          select: "name previewPhoto isDeluxe specification.modAuthor",
+        })
+      ).to.be.true;
     });
   });
 
@@ -169,13 +176,11 @@ describe("Review model unit test", () => {
         mod: modId,
       }));
 
-      sandbox.stub(Review, "find").returns({
-        populate: () => ({
-          sort: () => ({
-            limit: () => Promise.resolve(fakeReviews),
-          }),
-        }),
-      });
+      const limitStub = sandbox.stub().returns(Promise.resolve(fakeReviews));
+      const sortStub = sandbox.stub().returns({ limit: limitStub });
+      const populateStub = sandbox.stub().returns({ sort: sortStub });
+      const selectStub = sandbox.stub().returns({ populate: populateStub });
+      sandbox.stub(Review, "find").returns({ select: selectStub });
 
       const result = await Review.getLastTenReviewsWithSpecificStatus({
         userId,
@@ -196,13 +201,11 @@ describe("Review model unit test", () => {
         mod: modId,
       }));
 
-      sandbox.stub(Review, "find").returns({
-        populate: () => ({
-          sort: () => ({
-            limit: () => Promise.resolve(fakeReviews),
-          }),
-        }),
-      });
+      const limitStub = sandbox.stub().returns(Promise.resolve(fakeReviews));
+      const sortStub = sandbox.stub().returns({ limit: limitStub });
+      const populateStub = sandbox.stub().returns({ sort: sortStub });
+      const selectStub = sandbox.stub().returns({ populate: populateStub });
+      sandbox.stub(Review, "find").returns({ select: selectStub });
 
       const result = await Review.getLastTenCreatedReviews();
 
@@ -213,15 +216,15 @@ describe("Review model unit test", () => {
 
   describe("updateReviewStatus", () => {
     it("should update review status only", async () => {
-      let review = new Review({
-        _id: reviewId,
-        author: userId,
+      const review = {
         text: "some text",
         status: "DECLINED",
-        save: sandbox.stub().resolves(),
-      });
+      };
 
-      sandbox.stub(Review, "findByIdAndUpdate").resolves(review);
+      const selectStub = sandbox.stub().resolves(review);
+      const findByIdAndUpdateStub = sandbox
+        .stub(Review, "findByIdAndUpdate")
+        .returns({ select: selectStub });
 
       const result = await Review.updateReviewStatus({
         reviewId,
@@ -229,6 +232,16 @@ describe("Review model unit test", () => {
       });
 
       expect(result.status).to.equal("DECLINED");
+
+      expect(
+        findByIdAndUpdateStub.calledOnceWithExactly(
+          reviewId,
+          { $set: { status: "DECLINED" } },
+          { new: true }
+        )
+      ).to.be.true;
+
+      expect(selectStub.calledOnceWithExactly("-_id text status")).to.be.true;
     });
   });
 });

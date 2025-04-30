@@ -74,7 +74,7 @@ export const getTenReviewsByUser = async (req, res) => {
       return res.status(400).json({ error: "User id must be provided!" });
     }
 
-    const review = await Review.getLastTenReviews({ userId });
+    const review = await Review.getLastTenReviewsByUser({ userId });
 
     if (!review) {
       return res.status(404).json({ error: "Reviews not found!" });
@@ -113,7 +113,7 @@ export const getTenReviewsByUserAndStatus = async (req, res) => {
   }
 };
 
-export const getLastTenReviews = async (req, res) => {
+export const getLastTenReviewsWithStatusCreated = async (req, res) => {
   try {
     const review = await Review.getLastTenCreatedReviews();
 
