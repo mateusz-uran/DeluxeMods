@@ -46,6 +46,7 @@ reviewSchema.statics.createReview = async function ({
 reviewSchema.statics.updateReviewText = async function ({
   reviewId,
   reviewText,
+  userId,
 }) {
   if (!reviewId) {
     throw Error("Review id cannot be empty!");
@@ -55,14 +56,13 @@ reviewSchema.statics.updateReviewText = async function ({
     throw Error("Review must contain text!");
   }
 
-  const updatedReview = await this.findByIdAndUpdate(
-    reviewId,
+  const updatedReview = await this.findOneAndUpdate(
+    { _id: reviewId, author: userId },
     {
-      text: reviewText,
-      status: "UPDATED",
+      $set: { text: reviewText, status: "UPDATED" },
     },
     { new: true }
-  );
+  ).select("-_id text status");
 
   if (!updatedReview) {
     throw Error("Review not found!");

@@ -75,13 +75,26 @@ describe("Review model unit test", () => {
 
   describe("updateReviewText", () => {
     it("should update review text and return updated version", async () => {
-      sandbox.stub(Review, "findByIdAndUpdate").resolves(updateReview);
+      const selectStub = sandbox.stub().resolves(updateReview);
+      const findOneAndUpdateStub = sandbox
+        .stub(Review, "findOneAndUpdate")
+        .returns({ select: selectStub });
 
       const result = await Review.updateReviewText({
         reviewId,
         reviewText: updatedText,
+        userId,
       });
 
+      expect(
+        findOneAndUpdateStub.calledOnceWithExactly(
+          { _id: reviewId, author: userId },
+          { $set: { text: updatedText, status: "UPDATED" } },
+          { new: true }
+        )
+      ).to.be.true;
+
+      expect(selectStub.calledOnceWithExactly("-_id text status")).to.be.true;
       expect(result.text).to.equal(updatedText);
       expect(result.status).to.equal("UPDATED");
     });
@@ -91,6 +104,7 @@ describe("Review model unit test", () => {
         await Review.updateReviewText({
           reviewId: null,
           reviewText: updatedText,
+          userId,
         });
       } catch (error) {
         expect(error.message).to.equal("Review id cannot be empty!");
@@ -100,6 +114,7 @@ describe("Review model unit test", () => {
         await Review.updateReviewText({
           reviewId: reviewId,
           reviewText: "",
+          userId,
         });
       } catch (error) {
         expect(error.message).to.equal("Review must contain text!");
@@ -107,34 +122,17 @@ describe("Review model unit test", () => {
     });
 
     it("should throw error when review was not found", async () => {
-      sandbox.stub(Review, "findByIdAndUpdate").resolves(null);
-
+      const selectStub = sandbox.stub().resolves(null);
+      sandbox.stub(Review, "findOneAndUpdate").returns({ select: selectStub });
       try {
         await Review.updateReviewText({
           reviewId,
           reviewText: updatedText,
+          userId,
         });
       } catch (error) {
         expect(error.message).to.equal("Review not found!");
       }
-    });
-
-    it("should update review status only", async () => {
-      const fakeUpdatedReview = {
-        _id: reviewId,
-        text: "Some review",
-        status: "DECLINED",
-      };
-
-      sandbox.stub(Review, "findByIdAndUpdate").resolves(fakeUpdatedReview);
-
-      const result = await Review.updateReviewStatus({
-        reviewId,
-        status: "DECLINED",
-      });
-
-      expect(result.status).to.equal("DECLINED");
-      expect(result._id.toString()).to.equal(reviewId.toString());
     });
   });
 
@@ -179,7 +177,10 @@ describe("Review model unit test", () => {
         }),
       });
 
-      const result = await Review.getLastTenReviewsWithSpecificStatus({ userId, status: "CREATED" });
+      const result = await Review.getLastTenReviewsWithSpecificStatus({
+        userId,
+        status: "CREATED",
+      });
 
       expect(result).to.be.an("array").that.has.lengthOf(5);
       expect(result[0].text).to.equal("random review text number 0");
@@ -211,7 +212,7 @@ describe("Review model unit test", () => {
   });
 
   describe("updateReviewStatus", () => {
-    it("should return last ten reviews with specific status", async () => {
+    it("should update review status only", async () => {
       let review = new Review({
         _id: reviewId,
         author: userId,

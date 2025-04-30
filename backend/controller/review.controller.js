@@ -50,7 +50,11 @@ export const updateReview = async (req, res) => {
       return res.status(400).json({ error: "Review text must be provided!" });
     }
 
-    const review = await Review.updateReviewText({ reviewId, reviewText });
+    const review = await Review.updateReviewText({
+      reviewId,
+      reviewText,
+      userId: req.user._id,
+    });
 
     if (!review) {
       return res.status(404).json({ error: "Review not found!" });
