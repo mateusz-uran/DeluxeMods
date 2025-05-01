@@ -65,9 +65,11 @@ modSchema.statics.updateModSpecification = async function ({
   const updatedMod = await this.findByIdAndUpdate(
     modId,
     {
-      specification,
+      $set: { specification },
     },
     { new: true }
+  ).select(
+    "-_id name specification.isDeluxe specification.link specification.modAuthor"
   );
 
   if (!updatedMod) {
@@ -78,10 +80,8 @@ modSchema.statics.updateModSpecification = async function ({
 };
 
 modSchema.statics.getLastTenPublishedMods = async function () {
-  const mods = await this.find(
-    { isPublished: true },
-    "name previewPhoto specification.isDeluxe"
-  )
+  const mods = await this.find({ isPublished: true })
+    .select("-_id name previewPhoto specification.isDeluxe")
     .sort({ createdAt: -1 })
     .limit(10);
   return mods;
@@ -92,6 +92,7 @@ modSchema.statics.getModsNotPublishedPagingAndSorting = async function ({
   limit = 10,
 }) {
   const mods = await this.find({ isPublished: false })
+    .select("-_id name previewPhoto specification.modAuthor")
     .limit(limit * 1)
     .skip((page - 1) * limit)
     .sort({ createdAt: -1 });
@@ -104,12 +105,13 @@ modSchema.statics.getModsByCategorie = async function ({
   page = 1,
   limit = 10,
 }) {
-  console.log(`slug: ${subCategory}`);
-
   const mods = await this.find({
     isPublished: true,
     categories: { $in: [subCategory] },
   })
+    .select(
+      "-_id name previewPhoto specification.modAuthor specification.isDeluxe"
+    )
     .limit(limit * 1)
     .skip((page - 1) * limit)
     .sort({ createdAt: -1 });
@@ -139,6 +141,9 @@ modSchema.statics.getModByParameters = async function ({
   }
 
   const mods = await this.find(query)
+    .select(
+      "-_id name previewPhoto specification.modAuthor specification.isDeluxe"
+    )
     .limit(limit * 1)
     .skip((page - 1) * limit)
     .sort({ createdAt: -1 });
@@ -162,6 +167,8 @@ modSchema.statics.updateModDeluxeStatus = async function ({ modId }) {
         },
       },
       { new: true }
+    ).select(
+      "_id name specification.isDeluxe"
     );
 
     return updatedMod;
@@ -183,6 +190,8 @@ modSchema.statics.updatePreviewPhoto = async function (
         previewPhoto: secureUrl,
       },
       { new: true }
+    ).select(
+      "_id name previewPhoto"
     );
 
     if (!updatedMod) {

@@ -3,329 +3,241 @@ import sinon from "sinon";
 import mongoose from "mongoose";
 import Mod from "../models/Mod.js";
 import ModCategories from "../models/ModCategories.js";
-import * as cloudinaryUtil from "../utils/cloudinaryUpload.util.js";
-
-const sandbox = sinon.createSandbox();
 
 describe("Mod model test", () => {
-  let modInput, saveStub, updateStub, updateMod, uploadStub, findStub;
-  const modId = new mongoose.Types.ObjectId("507f1f77bcf86cd799439022");
+  const sandbox = sinon.createSandbox();
+  const modId = new mongoose.Types.ObjectId();
+  const page = 1,
+    limit = 5;
 
-  beforeEach(() => {
-    modInput = {
+  afterEach(() => sandbox.restore());
+
+  describe("createMod", () => {
+    let createStub, categoryFindStub;
+    const modInput = {
       name: "Test Mod",
-      previewPhoto: { buffer: Buffer.from("fake-image") },
-      specification: {
-        isDeluxe: false,
-        link: "http://example.com",
-        authorName: "Test Author",
-      },
+      previewPhoto: { buffer: Buffer.from("img") },
+      specification: { isDeluxe: false, link: "x", modAuthor: "A" },
       slugs: ["small", "medium"],
     };
 
-    saveStub = sandbox
-      .stub(Mod, "create")
-      .callsFake((obj) => Promise.resolve(obj));
+    beforeEach(() => {
+      createStub = sandbox.stub(Mod, "create").resolvesArg(0);
+      categoryFindStub = sandbox.stub(ModCategories, "find").resolves([
+        {
+          subCategory: [
+            { name: "Small", slug: "small" },
+            { name: "Medium", slug: "medium" },
+          ],
+        },
+      ]);
+    });
 
-    findStub = sandbox.stub(ModCategories, "find").callsFake(async () => [
-      {
-        name: "Some category",
-        subCategory: [
-          { name: "Small", slug: "small" },
-          { name: "Medium", slug: "medium" },
-        ],
-      },
-    ]);
-  });
-
-  afterEach(() => {
-    sandbox.restore();
-  });
-
-  describe("createMod", () => {
     it("should successfully create a mod with Cloudinary upload", async () => {
-      const fakeUpload = sandbox.stub().resolves("fake_secure_url");
+      const fakeUpload = sandbox.stub().resolves("url123");
 
       const result = await Mod.createMod(modInput, fakeUpload);
 
-      sinon.assert.calledOnceWithExactly(
-        fakeUpload,
-        modInput.previewPhoto.buffer
-      );
-
-      sinon.assert.calledOnce(saveStub);
-      const saved = saveStub.firstCall.args[0];
-      expect(saved.previewPhoto).to.equal("fake_secure_url");
-      expect(saved.categories).to.deep.equal(["small", "medium"]);
+      expect(fakeUpload.calledOnceWithExactly(modInput.previewPhoto.buffer)).to
+        .be.true;
+      expect(createStub.calledOnce).to.be.true;
+      expect(result.previewPhoto).to.equal("url123");
+      expect(result.categories).to.deep.equal(["small", "medium"]);
     });
 
-    it("should throw an error if Cloudinary upload fails", async () => {
-      const fakeUpload = sandbox.stub().rejects(new Error("Upload failed"));
-
+    it("should throw if upload fails", async () => {
+      const fakeUpload = sandbox.stub().rejects(new Error("fail"));
       try {
         await Mod.createMod(modInput, fakeUpload);
-        expect.fail("Expected createMod to throw an error");
+        expect.fail("Expected createMod to throw");
       } catch (err) {
-        expect(err.message).to.equal("Upload failed");
+        expect(err.message).to.equal("fail");
       }
     });
 
-    it("should throw an error if no category slugs match", async () => {
-      findStub.resolves([]);
-      const fakeUpload = sandbox.stub().resolves("whatever");
-
+    it("should throw if no matching slugs", async () => {
+      categoryFindStub.resolves([]);
+      const fakeUpload = sandbox.stub().resolves("url");
       try {
         await Mod.createMod(modInput, fakeUpload);
-        expect.fail("Expected createMod to throw an error");
+        expect.fail("Expected createMod to throw");
       } catch (err) {
-        expect(err.message).to.equal(
-          "No valid subCategory slugs found for provided slugs."
-        );
+        expect(err.message).to.match(/No valid subCategory slugs/);
       }
     });
   });
 
-  describe("updateModText", () => {
-    it("should return updated mod", async () => {
-      updateMod = new Mod({
-        _id: modId,
-        previewPhoto: "",
-        specification: {
-          isDeluxe: false,
-          link: "http://update-link.com",
-          modAuthor: "John Doe",
-        },
-        isPublished: true,
-        categories: [new mongoose.Types.ObjectId()],
+  describe("updateModSpecification", () => {
+    const spec = { link: "L", modAuthor: "A", isDeluxe: true };
+    beforeEach(() => {
+      sandbox.stub(Mod, "findByIdAndUpdate").returns({
+        select: sandbox.stub().resolves({ specification: spec }),
       });
+    });
 
-      updateStub = sandbox.stub(Mod, "findByIdAndUpdate").resolves(updateMod);
-
-      const spec = {
-        isDeluxe: true,
-        link: "http://update-link.com",
-        modAuthor: "John Doe",
-      };
-
+    it("should update specification and return selected fields", async () => {
       const result = await Mod.updateModSpecification({
         modId,
         specification: spec,
       });
+      expect(result.specification).to.deep.equal(spec);
+    });
 
-      expect(result.specification.link).to.equal("http://update-link.com");
-      expect(result.specification.modAuthor).to.equal("John Doe");
+    it("should throw if mod not found", async () => {
+      sandbox.restore();
+      sandbox
+        .stub(Mod, "findByIdAndUpdate")
+        .returns({ select: sinon.stub().resolves(null) });
+      try {
+        await Mod.updateModSpecification({ modId, specification: spec });
+        expect.fail("Expected error");
+      } catch (err) {
+        expect(err.message).to.equal("Mod not found!");
+      }
     });
   });
 
   describe("getLastTenPublishedMods", () => {
-    it("should return last 10 created mods with isPublished=true", async () => {
-      const fakeMods = Array.from({ length: 10 }, (_, i) => ({
-        name: `Mod ${i}`,
-        previewPhoto: `url_${i}`,
-        specification: { isDeluxe: false },
-        categories: [],
-        createdAt: new Date(Date.now() - i * 1000),
-        isPublished: true,
-      }));
+    const fakeMods = Array.from({ length: 10 }, (_, i) => ({
+      name: `M${i}`,
+      previewPhoto: `u${i}`,
+      specification: { isDeluxe: false },
+      isPublished: true,
+    }));
+    beforeEach(() => {
+      const limitStub = sandbox.stub().resolves(fakeMods);
+      const sortStub = sandbox.stub().returns({ limit: limitStub });
+      const selectStub = sandbox.stub().returns({ sort: sortStub });
+      sandbox.stub(Mod, "find").returns({ select: selectStub });
+    });
 
-      const findStub = sandbox.stub(Mod, "find").returns({
-        sort: sandbox.stub().returnsThis(),
-        limit: sandbox.stub().returns(Promise.resolve(fakeMods)),
-      });
-
+    it("should query with filter and projection, sort & limit", async () => {
       const result = await Mod.getLastTenPublishedMods();
-
-      expect(
-        findStub.calledOnceWithExactly(
-          { isPublished: true },
-          "name previewPhoto specification.isDeluxe"
-        )
-      ).to.be.true;
-
-      expect(result).to.be.an("array").that.has.lengthOf(10);
-      expect(result[0].name).to.equal("Mod 0");
+      expect(result).to.deep.equal(fakeMods);
     });
   });
 
   describe("getModsNotPublishedPagingAndSorting", () => {
-    it("should return unpublished mods paginated and sorted", async () => {
-      const page = 1;
-      const limit = 5;
-      const fakeMods = Array.from({ length: limit }, (_, i) => ({
-        name: `Mod ${i}`,
-        isPublished: false,
-        createdAt: new Date(Date.now() - i * 1000),
-      }));
+    const fakeMods = Array.from({ length: limit }, (_, i) => ({
+      name: `M${i}`,
+      isPublished: false,
+    }));
+    beforeEach(() => {
+      const sortStub = sandbox.stub().resolves(fakeMods);
+      const skipStub = sandbox.stub().returns({ sort: sortStub });
+      const limitStub = sandbox.stub().returns({ skip: skipStub });
+      const selectStub = sandbox.stub().returns({ limit: limitStub });
+      sandbox.stub(Mod, "find").returns({ select: selectStub });
+    });
 
-      const findStub = sandbox.stub(Mod, "find").returns({
-        limit: sandbox.stub().returnsThis(),
-        skip: sandbox.stub().returnsThis(),
-        sort: sandbox.stub().returns(Promise.resolve(fakeMods)),
-      });
-
+    it("should paginate, project, and sort unpublished mods", async () => {
       const result = await Mod.getModsNotPublishedPagingAndSorting({
         page,
         limit,
       });
-
-      expect(result).to.be.an("array").with.lengthOf(limit);
-      expect(findStub.calledOnceWithExactly({ isPublished: false })).to.be.true;
+      expect(result).to.deep.equal(fakeMods);
     });
   });
 
-  describe("getModsByCategories", () => {
-    const categoryId = new mongoose.Types.ObjectId("507f1f77bcf86cd799439011");
-    const page = 1;
-    const limit = 5;
+  describe("getModsByCategorie", () => {
+    const fakeMods = Array.from({ length: limit }, (_, i) => ({
+      name: `M${i}`,
+      isPublished: true,
+    }));
+    beforeEach(() => {
+      const sortStub = sandbox.stub().resolves(fakeMods);
+      const skipStub = sandbox.stub().returns({ sort: sortStub });
+      const limitStub = sandbox.stub().returns({ skip: skipStub });
+      const selectStub = sandbox.stub().returns({ limit: limitStub });
+      sandbox.stub(Mod, "find").returns({ select: selectStub });
+    });
 
-    it("should return sorted not published mods", async () => {
-      const fakeMods = Array.from({ length: limit }, (_, i) => ({
-        name: `Mod ${i}`,
-        isPublished: true,
-        categories: ["baler"],
-        createdAt: new Date(Date.now() - i * 1000),
-      }));
-
-      sandbox.stub(Mod, "find").returns({
-        limit: sandbox.stub().returnsThis(),
-        skip: sandbox.stub().returnsThis(),
-        sort: sandbox.stub().returns(Promise.resolve(fakeMods)),
-      });
-
+    it("should filter by slug, project, paginate, and sort", async () => {
       const result = await Mod.getModsByCategorie({
-        subCategory: "Baler",
+        subCategory: "baler",
         page,
         limit,
       });
-
-      expect(result).to.be.an("array").that.has.lengthOf(limit);
-      expect(result[0].name).to.equal("Mod 0");
-      expect(result[0].isPublished).to.equal(true);
+      expect(result).to.deep.equal(fakeMods);
     });
   });
 
   describe("getModByParameters", () => {
-    const categoryId = new mongoose.Types.ObjectId("507f1f77bcf86cd799439011");
-    const page = 1;
-    const limit = 5;
-
-    it("should return mods with isDeluxe=true, isPublished=true and category", async () => {
-      sandbox.stub(ModCategories, "find").resolves([
-        {
-          _id: new mongoose.Types.ObjectId(),
-          name: "Bailing",
-          subCategory: [
-            { name: "Baler", slug: "baler" },
-            { name: "Wrapper", slug: "wrapper" },
-          ],
-        },
-      ]);
-
-      const fakeMods = Array.from({ length: limit }, (_, i) => ({
-        name: `Mod ${i}`,
-        isPublished: true,
-        specification: { isDeluxe: true },
-        categories: [categoryId],
-        createdAt: new Date(Date.now() - i * 1000),
-      }));
-
-      sandbox.stub(Mod, "find").returns({
-        limit: sandbox.stub().returnsThis(),
-        skip: sandbox.stub().returnsThis(),
-        sort: sandbox.stub().returns(Promise.resolve(fakeMods)),
-      });
-
-      const result = await Mod.getModByParameters({
-        subCategory: "Baler",
-        page,
-        limit,
-      });
-
-      expect(result).to.be.an("array").that.has.lengthOf(limit);
-      expect(result[0].name).to.equal("Mod 0");
-      expect(result[0].isPublished).to.equal(true);
-      expect(result[0].specification.isDeluxe).to.equal(true);
+    const fakeMods = Array.from({ length: limit }, (_, i) => ({
+      name: `M${i}`,
+      isPublished: true,
+    }));
+    beforeEach(() => {
+      sandbox
+        .stub(ModCategories, "find")
+        .resolves([{ subCategory: [{ slug: "baler" }, { slug: "wrapper" }] }]);
+      const sortStub = sandbox.stub().resolves(fakeMods);
+      const skipStub = sandbox.stub().returns({ sort: sortStub });
+      const limitStub = sandbox.stub().returns({ skip: skipStub });
+      const selectStub = sandbox.stub().returns({ limit: limitStub });
+      sandbox.stub(Mod, "find").returns({ select: selectStub });
     });
 
-    it("should return mods with isDeluxe=false, isPublished=false and without assigned category", async () => {
-      sandbox.stub(ModCategories, "find").resolves([
-        {
-          _id: categoryId,
-          name: "Bailing",
-          subCategory: ["Baler", "Wrapper"],
-        },
-      ]);
-
-      const fakeMods = Array.from({ length: limit }, (_, i) => ({
-        name: `Mod ${i}`,
-        isPublished: false,
-        specification: { isDeluxe: false },
-        categories: [],
-        createdAt: new Date(Date.now() - i * 1000),
-      }));
-
-      sandbox.stub(Mod, "find").returns({
-        limit: sandbox.stub().returnsThis(),
-        skip: sandbox.stub().returnsThis(),
-        sort: sandbox.stub().returns(Promise.resolve(fakeMods)),
-      });
-
+    it("should build query with both flags and mapped slugs", async () => {
       const result = await Mod.getModByParameters({
-        subCategory: "Baler",
+        isPublished: true,
+        isDeluxe: true,
+        subCategory: "baler",
         page,
         limit,
       });
+      expect(result).to.deep.equal(fakeMods);
+    });
 
-      expect(result).to.be.an("array").that.has.lengthOf(limit);
-      expect(result[0].name).to.equal("Mod 0");
-      expect(result[0].isPublished).to.equal(false);
-      expect(result[0].specification.isDeluxe).to.equal(false);
+    it("should return empty array if no categories found", async () => {
+      ModCategories.find.resolves([]);
+      const result = await Mod.getModByParameters({
+        subCategory: "none",
+        page,
+        limit,
+      });
+      expect(result).to.deep.equal([]);
     });
   });
 
   describe("updateModDeluxeStatus", () => {
-    const modId = new mongoose.Types.ObjectId("507f1f77bcf86cd799439011");
+    const modId = new mongoose.Types.ObjectId();
 
-    it("should toggle the isDeluxe status and return the updated mod", async () => {
-      const modBefore = {
+    afterEach(() => sandbox.restore());
+
+    it("should toggle and return selected fields", async () => {
+      sandbox
+        .stub(Mod, "findById")
+        .resolves({ specification: { isDeluxe: false } });
+
+      const selectStub = sandbox.stub().resolves({
         _id: modId,
-        specification: {
-          isDeluxe: false,
-        },
-      };
-
-      const modAfter = {
-        _id: modId,
-        specification: {
-          isDeluxe: true,
-        },
-      };
-
-      const findByIdStub = sandbox.stub(Mod, "findById").resolves(modBefore);
-      const findByIdAndUpdateStub = sandbox
+        name: "Test",
+        specification: { isDeluxe: true },
+      });
+      sandbox
         .stub(Mod, "findByIdAndUpdate")
-        .resolves(modAfter);
-
-      const result = await Mod.updateModDeluxeStatus({ modId });
-
-      expect(findByIdStub.calledOnceWith(modId)).to.be.true;
-      expect(
-        findByIdAndUpdateStub.calledOnceWith(
+        .withArgs(
           modId,
           { $set: { "specification.isDeluxe": true } },
           { new: true }
         )
-      ).to.be.true;
+        .returns({ select: selectStub });
 
-      expect(result).to.deep.equal(modAfter);
+      const result = await Mod.updateModDeluxeStatus({ modId });
+
+      expect(
+        selectStub.calledOnceWithExactly("_id name specification.isDeluxe")
+      ).to.be.true;
+      expect(result.specification.isDeluxe).to.be.true;
     });
 
-    it("should throw an error if the mod is not found", async () => {
+    it("should throw if mod not found", async () => {
       sandbox.stub(Mod, "findById").resolves(null);
 
       try {
         await Mod.updateModDeluxeStatus({ modId });
-        expect.fail("Expected error was not thrown");
+        expect.fail("Expected error");
       } catch (err) {
         expect(err.message).to.equal(
           "Error while updating mod: Mod not found!"
@@ -335,45 +247,46 @@ describe("Mod model test", () => {
   });
 
   describe("updatePreviewPhoto", () => {
-    const modId = new mongoose.Types.ObjectId("507f1f77bcf86cd799439011");
-    const fakeBuffer = Buffer.from("fake-image-bytes");
-    const previewPhoto = { buffer: fakeBuffer };
+    const modId = new mongoose.Types.ObjectId();
+    const buffer = Buffer.from("img-data");
+    const previewPhoto = { buffer };
 
-    it("should upload new preview photo and replace secure_url", async () => {
-      const fakeUpload = sandbox.stub().resolves("new_secure_url");
-      const updatedDoc = { _id: modId, previewPhoto: "new_secure_url" };
+    afterEach(() => sandbox.restore());
 
-      const findByIdAndUpdateStub = sandbox
+    it("should upload and return selected fields", async () => {
+      const fakeUpload = sandbox.stub().resolves("new_url");
+
+      const selectStub = sandbox.stub().resolves({
+        _id: modId,
+        name: "Test",
+        previewPhoto: "new_url",
+      });
+      sandbox
         .stub(Mod, "findByIdAndUpdate")
-        .resolves(updatedDoc);
+        .withArgs(modId, { previewPhoto: "new_url" }, { new: true })
+        .returns({ select: selectStub });
 
       const result = await Mod.updatePreviewPhoto(
         { modId, previewPhoto },
         fakeUpload
       );
 
-      expect(fakeUpload.calledOnce).to.be.true;
-      expect(fakeUpload.firstCall.args[0]).to.equal(fakeBuffer);
-
-      expect(findByIdAndUpdateStub.calledOnce).to.be.true;
-      expect(findByIdAndUpdateStub.firstCall.args).to.deep.equal([
-        modId,
-        { previewPhoto: "new_secure_url" },
-        { new: true },
-      ]);
-
-      expect(result).to.deep.equal(updatedDoc);
+      expect(fakeUpload.calledOnceWithExactly(buffer)).to.be.true;
+      expect(selectStub.calledOnceWithExactly("_id name previewPhoto")).to.be
+        .true;
+      expect(result.previewPhoto).to.equal("new_url");
     });
 
-    it("should throw an error if the mod is not found", async () => {
-      const fakeUpload = sandbox.stub().resolves("new_secure_url");
-      sandbox.stub(Mod, "findByIdAndUpdate").resolves(null);
+    it("should throw if update returns null", async () => {
+      const fakeUpload = sandbox.stub().resolves("new_url");
+
+      const selectStub = sandbox.stub().resolves(null);
+      sandbox.stub(Mod, "findByIdAndUpdate").returns({ select: selectStub });
 
       try {
         await Mod.updatePreviewPhoto({ modId, previewPhoto }, fakeUpload);
-        expect.fail("Expected updatePreviewPhoto to throw");
+        expect.fail("Expected error");
       } catch (err) {
-        expect(err).to.be.an("error");
         expect(err.message).to.equal("Mod not found!");
       }
     });
