@@ -80,7 +80,7 @@ reviewSchema.statics.getLastTenReviewsByUser = async function ({ userId }) {
     .select("-_id author text status")
     .populate({
       path: "mod",
-      select: "-_id name previewPhoto isDeluxe specification.modAuthor",
+      select: "-_id name previewPhoto specification.modAuthor specification.isDeluxe ",
     })
     .sort({ createdAt: -1 })
     .limit(10);
@@ -116,7 +116,8 @@ reviewSchema.statics.getLastTenReviewsWithSpecificStatus = async function ({
 
 reviewSchema.statics.getLastTenCreatedReviews = async function () {
   const reviews = await this.find({ status: "CREATED" })
-    .select("-_id author text status")
+    .select("-_id text status")
+    .populate({path: "author", select: "-_id name"})
     .populate({
       path: "mod",
       select: "-_id name previewPhoto isDeluxe specification.modAuthor",

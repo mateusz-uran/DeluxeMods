@@ -195,16 +195,29 @@ describe("Review model unit test", () => {
   describe("getLastTenCreatedReviews", () => {
     it("should return last ten reviews with specific status", async () => {
       const fakeReviews = Array.from({ length: 10 }, (_, i) => ({
-        author: userId,
+        author: { name: `User ${i}` },
         text: `random review text number ${i}`,
         status: "CREATED",
         mod: modId,
       }));
 
-      const limitStub = sandbox.stub().returns(Promise.resolve(fakeReviews));
+      const limitStub = sandbox.stub().resolves(fakeReviews);
       const sortStub = sandbox.stub().returns({ limit: limitStub });
-      const populateStub = sandbox.stub().returns({ sort: sortStub });
-      const selectStub = sandbox.stub().returns({ populate: populateStub });
+      const populateModStub = sandbox
+        .stub()
+        .withArgs({
+          path: "mod",
+          select: "name previewPhoto isDeluxe specification.modAuthor -_id",
+        })
+        .returns({ sort: sortStub });
+      const populateAuthorStub = sandbox
+        .stub()
+        .withArgs({ path: "author", select: "name -_id" })
+        .returns({ populate: populateModStub });
+      const selectStub = sandbox
+        .stub()
+        .withArgs("author text status createdAt -_id")
+        .returns({ populate: populateAuthorStub });
       sandbox.stub(Review, "find").returns({ select: selectStub });
 
       const result = await Review.getLastTenCreatedReviews();

@@ -7,7 +7,7 @@ import {
   toggleIsDeluxeStatus,
   updateModSpec,
   updatePreviewPhoto,
-} from "../controller/review.controller.js";
+} from "../controller/mod.controller.js";
 import { authorize } from "../middleware/authorize.js";
 import multerUpload from "../middleware/multer.js";
 
