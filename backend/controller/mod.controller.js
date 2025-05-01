@@ -41,6 +41,7 @@ export const getNotPublishedMods = async (req, res) => {
 };
 
 export const getModsCategorizied = async (req, res) => {
+  console.log("Calling getModsCategorizied");
   const { subCategory } = req.params;
   const { page = 1, limit = 10 } = req.query;
   try {
@@ -57,14 +58,15 @@ export const getModsCategorizied = async (req, res) => {
 };
 
 export const getModsByParams = async (req, res) => {
-  const { open = true, deluxe = false, cat, page = 1, limit = 10 } = req.query;
+  const { deluxe = "false", cat, page = 1, limit = 10 } = req.query;
 
-  console.log(`Parameters: open=${open}, deluxe=${deluxe}, cat=${cat}`);
+  const isDeluxe = deluxe.toLowerCase() === "true";
+  const subCategory = Array.isArray(cat) ? cat : cat ? [cat] : [];
+
   try {
     const mods = await Mod.getModByParameters({
-      isPublished: open,
-      isDeluxe: deluxe,
-      subCategory: cat,
+      isDeluxe,
+      subCategory,
       page,
       limit,
     });

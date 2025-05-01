@@ -120,35 +120,27 @@ modSchema.statics.getModsByCategorie = async function ({
 };
 
 modSchema.statics.getModByParameters = async function ({
-  isPublished = true,
   isDeluxe = false,
-  subCategory,
+  subCategory = [],
   page,
   limit,
 }) {
-  let query = { isPublished, isDeluxe };
+  const query = {
+    ...(typeof isDeluxe === "boolean" && {
+      "specification.isDeluxe": isDeluxe,
+    }),
+    ...(subCategory.length > 0 && {
+      categories: { $in: subCategory },
+    }),
+  };
 
-  if (subCategory) {
-    const categories = await ModCategories.find({
-      "subCategory.slug": subCategory,
-    });
-
-    if (categories.length > 0) {
-      query.categories = { $in: categories.map((cat) => cat.subCategory.slug) };
-    } else {
-      return [];
-    }
-  }
-
-  const mods = await this.find(query)
+  return this.find(query)
     .select(
       "-_id name previewPhoto specification.modAuthor specification.isDeluxe"
     )
     .limit(limit * 1)
     .skip((page - 1) * limit)
     .sort({ createdAt: -1 });
-
-  return mods;
 };
 
 modSchema.statics.updateModDeluxeStatus = async function ({ modId }) {
@@ -167,9 +159,7 @@ modSchema.statics.updateModDeluxeStatus = async function ({ modId }) {
         },
       },
       { new: true }
-    ).select(
-      "_id name specification.isDeluxe"
-    );
+    ).select("_id name specification.isDeluxe");
 
     return updatedMod;
   } catch (error) {
@@ -190,9 +180,7 @@ modSchema.statics.updatePreviewPhoto = async function (
         previewPhoto: secureUrl,
       },
       { new: true }
-    ).select(
-      "_id name previewPhoto"
-    );
+    ).select("_id name previewPhoto");
 
     if (!updatedMod) {
       throw new Error("Mod not found!");

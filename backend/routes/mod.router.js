@@ -1,4 +1,6 @@
 import express from "express";
+import { authorize } from "../middleware/authorize.js";
+import multerUpload from "../middleware/multer.js";
 import {
   getModsByParams,
   getModsCategorizied,
@@ -8,25 +10,29 @@ import {
   updateModSpec,
   updatePreviewPhoto,
 } from "../controller/mod.controller.js";
-import { authorize } from "../middleware/authorize.js";
-import multerUpload from "../middleware/multer.js";
 
 const router = express.Router();
 
 router.patch("/update/:modId", authorize(["EDIT_REVIEW"]), updateModSpec);
+
 router.get("", getPublishedMods);
+
 router.get(
   "/private/:page/:limit",
   authorize(["READ_ALL_REVIEWS"]),
   getNotPublishedMods
 );
-router.get("/:subCategory", getModsCategorizied);
-router.get("/", getModsByParams);
+
+router.get("/category/:subCategory", getModsCategorizied);
+
+router.get("/params", getModsByParams);
+
 router.patch(
   "/deluxe/:modId",
   authorize(["UPDATE_REVIEW"]),
   toggleIsDeluxeStatus
 );
+
 router.patch(
   "/update-mod/:modId",
   multerUpload,

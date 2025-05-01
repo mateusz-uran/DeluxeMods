@@ -163,40 +163,46 @@ describe("Mod model test", () => {
   });
 
   describe("getModByParameters", () => {
+    const limit = 5;
+    const page = 1;
+
     const fakeMods = Array.from({ length: limit }, (_, i) => ({
       name: `M${i}`,
       isPublished: true,
     }));
+
     beforeEach(() => {
-      sandbox
-        .stub(ModCategories, "find")
-        .resolves([{ subCategory: [{ slug: "baler" }, { slug: "wrapper" }] }]);
-      const sortStub = sandbox.stub().resolves(fakeMods);
-      const skipStub = sandbox.stub().returns({ sort: sortStub });
-      const limitStub = sandbox.stub().returns({ skip: skipStub });
-      const selectStub = sandbox.stub().returns({ limit: limitStub });
-      sandbox.stub(Mod, "find").returns({ select: selectStub });
+      const sortStub = sinon.stub().resolves(fakeMods);
+      const skipStub = sinon.stub().returns({ sort: sortStub });
+      const limitStub = sinon.stub().returns({ skip: skipStub });
+      const selectStub = sinon.stub().returns({ limit: limitStub });
+      sinon.stub(Mod, "find").returns({ select: selectStub });
     });
 
-    it("should build query with both flags and mapped slugs", async () => {
+    afterEach(() => {
+      sinon.restore();
+    });
+
+    it("should build query with isDeluxe and category", async () => {
       const result = await Mod.getModByParameters({
-        isPublished: true,
         isDeluxe: true,
-        subCategory: "baler",
+        subCategory: ["baler"],
         page,
         limit,
       });
+
       expect(result).to.deep.equal(fakeMods);
     });
 
-    it("should return empty array if no categories found", async () => {
-      ModCategories.find.resolves([]);
+    it("should build query with only isDeluxe", async () => {
       const result = await Mod.getModByParameters({
-        subCategory: "none",
+        isDeluxe: false,
+        subCategory: [],
         page,
         limit,
       });
-      expect(result).to.deep.equal([]);
+
+      expect(result).to.deep.equal(fakeMods);
     });
   });
 
