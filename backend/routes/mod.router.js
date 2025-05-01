@@ -34,7 +34,7 @@ router.patch(
 );
 
 router.patch(
-  "/update-mod/:modId",
+  "/update-preview/:modId",
   multerUpload,
   authorize(["UPDATE_MOD"]),
   updatePreviewPhoto
