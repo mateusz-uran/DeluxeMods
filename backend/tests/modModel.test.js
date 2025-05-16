@@ -7,6 +7,7 @@ import ModCategories from "../models/ModCategories.js";
 describe("Mod model test", () => {
   const sandbox = sinon.createSandbox();
   const modId = new mongoose.Types.ObjectId();
+  const modSlug = "random-dude-mod-name-85aE";
   const page = 1,
     limit = 5;
 
@@ -19,6 +20,7 @@ describe("Mod model test", () => {
       previewPhoto: { buffer: Buffer.from("img") },
       specification: { isDeluxe: false, link: "x", modAuthor: "A" },
       slugs: ["small", "medium"],
+      slug: modSlug,
     };
 
     beforeEach(() => {
@@ -67,9 +69,64 @@ describe("Mod model test", () => {
     });
   });
 
+  describe("getSingleMod", () => {
+    beforeEach(() => {
+      sandbox.stub(Mod, "findOne").returns({
+        select: sandbox.stub().resolves({
+          _id: modId,
+          name: "Test Mod",
+          specification: { isDeluxe: true, link: "L", modAuthor: "A" },
+          categories: ["small"],
+        }),
+      });
+    });
+
+    it("should return single mod", async () => {
+      const result = await Mod.getSingleMod({
+        modSlug,
+      });
+      expect(result.specification).to.deep.equal({
+        isDeluxe: true,
+        link: "L",
+        modAuthor: "A",
+      });
+    });
+
+    it("should throw error when slug not provided", async () => {
+      try {
+        await Mod.getSingleMod({ modSlug: null });
+        expect.fail("Expected error");
+      } catch (err) {
+        expect(err.message).to.equal("Mod slug must be provided!");
+      }
+    });
+
+    it("should throw error mod not found", async () => {
+      sandbox.restore();
+      sandbox
+        .stub(Mod, "findOne")
+        .returns({ select: sandbox.stub().resolves(null) });
+
+      try {
+        await Mod.getSingleMod({ modSlug });
+        expect.fail("Expected error");
+      } catch (err) {
+        expect(err.message).to.equal("Mod not found!");
+      }
+    });
+  });
+
   describe("updateModSpecification", () => {
     const spec = { link: "L", modAuthor: "A", isDeluxe: true };
     beforeEach(() => {
+      sandbox.stub(Mod, "findOne").returns({
+        select: sandbox.stub().resolves({
+          _id: modId,
+          name: "Test Mod",
+          specification: { modAuthor: "A" },
+        }),
+      });
+
       sandbox.stub(Mod, "findByIdAndUpdate").returns({
         select: sandbox.stub().resolves({ specification: spec }),
       });
@@ -77,7 +134,7 @@ describe("Mod model test", () => {
 
     it("should update specification and return selected fields", async () => {
       const result = await Mod.updateModSpecification({
-        modId,
+        modSlug,
         specification: spec,
       });
       expect(result.specification).to.deep.equal(spec);
@@ -86,10 +143,11 @@ describe("Mod model test", () => {
     it("should throw if mod not found", async () => {
       sandbox.restore();
       sandbox
-        .stub(Mod, "findByIdAndUpdate")
-        .returns({ select: sinon.stub().resolves(null) });
+        .stub(Mod, "findOne")
+        .returns({ select: sandbox.stub().resolves(null) });
+
       try {
-        await Mod.updateModSpecification({ modId, specification: spec });
+        await Mod.updateModSpecification({ modSlug, specification: spec });
         expect.fail("Expected error");
       } catch (err) {
         expect(err.message).to.equal("Mod not found!");

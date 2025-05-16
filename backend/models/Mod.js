@@ -59,15 +59,32 @@ modSchema.statics.createMod = async function (
   return createMod;
 };
 
-modSchema.statics.updateModSpecification = async function ({
-  modId,
-  specification,
-}) {
-  if (!modId) {
-    throw Error("Mod id must be provided!");
+modSchema.statics.getSingleMod = async function ({ modSlug }) {
+  if (!modSlug) {
+    throw Error("Mod slug must be provided!");
   }
 
-  const mod = await this.findById(modId).select("name specification.modAuthor");
+  const mod = await this.findOne({ slug: modSlug, isPublished: true }).select(
+    "-_id name specification categories"
+  );
+  if (!mod) {
+    throw Error("Mod not found!");
+  }
+
+  return mod;
+};
+
+modSchema.statics.updateModSpecification = async function ({
+  modSlug,
+  specification,
+}) {
+  if (!modSlug) {
+    throw Error("Mod slug must be provided!");
+  }
+
+  const mod = await this.findOne({ slug: modSlug }).select(
+    "name specification.modAuthor"
+  );
   if (!mod) {
     throw Error("Mod not found!");
   }
@@ -86,7 +103,7 @@ modSchema.statics.updateModSpecification = async function ({
   }
 
   const updatedMod = await this.findByIdAndUpdate(
-    modId,
+    mod._id,
     {
       $set: updateFields,
     },

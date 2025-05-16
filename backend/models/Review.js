@@ -20,6 +20,8 @@ const reviewSchema = new mongoose.Schema({
   slug: { type: String, required: true },
 });
 
+// get single review by review-slug
+
 reviewSchema.statics.createReview = async function ({
   authorId,
   reviewText,
