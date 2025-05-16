@@ -1,5 +1,7 @@
 import mongoose from "mongoose";
 import Mod from "./Mod.js";
+import User from "./User.js";
+import { createLongerSlug } from "../utils/slug.utils.js";
 
 const reviewSchema = new mongoose.Schema({
   author: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
@@ -15,6 +17,7 @@ const reviewSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
+  slug: { type: String, required: true },
 });
 
 reviewSchema.statics.createReview = async function ({
@@ -36,10 +39,16 @@ reviewSchema.statics.createReview = async function ({
     slugs,
   });
 
+  const author = await User.findById(authorId);
+  if (!author) throw Error("Author not found!");
+
+  const reviewSlug = createLongerSlug(author.name, mod.name);
+
   return this.create({
     author: authorId,
     text: reviewText,
     mod: mod._id,
+    slug: reviewSlug,
   });
 };
 
@@ -80,7 +89,8 @@ reviewSchema.statics.getLastTenReviewsByUser = async function ({ userId }) {
     .select("-_id author text status")
     .populate({
       path: "mod",
-      select: "-_id name previewPhoto specification.modAuthor specification.isDeluxe ",
+      select:
+        "-_id name previewPhoto specification.modAuthor specification.isDeluxe ",
     })
     .sort({ createdAt: -1 })
     .limit(10);
@@ -117,7 +127,7 @@ reviewSchema.statics.getLastTenReviewsWithSpecificStatus = async function ({
 reviewSchema.statics.getLastTenCreatedReviews = async function () {
   const reviews = await this.find({ status: "CREATED" })
     .select("-_id text status")
-    .populate({path: "author", select: "-_id name"})
+    .populate({ path: "author", select: "-_id name" })
     .populate({
       path: "mod",
       select: "-_id name previewPhoto isDeluxe specification.modAuthor",

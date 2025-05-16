@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import Role from "../models/Role.js";
 import ModCategories from "../models/ModCategories.js";
+import { createSlug } from "../utils/slug.utils.js";
 
 async function initializeRoles() {
   const roles = [
@@ -48,16 +49,6 @@ async function initializeRoles() {
   } catch (error) {
     console.error(`Error while creating roles: ${error.message}`);
   }
-}
-
-function createSlug(name) {
-  return name
-    .toLowerCase()
-    .replace(/\s+/g, "-") // replace spaces with -
-    .replace(/\//g, "-") // replace slashes with -
-    .replace(/[^\w\-]+/g, "") // remove non-word characters except -
-    .replace(/\-\-+/g, "-") // replace multiple -- with single -
-    .trim();
 }
 
 async function initializeModCategories() {

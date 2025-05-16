@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import ModCategories from "./ModCategories.js";
 import { uploadImageToCloudinary } from "../utils/cloudinaryUpload.util.js";
+import { createLongerSlug } from "../utils/slug.utils.js";
 
 const modSchema = new mongoose.Schema(
   {
@@ -18,6 +19,7 @@ const modSchema = new mongoose.Schema(
         required: true,
       },
     ],
+    slug: { type: String, required: true },
   },
   {
     timestamps: true,
@@ -44,11 +46,14 @@ modSchema.statics.createMod = async function (
     throw Error("No valid subCategory slugs found for provided slugs.");
   }
 
+  const modSlug = createLongerSlug(name, specification.modAuthor);
+
   const createMod = await this.create({
     name,
     previewPhoto: secureUrl,
     specification,
     categories: categorySlugs,
+    slug: modSlug,
   });
 
   return createMod;
@@ -62,10 +67,28 @@ modSchema.statics.updateModSpecification = async function ({
     throw Error("Mod id must be provided!");
   }
 
+  const mod = await this.findById(modId).select("name specification.modAuthor");
+  if (!mod) {
+    throw Error("Mod not found!");
+  }
+
+  const updateFields = {
+    specification,
+  };
+
+  const isAuthorChanged =
+    specification.modAuthor &&
+    specification.modAuthor !== mod.specification.modAuthor;
+
+  if (isAuthorChanged) {
+    const updateSlug = createLongerSlug(mod.name, specification.modAuthor);
+    updateFields.slug = updateSlug;
+  }
+
   const updatedMod = await this.findByIdAndUpdate(
     modId,
     {
-      $set: { specification },
+      $set: updateFields,
     },
     { new: true }
   ).select(

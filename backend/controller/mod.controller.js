@@ -41,7 +41,6 @@ export const getNotPublishedMods = async (req, res) => {
 };
 
 export const getModsCategorizied = async (req, res) => {
-  console.log("Calling getModsCategorizied");
   const { subCategory } = req.params;
   const { page = 1, limit = 10 } = req.query;
   try {
