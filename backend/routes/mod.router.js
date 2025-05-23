@@ -6,12 +6,15 @@ import {
   getModsCategorizied,
   getNotPublishedMods,
   getPublishedMods,
+  getSingleMod,
   toggleIsDeluxeStatus,
   updateModSpec,
   updatePreviewPhoto,
 } from "../controller/mod.controller.js";
 
 const router = express.Router();
+
+router.get("/single/:modSlug", getSingleMod);
 
 router.patch("/update/:modId", authorize(["EDIT_REVIEW"]), updateModSpec);
 

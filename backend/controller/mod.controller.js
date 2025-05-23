@@ -1,5 +1,22 @@
 import Mod from "../models/Mod.js";
 
+export const getSingleMod = async (req, res) => {
+  const { modSlug } = req.params;
+
+  try {
+    if (!modSlug) {
+      return res.status(400).json({ error: "Mod slug must be provided!" });
+    }
+    const mod = await Mod.getSingleMod({
+      modSlug,
+    });
+
+    return res.status(201).json(mod);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 export const updateModSpec = async (req, res) => {
   const { modId } = req.params;
   const { specification } = req.body;
