@@ -3,6 +3,7 @@ import sinon from "sinon";
 import mongoose from "mongoose";
 import Mod from "../models/Mod.js";
 import ModCategories from "../models/ModCategories.js";
+import Review from "../models/Review.js";
 
 describe("Mod model test", () => {
   const sandbox = sinon.createSandbox();
@@ -113,6 +114,90 @@ describe("Mod model test", () => {
       } catch (err) {
         expect(err.message).to.equal("Mod not found!");
       }
+    });
+  });
+
+  describe("getSingleModWithReview", () => {
+    const fakeMod = {
+      _id: modId,
+      name: "Tractor 3000",
+      specification: {
+        isDeluxe: true,
+        link: "http://example.com",
+        modAuthor: "John Doe",
+      },
+    };
+
+    const fakeReview = {
+      text: "This is a great mod!",
+      author: {
+        name: "Reviewer Name",
+      },
+    };
+
+    it("should return mod with review data", async () => {
+      sandbox.stub(Mod, "findOne").returns({
+        select: sandbox.stub().resolves(fakeMod),
+      });
+
+      sandbox.stub(Review, "findOne").returns({
+        select: sandbox.stub().returnsThis(),
+        populate: sandbox.stub().resolves(fakeReview),
+      });
+
+      const result = await Mod.getSingleModWithReview({ modSlug });
+
+      expect(result).to.deep.equal({
+        review: {
+          author: "Reviewer Name",
+          text: "This is a great mod!",
+        },
+        mod: {
+          name: "Tractor 3000",
+          specification: {
+            isDeluxe: true,
+            link: "http://example.com",
+            modAuthor: "John Doe",
+          },
+        },
+      });
+    });
+
+    it("should throw error if mod not found", async () => {
+      sandbox.stub(Mod, "findOne").returns({
+        select: sandbox.stub().resolves(null),
+      });
+
+      try {
+        await Mod.getSingleModWithReview({ modSlug });
+      } catch (err) {
+        expect(err.message).to.equal("Mod not found!");
+      }
+    });
+
+    it("should return null review if no review is found", async () => {
+      sandbox.stub(Mod, "findOne").returns({
+        select: sandbox.stub().resolves(fakeMod),
+      });
+
+      sandbox.stub(Review, "findOne").returns({
+        select: sandbox.stub().returnsThis(),
+        populate: sandbox.stub().resolves(null),
+      });
+
+      const result = await Mod.getSingleModWithReview({ modSlug });
+
+      expect(result).to.deep.equal({
+        review: null,
+        mod: {
+          name: "Tractor 3000",
+          specification: {
+            isDeluxe: true,
+            link: "http://example.com",
+            modAuthor: "John Doe",
+          },
+        },
+      });
     });
   });
 

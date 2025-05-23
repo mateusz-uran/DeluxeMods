@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import ModCategories from "./ModCategories.js";
 import { uploadImageToCloudinary } from "../utils/cloudinaryUpload.util.js";
 import { createLongerSlug } from "../utils/slug.utils.js";
+import Review from "./Review.js";
 
 const modSchema = new mongoose.Schema(
   {
@@ -72,6 +73,41 @@ modSchema.statics.getSingleMod = async function ({ modSlug }) {
   }
 
   return mod;
+};
+
+modSchema.statics.getSingleModWithReview = async function ({ modSlug }) {
+  if (!modSlug) {
+    throw Error("Mod slug must be provided!");
+  }
+
+  const mod = await this.findOne({ slug: modSlug, isPublished: true }).select(
+    "_id name specification"
+  );
+  if (!mod) {
+    throw Error("Mod not found!");
+  }
+
+  const review = await Review.findOne({ mod: mod._id })
+    .select("text author")
+    .populate([
+      {
+        path: "author",
+        select: "name",
+      },
+    ]);
+
+  return {
+    mod: {
+      name: mod.name,
+      specification: mod.specification,
+    },
+    review: review
+      ? {
+          text: review.text,
+          author: review.author.name,
+        }
+      : null,
+  };
 };
 
 modSchema.statics.updateModSpecification = async function ({
