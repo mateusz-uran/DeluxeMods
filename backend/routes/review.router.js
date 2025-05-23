@@ -2,6 +2,7 @@ import express from "express";
 import { authorize } from "../middleware/authorize.js";
 import {
   getLastTenReviewsWithStatusCreated,
+  getReview,
   getTenReviewsByUser,
   getTenReviewsByUserAndStatus,
   saveReviewWithMod,
@@ -18,14 +19,37 @@ router.post(
   authorize(["ADD_REVIEW"]),
   saveReviewWithMod
 );
-router.patch("/update-review/:reviewId", authorize(["EDIT_REVIEW"]), updateReview);
 
-router.get("/get-reviews/:userId", authorize(["READ_REVIEW"]), getTenReviewsByUser)
+router.get("/get-review/:reviewSlug", getReview);
 
-router.get("/get-reviews/:userId/:status", authorize(["READ_REVIEW"]), getTenReviewsByUserAndStatus)
+router.patch(
+  "/update-review/:reviewId",
+  authorize(["EDIT_REVIEW"]),
+  updateReview
+);
 
-router.get("/get-reviews", authorize(["READ_ALL_REVIEWS"]), getLastTenReviewsWithStatusCreated)
+router.get(
+  "/get-reviews/:userId",
+  authorize(["READ_REVIEW"]),
+  getTenReviewsByUser
+);
 
-router.patch("/update-review/:reviewId/:status", authorize(["UPDATE_REVIEW"]), updateReviewStatus);
+router.get(
+  "/get-reviews/:userId/:status",
+  authorize(["READ_REVIEW"]),
+  getTenReviewsByUserAndStatus
+);
+
+router.get(
+  "/get-reviews",
+  authorize(["READ_ALL_REVIEWS"]),
+  getLastTenReviewsWithStatusCreated
+);
+
+router.patch(
+  "/update-review/:reviewId/:status",
+  authorize(["UPDATE_REVIEW"]),
+  updateReviewStatus
+);
 
 export default router;

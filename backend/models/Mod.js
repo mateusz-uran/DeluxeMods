@@ -121,7 +121,7 @@ modSchema.statics.updateModSpecification = async function ({
 
 modSchema.statics.getLastTenPublishedMods = async function () {
   const mods = await this.find({ isPublished: true })
-    .select("-_id name previewPhoto specification.isDeluxe")
+    .select("-_id name previewPhoto specification.isDeluxe slug")
     .sort({ createdAt: -1 })
     .limit(10);
   return mods;
@@ -150,7 +150,7 @@ modSchema.statics.getModsByCategorie = async function ({
     categories: { $in: [subCategory] },
   })
     .select(
-      "-_id name previewPhoto specification.modAuthor specification.isDeluxe"
+      "-_id name previewPhoto specification.modAuthor specification.isDeluxe slug"
     )
     .limit(limit * 1)
     .skip((page - 1) * limit)
@@ -176,7 +176,7 @@ modSchema.statics.getModByParameters = async function ({
 
   return this.find(query)
     .select(
-      "-_id name previewPhoto specification.modAuthor specification.isDeluxe"
+      "-_id name previewPhoto specification.modAuthor specification.isDeluxe slug"
     )
     .limit(limit * 1)
     .skip((page - 1) * limit)

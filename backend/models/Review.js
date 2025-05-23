@@ -20,8 +20,6 @@ const reviewSchema = new mongoose.Schema({
   slug: { type: String, required: true },
 });
 
-// get single review by review-slug
-
 reviewSchema.statics.createReview = async function ({
   authorId,
   reviewText,
@@ -52,6 +50,45 @@ reviewSchema.statics.createReview = async function ({
     mod: mod._id,
     slug: reviewSlug,
   });
+};
+
+reviewSchema.statics.getSingleReview = async function ({ reviewSlug }) {
+  if (!reviewSlug) {
+    throw Error("Review slug must be provided!");
+  }
+
+  const review = await this.findOne({
+    slug: reviewSlug,
+    status: "REVIEWED",
+  })
+    .select("-_id author text")
+    .populate([
+      {
+        path: "author",
+        select: "name",
+      },
+      {
+        path: "mod",
+        select: "name specification",
+      },
+    ]);
+
+  if (!review) {
+    throw Error("Review not found!");
+  }
+
+  return {
+    author: review.author.name,
+    text: review.text,
+    mod: {
+      name: review.mod.name,
+      specification: {
+        isDeluxe: review.mod.specification.isDeluxe,
+        link: review.mod.specification.link,
+        modAuthor: review.mod.specification.modAuthor,
+      },
+    },
+  };
 };
 
 reviewSchema.statics.updateReviewText = async function ({
@@ -132,7 +169,7 @@ reviewSchema.statics.getLastTenCreatedReviews = async function () {
     .populate({ path: "author", select: "-_id name" })
     .populate({
       path: "mod",
-      select: "-_id name previewPhoto isDeluxe specification.modAuthor",
+      select: "-_id name previewPhoto isDeluxe specification.modAuthor slug",
     })
     .sort({ createdAt: -1 })
     .limit(10);

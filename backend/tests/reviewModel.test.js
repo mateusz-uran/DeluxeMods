@@ -3,6 +3,7 @@ import sinon from "sinon";
 import Review from "../models/Review.js";
 import { expect } from "chai";
 import Mod from "../models/Mod.js";
+import { populate } from "dotenv";
 
 const sandbox = sinon.createSandbox();
 
@@ -69,6 +70,71 @@ describe("Review model unit test", () => {
         await Review.createReview({ authorId: userId, reviewText: null });
       } catch (err) {
         expect(err.message).to.equal("Review must contain text!");
+      }
+    });
+  });
+
+  describe("getSingleReview", () => {
+    it("should return single review", async () => {
+      const reviewSlug = "jonh-doe-class-83Ad";
+      const fakeReview = {
+        author: { name: "John Doe" },
+        text: "Sample review content",
+        mod: {
+          name: "class",
+          specification: {
+            isDeluxe: true,
+            link: "random-link",
+            modAuthor: "dude",
+          },
+        },
+      };
+
+      const selectStub = sandbox.stub().returnsThis();
+      const populateStub = sandbox.stub().resolves(fakeReview);
+
+      sandbox
+        .stub(Review, "findOne")
+        .returns({ select: selectStub, populate: populateStub });
+
+      const result = await Review.getSingleReview({ reviewSlug });
+
+      expect(result).to.deep.equal({
+        author: "John Doe",
+        mod: {
+          name: "class",
+          specification: {
+            isDeluxe: true,
+            link: "random-link",
+            modAuthor: "dude",
+          },
+        },
+        text: "Sample review content",
+      });
+    });
+
+    it("should throw an error if no reviewSlug is provided", async () => {
+      try {
+        await Review.getSingleReview({});
+      } catch (err) {
+        expect(err.message).to.equal("Review slug must be provided!");
+      }
+    });
+
+    it("should throw an error if no review is found", async () => {
+      const reviewSlug = "nonexistent-slug";
+
+      const selectStub = sandbox.stub().returnsThis();
+      const populateStub = sandbox.stub().resolves(null);
+
+      sandbox
+        .stub(Review, "findOne")
+        .returns({ select: selectStub, populate: populateStub });
+
+      try {
+        await Review.getSingleReview({ reviewSlug });
+      } catch (err) {
+        expect(err.message).to.equal("Review not found!");
       }
     });
   });

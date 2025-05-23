@@ -36,6 +36,26 @@ export const saveReviewWithMod = async (req, res) => {
   }
 };
 
+export const getReview = async (req, res) => {
+  const { reviewSlug } = req.params;
+
+  try {
+    if (!reviewSlug) {
+      return res.status(400).json({ error: "Review slug must be provided!" });
+    }
+
+    const review = await Review.getSingleReview({ reviewSlug });
+
+    if (!review) {
+      return res.status(404).json({ error: "Review not found!" });
+    }
+
+    return res.status(201).json(review);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 export const updateReview = async (req, res) => {
   const { reviewId } = req.params;
   const { reviewText } = req.body;
