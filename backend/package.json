@@ -1,9 +1,9 @@
 {
   "name": "deluxemods",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
-    "dev": "nodemon backend/server.js",
+    "dev": "nodemon server.js",
     "test": "mocha ./backend/tests/*.test.js"
   },
   "type": "module",
