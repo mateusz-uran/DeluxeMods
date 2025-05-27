@@ -4,6 +4,7 @@
 /backend/.env.*      # catch multiple .env variants
 /backend/build
 
+
 # === Frontend (Next.js) ===
 /frontend/node_modules/
 /frontend/.next/
