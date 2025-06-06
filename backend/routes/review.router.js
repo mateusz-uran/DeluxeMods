@@ -1,5 +1,5 @@
 import express from "express";
-import { authorize, cookieAuthorize } from "../middleware/authorize.js";
+import { cookieAuthorize } from "../middleware/authorize.js";
 import {
   getLastTenReviewsWithStatusCreated,
   getReview,
@@ -16,7 +16,7 @@ const router = express.Router();
 router.post(
   "/save-review",
   multerUpload,
-  authorize(["ADD_REVIEW"]),
+  cookieAuthorize(["ADD_REVIEW"]),
   saveReviewWithMod
 );
 
@@ -24,7 +24,7 @@ router.get("/get-review/:reviewSlug", getReview);
 
 router.patch(
   "/update-review/:reviewId",
-  authorize(["EDIT_REVIEW"]),
+  cookieAuthorize(["EDIT_REVIEW"]),
   updateReview
 );
 
@@ -36,19 +36,19 @@ router.get(
 
 router.get(
   "/get-reviews/:userId/:status",
-  authorize(["READ_REVIEW"]),
+  cookieAuthorize(["READ_REVIEW"]),
   getTenReviewsByUserAndStatus
 );
 
 router.get(
   "/get-reviews",
-  authorize(["READ_ALL_REVIEWS"]),
+  cookieAuthorize(["READ_ALL_REVIEWS"]),
   getLastTenReviewsWithStatusCreated
 );
 
 router.patch(
   "/update-review/:reviewId/:status",
-  authorize(["UPDATE_REVIEW"]),
+  cookieAuthorize(["UPDATE_REVIEW"]),
   updateReviewStatus
 );
 

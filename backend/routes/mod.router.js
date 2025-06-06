@@ -1,5 +1,5 @@
 import express from "express";
-import { authorize } from "../middleware/authorize.js";
+import { cookieAuthorize } from "../middleware/authorize.js";
 import multerUpload from "../middleware/multer.js";
 import {
   getModsByParams,
@@ -18,13 +18,13 @@ const router = express.Router();
 router.get("/single/:modSlug", getSingleMod);
 router.get("/single-mod-review/:modSlug", getSingleModAndReview);
 
-router.patch("/update/:modId", authorize(["EDIT_REVIEW"]), updateModSpec);
+router.patch("/update/:modId", cookieAuthorize(["EDIT_REVIEW"]), updateModSpec);
 
 router.get("", getPublishedMods);
 
 router.get(
   "/private/:page/:limit",
-  authorize(["READ_ALL_REVIEWS"]),
+  cookieAuthorize(["READ_ALL_REVIEWS"]),
   getNotPublishedMods
 );
 
@@ -34,14 +34,14 @@ router.get("/params", getModsByParams);
 
 router.patch(
   "/deluxe/:modId",
-  authorize(["UPDATE_REVIEW"]),
+  cookieAuthorize(["UPDATE_REVIEW"]),
   toggleIsDeluxeStatus
 );
 
 router.patch(
   "/update-preview/:modId",
   multerUpload,
-  authorize(["UPDATE_MOD"]),
+  cookieAuthorize(["UPDATE_MOD"]),
   updatePreviewPhoto
 );
 
