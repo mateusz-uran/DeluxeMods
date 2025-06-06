@@ -1,5 +1,5 @@
 import express from "express";
-import { authorize } from "../middleware/authorize.js";
+import { authorize, cookieAuthorize } from "../middleware/authorize.js";
 import {
   getLastTenReviewsWithStatusCreated,
   getReview,
@@ -30,7 +30,7 @@ router.patch(
 
 router.get(
   "/get-reviews/:userId",
-  authorize(["READ_REVIEW"]),
+  cookieAuthorize(["READ_REVIEW"]),
   getTenReviewsByUser
 );
 

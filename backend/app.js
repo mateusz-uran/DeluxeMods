@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors"
 import cookieParser from 'cookie-parser';
 import authRoutes from "./routes/auth.router.js";
 import userRoutes from './routes/user.router.js';
@@ -6,6 +7,11 @@ import reviewRoutes from './routes/review.router.js'
 import modRoutes from './routes/mod.router.js'
 
 const app = express();
+
+app.use(cors({
+    origin: process.env.DEV_FRONTEND,
+    credentials: true
+}))
 
 app.use(express.json());
 app.use(cookieParser());
