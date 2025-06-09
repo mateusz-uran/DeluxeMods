@@ -13,12 +13,12 @@ export const createAccessToken = (user) => {
   );
 };
 
-export const createRefreshToken = (user) => {
+export const createRefreshToken = (user, rememberMe = false) => {
   return jwt.sign(
     {
       _id: user._id,
     },
     process.env.REFRESH_SECRET,
-    { expiresIn: "7d" }
+    { expiresIn: rememberMe ? "30d" : "1d" }
   );
 };

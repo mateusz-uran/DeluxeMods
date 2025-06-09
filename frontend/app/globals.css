@@ -108,7 +108,7 @@ footer .socials > a:hover {
 }
 
 footer .copyright {
-  text-align: center;
+  text-align: right;
   font-size: .7rem;
   color: var(--font-gray-light);
   letter-spacing: 1px;

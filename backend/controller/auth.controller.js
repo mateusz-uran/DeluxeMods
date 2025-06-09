@@ -2,13 +2,13 @@ import User from "../models/User.js";
 import { createAccessToken, createRefreshToken } from "../utils/auth.utils.js";
 
 export const loginUser = async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, rememberMe } = req.body;
 
   try {
     const user = await User.login(email, password);
 
     const accessToken = createAccessToken(user);
-    const refreshToken = createRefreshToken(user);
+    const refreshToken = createRefreshToken(user, rememberMe);
 
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
@@ -21,10 +21,10 @@ export const loginUser = async (req, res) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+      maxAge: rememberMe ? 30 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000, // 30 days or 1 day
     });
 
-    res.status(200).json("user login success");
+    res.status(200).json({ message: "user login success" });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
@@ -38,5 +38,5 @@ export const logoutUser = async (req, res) => {
     maxAge: 0,
   });
 
-  return res.status(200).json({message: "User logout!"})
+  return res.status(200).json({ message: "User logout!" });
 };
