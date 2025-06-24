@@ -137,6 +137,7 @@ form .error {
   font-size: .8rem;
   color: red;
   font-weight: 800;
+  text-align: center;
 }
 
 /*buttons styles*/
@@ -198,4 +199,10 @@ input[type="checkbox"]:checked::after {
   color: var(--foreground-yellow);
   font-size: 16px;
   pointer-events: none;
+}
+
+input[type="text"]:disabled,
+input[type="password"]:disabled {
+  background-color: var(--background-gray-2);
+  color: var(--font-gray-light);
 }
