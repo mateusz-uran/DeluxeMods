@@ -1,12 +1,11 @@
 import { NextResponse } from "next/server";
 
 export default function middleware(req) {
-  console.log("calling secure path middleware");
-
   const { cookies, nextUrl } = req;
   const accessToken = cookies.get("accessToken")?.value;
 
   const protectedPaths = ["/reviews"];
+  
   if (protectedPaths.some((path) => nextUrl.pathname.startsWith(path))) {
     if (!accessToken) {
       const loginUrl = new URL("/login", req.url);
