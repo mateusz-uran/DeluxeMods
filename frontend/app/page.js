@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import styles from "./page.module.css";
 import api from "@/utils/api";
+import PreviewMod from "@/components/mods/PreviewMod";
 
 export default function Home() {
   const [mods, setMods] = useState([]);
@@ -17,18 +18,15 @@ export default function Home() {
       }
     }
 
-    fetchMods()
+    fetchMods();
   }, []);
 
   return (
     <div className={styles.page}>
       <main>
-        {mods.map((singleMod => (
-          <div key={singleMod.slug}>
-            <h3>{singleMod.name}</h3>
-            <img src={singleMod.previewPhoto} alt="mod" />
-          </div>
-        )))}
+        {mods.map((singleMod) => (
+          <PreviewMod key={singleMod.slug} mod={singleMod}/>
+        ))}
       </main>
       <aside>nawigacja</aside>
     </div>

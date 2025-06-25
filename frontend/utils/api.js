@@ -1,8 +1,10 @@
+import { BACKEND_URL } from "./config.client";
+
 const { default: axios } = require("axios");
 const { Router } = require("next/router");
 
 const api = axios.create({
-  baseURL: "http://localhost:5000",
+  baseURL: BACKEND_URL,
   withCredentials: true,
 });
 
