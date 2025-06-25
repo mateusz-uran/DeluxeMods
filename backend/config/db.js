@@ -103,6 +103,10 @@ async function initializeModCategories() {
       name: "Productions",
       subCategory: ["Factory", "Selling point", "Green house"],
     },
+    {
+      name: "Misc",
+      subCategory: ["Driveable"],
+    },
   ];
 
   try {
