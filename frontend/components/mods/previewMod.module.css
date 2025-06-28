@@ -1,0 +1,10 @@
+.mod {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    width: 200px;
+}
+
+.mod .imgWrapper img {
+    object-fit: contain;
+}

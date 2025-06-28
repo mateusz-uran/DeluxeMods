@@ -8,7 +8,12 @@ async function initializeRoles() {
     { name: "ADMIN", permissions: ["ADD_USER", "READ_USERS", "UPDATE_USER"] },
     {
       name: "EDITOR",
-      permissions: ["ACCEPT_REVIEW", "READ_ALL_REVIEWS", "UPDATE_REVIEW", "UPDATE_MOD"],
+      permissions: [
+        "ACCEPT_REVIEW",
+        "READ_ALL_REVIEWS",
+        "UPDATE_REVIEW",
+        "UPDATE_MOD",
+      ],
     },
     {
       name: "REVIEWER",
@@ -55,6 +60,7 @@ async function initializeModCategories() {
   const rawCategories = [
     { name: "Tractors", subCategory: ["Small", "Medium", "Big"] },
     { name: "Harvesters", subCategory: ["Combine", "Forage"] },
+    { name: "Vehicles", subCategory: ["Trucks", "Car"] },
     {
       name: "Trailers",
       subCategory: [
@@ -65,6 +71,7 @@ async function initializeModCategories() {
         "Slurry tank",
         "Manure spreader",
         "Spreader",
+        "Forage trailer",
       ],
     },
     {
@@ -115,12 +122,12 @@ async function initializeModCategories() {
         name: category.name,
       });
 
-      if (!existingCategory) {
-        const subCategoriesWithSlugs = category.subCategory.map((sub) => ({
-          name: sub,
-          slug: createSlug(sub),
-        }));
+      const subCategoriesWithSlugs = category.subCategory.map((sub) => ({
+        name: sub,
+        slug: createSlug(sub),
+      }));
 
+      if (!existingCategory) {
         await new ModCategories({
           name: category.name,
           subCategory: subCategoriesWithSlugs,
@@ -133,6 +140,25 @@ async function initializeModCategories() {
             .map((s) => `${s.name} (${s.slug})`)
             .join(", ")} created.`
         );
+      } else {
+        const exsitingNames = new Set(
+          existingCategory.subCategory.map((sc) => sc.name)
+        );
+        let modified = false;
+
+        for (const sub of subCategoriesWithSlugs) {
+          if (!exsitingNames.has(sub.name)) {
+            existingCategory.subCategory.push(sub);
+            modified = true;
+            console.log(
+              `Added subcategory '${sub.name}' to category '${category.name}'`
+            );
+          }
+        }
+
+        if (modified) {
+          await existingCategory.save();
+        }
       }
     }
   } catch (error) {

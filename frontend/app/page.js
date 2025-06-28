@@ -24,9 +24,13 @@ export default function Home() {
   return (
     <div className={styles.page}>
       <main>
-        {mods.map((singleMod) => (
-          <PreviewMod key={singleMod.slug} mod={singleMod}/>
-        ))}
+        {mods.length > 0 ? (
+          mods.map((singleMod) => (
+            <PreviewMod key={singleMod.slug} mod={singleMod} />
+          ))
+        ) : (
+          <p>List of mods is empty at this moment.</p>
+        )}
       </main>
       <aside>nawigacja</aside>
     </div>
