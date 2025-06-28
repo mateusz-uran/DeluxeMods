@@ -1,4 +1,5 @@
 import Mod from "../models/Mod.js";
+import ModCategories from "../models/ModCategories.js";
 
 export const getSingleMod = async (req, res) => {
   const { modSlug } = req.params;
@@ -143,6 +144,15 @@ export const updatePreviewPhoto = async (req, res) => {
     });
 
     return res.status(201).json(mod);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const fetchAllCategories = async (req, res) => {
+  try {
+    const categories = await ModCategories.allCategories();
+    return res.status(201).json(categories);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

@@ -2,6 +2,7 @@ import express from "express";
 import { cookieAuthorize } from "../middleware/authorize.js";
 import multerUpload from "../middleware/multer.js";
 import {
+  fetchAllCategories,
   getModsByParams,
   getModsCategorizied,
   getNotPublishedMods,
@@ -44,5 +45,7 @@ router.patch(
   cookieAuthorize(["UPDATE_MOD"]),
   updatePreviewPhoto
 );
+
+router.get("/categories", fetchAllCategories);
 
 export default router;

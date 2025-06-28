@@ -3,6 +3,11 @@
   justify-content: center;
 }
 
+.page main, 
+.page aside {
+  padding-top: 1rem;
+}
+
 .page main {
   max-width: var(--content-width);
   display: grid;

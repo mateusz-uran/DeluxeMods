@@ -10,5 +10,9 @@ const categoriesSchema = new mongoose.Schema({
   ],
 });
 
+categoriesSchema.statics.allCategories = async function () {
+  return await this.find().select("-_id name subCategory.name");
+};
+
 const ModCategories = mongoose.model("ModCategories", categoriesSchema);
 export default ModCategories;
