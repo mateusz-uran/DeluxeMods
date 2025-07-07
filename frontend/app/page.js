@@ -4,12 +4,13 @@ import { useEffect, useState } from "react";
 import styles from "./page.module.css";
 import api from "@/utils/api";
 import PreviewMod from "@/components/mods/PreviewMod";
+import Categories from "@/components/categories/Categories";
 
 export default function Home() {
   const [mods, setMods] = useState([]);
 
   useEffect(() => {
-    async function fetchMods() {
+    async function fetchMods() {8
       try {
         const response = await api.get("/api/mod");
         setMods(response.data);
@@ -32,7 +33,9 @@ export default function Home() {
           <p>List of mods is empty at this moment.</p>
         )}
       </main>
-      <aside>nawigacja</aside>
+      <aside>
+        <Categories />
+      </aside>
     </div>
   );
 }

@@ -55,7 +55,6 @@ nav .wrapper {
   margin: 0 auto;
   justify-content: space-between;
   padding: 1.2rem 0;
-  border-bottom: 1px solid var(--background-gray-2);
 }
 
 nav .wrapper a {
@@ -92,6 +91,10 @@ footer .wrapper {
   flex-direction: column;
   justify-content: space-between;
   padding: 1.2rem 0;
+}
+
+footer .wrapper .image {
+  margin-bottom: 2rem;
 }
 
 footer .socials > a {

@@ -1,8 +1,30 @@
 .mod {
     display: flex;
     align-items: center;
-    text-align: center;
     width: 200px;
+    transition: all .2s ease-in-out;
+}
+
+.mod:hover {
+    transform: scale(1.01);
+}
+
+.mod .hWrapper {
+    border-radius: 5px 5px 0 0;
+    padding: 1rem;
+    color: var(--font-gray-dark-0);
+    height: 70px;
+    display: flex;
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+}
+.mod .imgWrapper img {
+    border-radius: 0 0 5px 5px;
+}
+
+.mod .hWrapper {
+    background-color: white;
 }
 
 .mod .imgWrapper img {

@@ -7,7 +7,7 @@ export default function Footer() {
   return (
     <footer>
       <div className="wrapper">
-        <Image src="/full_logo_light.svg" width="145" height="45" alt="Deluxe Mods" />
+        <Image className="image" src="/full_logo_light.svg" width="145" height="45" alt="Deluxe Mods" />
         <div className="socials">
           <a href="">About</a>
           <a href="">Gmail</a>

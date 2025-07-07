@@ -1,10 +1,12 @@
 .page {
   display: flex;
   justify-content: center;
+  background-color: var(--background-gray-3);
 }
 
 .page main, 
 .page aside {
+  margin-top: 1rem;
   padding-top: 1rem;
 }
 
@@ -20,7 +22,8 @@
 }
 
 .page aside {
-  background-color: cadetblue;
+  background-color: #fff;
   width: 100%;
   max-width: 300px;
+  border-radius: 5px;
 }

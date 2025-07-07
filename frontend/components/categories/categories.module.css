@@ -1,0 +1,26 @@
+.categories {
+    list-style: none;
+}
+
+.categories .catWrapper {
+    display: flex;
+    justify-content: center;
+    margin: 0 auto;
+    margin-bottom: 20px;
+    border-radius: 5px;
+    padding: 1rem;
+    background-color: var(--background-gray-3);
+    min-width: 280px;
+    margin-right: 5px;
+    margin-left: 5px;
+    border: 0;
+}
+
+.categories .catWrapper span {
+    margin-right: 1rem;
+}
+
+.categories .catWrapper .singleCat {
+    min-width: 150px;
+    max-width: 150px;
+}
