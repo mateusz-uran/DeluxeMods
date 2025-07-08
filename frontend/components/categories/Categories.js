@@ -24,38 +24,47 @@ export default function Categories() {
   return categories.length > 0 ? (
     <ul className={styles.categories}>
       {categories.map((category, index) => (
-        <button
-          key={index}
-          className={styles.catWrapper}
-          onClick={() => {
-            setVisibleCategories((prev) => ({
-              ...prev,
-              [index]: !prev[index],
-            }));
-          }}
-        >
-          {category.subCategory.length > 0 && (
-            <span>
-              <FaArrowDown />
-            </span>
-          )}
-          <li className={styles.singleCat}>
-            <p>{category.categoryName}</p>
-            <ul>
+        <li key={index} className={styles.categoryItem}>
+          <button
+            className={styles.btnCategory}
+            onClick={() => {
+              setVisibleCategories((prev) => ({
+                ...prev,
+                [index]: !prev[index],
+              }));
+            }}
+          >
+            <div className={styles.singleCat}>
+              {category.subCategory.length > 0 && (
+                <span className={styles.iconWrapper}>
+                  <FaArrowDown />
+                </span>
+              )}
+              <div className={styles.catNameWrapper}>
+                <p>{category.categoryName}</p>
+              </div>
+            </div>
+            <ul
+              className={styles.subCategoryList}
+              style={{
+                display: visibleCategories[index] ? "block" : "none",
+              }}
+            >
               {category.subCategory.map((sub, subIndex) => (
-                <li
-                  key={subIndex}
-                  style={{
-                    display: visibleCategories[index] ? "block" : "none",
-                  }}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <Link href={`/${sub.slug}`}>{sub.name}</Link>
+                <li key={subIndex}>
+                  <Link href={`/${sub.slug}`}>
+                    <p
+                      className={styles.singleSubCat}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {sub.name}
+                    </p>
+                  </Link>
                 </li>
               ))}
             </ul>
-          </li>
-        </button>
+          </button>
+        </li>
       ))}
     </ul>
   ) : (
