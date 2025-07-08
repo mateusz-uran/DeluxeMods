@@ -26,6 +26,11 @@
   color: var(--font-gray-dark-1);
 }
 
+.singleCat,
+.singleSubCat {
+  transition: color .2s ease-in-out;
+}
+
 .singleCat {
   display: flex;
   align-items: center;
@@ -51,12 +56,12 @@
   margin-top: 0.5rem;
 }
 
+.subCategoryList a:hover > .singleSubCat {
+  color: var(--font-gray-dark-1);
+}
+
 .singleSubCat {
   cursor: pointer;
   padding: 0.25rem 0;
   text-align: left;
-}
-
-.singleSubCat:hover {
-  color: var(--font-gray-dark-1);
 }
