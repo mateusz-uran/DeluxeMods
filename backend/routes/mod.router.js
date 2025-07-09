@@ -21,7 +21,7 @@ router.get("/single-mod-review/:modSlug", getSingleModAndReview);
 
 router.patch("/update/:modId", cookieAuthorize(["EDIT_REVIEW"]), updateModSpec);
 
-router.get("", getPublishedMods);
+router.get("/all/:page", getPublishedMods);
 
 router.get(
   "/private/:page/:limit",

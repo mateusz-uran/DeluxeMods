@@ -155,6 +155,23 @@ modSchema.statics.updateModSpecification = async function ({
   return updatedMod;
 };
 
+modSchema.statics.getLastSixPublishedModsPaging = async function ({
+  page = 1,
+}) {
+  const limit = 6
+
+  const [mods, totalCount] = await Promise.all([
+    this.find({ isPublished: true })
+      .select("-_id name previewPhoto specification.isDeluxe slug")
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .skip((page - 1) * limit),
+    this.countDocuments({ isPublished: true }),
+  ]);
+
+  return { mods, totalCount };
+};
+
 modSchema.statics.getLastTenPublishedMods = async function () {
   const mods = await this.find({ isPublished: true })
     .select("-_id name previewPhoto specification.isDeluxe slug")

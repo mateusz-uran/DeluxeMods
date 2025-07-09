@@ -2,7 +2,7 @@ import React from "react";
 import styles from "./previewMod.module.css";
 import Link from "next/link";
 
-export default function PreviewMod({mod}) {
+export default function PreviewMod({ mod }) {
   return (
     <div className={styles.mod}>
       <Link href={`/${mod.slug}`}>

@@ -54,9 +54,11 @@ export const updateModSpec = async (req, res) => {
   }
 };
 
+/** replace function to fetch 6 mods per page instead of 10 **/
 export const getPublishedMods = async (req, res) => {
+  const { page, limit } = req.params;
   try {
-    const mod = await Mod.getLastTenPublishedMods();
+    const mod = await Mod.getLastSixPublishedModsPaging({ page});
 
     return res.status(200).json(mod);
   } catch (error) {

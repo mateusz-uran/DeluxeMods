@@ -240,6 +240,38 @@ describe("Mod model test", () => {
     });
   });
 
+  describe("getLastSixPublishedModsPaging", () => {
+    const fakeMods = Array.from({ length: 6 }, (_, i) => ({
+      name: `M${i}`,
+      previewPhoto: `u${i}`,
+      specification: { isDeluxe: false },
+      isPublished: true,
+    }));
+
+    const fakeTotalCount = 42;
+
+    beforeEach(() => {
+      const skipStub = sandbox.stub().resolves(fakeMods);
+      const limitStub = sandbox.stub().returns({ skip: skipStub });
+      const sortStub = sandbox.stub().returns({ limit: limitStub });
+      const selectStub = sandbox.stub().returns({ sort: sortStub });
+      sandbox.stub(Mod, "find").returns({ select: selectStub });
+
+      sandbox.stub(Mod, "countDocuments").resolves(fakeTotalCount);
+    });
+
+    it("should query with filter, projection, sort, limit and skip", async () => {
+      const result = await Mod.getLastSixPublishedModsPaging({
+        limit: 6,
+        page: 1,
+      });
+      expect(result).to.deep.equal({
+        mods: fakeMods,
+        totalCount: fakeTotalCount,
+      });
+    });
+  });
+
   describe("getLastTenPublishedMods", () => {
     const fakeMods = Array.from({ length: 10 }, (_, i) => ({
       name: `M${i}`,
