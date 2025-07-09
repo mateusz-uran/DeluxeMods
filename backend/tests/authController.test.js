@@ -29,15 +29,21 @@ describe("Auth Controller Integration Tests", () => {
   it("POST /login", async () => {
     const response = await request(app)
       .post("/login")
-      .send({ email, password })
+      .send({ email, password, rememberMe: true })
       .expect(200);
 
     expect(response.body).to.have.property("email", email);
     expect(response.body).to.have.property("accessToken", "mockedToken");
 
-    expect(response.headers["set-cookie"][0]).to.include(
-      "refreshToken=mockedToken"
+    const refreshTokenCookie = response.headers["set-cookie"].find((cookie) =>
+      cookie.startsWith("refreshToken=")
     );
+
+    expect(refreshTokenCookie).to.include("refreshToken=mockedToken");
+
+    expect(response.body.message).to.equal("User logged in successfully!");
+
+    expect(response.status).to.equal(200);
 
     expect(jwtStub.called).to.be.true;
     expect(loginStub.calledOnce).to.be.true;

@@ -24,7 +24,11 @@ export const loginUser = async (req, res) => {
       maxAge: rememberMe ? 30 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000, // 30 days or 1 day
     });
 
-    res.status(200).json({ message: "user login success" });
+    res.status(200).json({
+      message: "User logged in successfully!",
+      email: user.email,
+      accessToken,
+    });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
