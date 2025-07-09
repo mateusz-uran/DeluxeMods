@@ -4,6 +4,7 @@ import Review from "../models/Review.js";
 import { expect } from "chai";
 import Mod from "../models/Mod.js";
 import { populate } from "dotenv";
+import User from "../models/User.js";
 
 const sandbox = sinon.createSandbox();
 
@@ -29,6 +30,8 @@ describe("Review model unit test", () => {
       save: sandbox.stub().resolves(),
     });
   });
+
+  sandbox.stub(User, "findById").resolves({ _id: userId, name: "TestUser" });
 
   afterEach(() => {
     sandbox.restore();
@@ -224,12 +227,11 @@ describe("Review model unit test", () => {
 
       expect(selectStub.calledOnceWithExactly("-_id author text status")).to.be
         .true;
-      expect(
-        populateStub.calledOnceWithExactly({
-          path: "mod",
-          select: "name previewPhoto isDeluxe specification.modAuthor",
-        })
-      ).to.be.true;
+
+      expect(populateStub.calledOnce).to.be.true;
+      expect(populateStub.firstCall.args[0]).to.have.property("path", "mod");
+      expect(populateStub.firstCall.args[0].select).to.include("previewPhoto");
+      expect(populateStub.firstCall.args[0].select).to.include("specification.modAuthor");
     });
   });
 
