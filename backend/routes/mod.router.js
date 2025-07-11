@@ -4,6 +4,7 @@ import multerUpload from "../middleware/multer.js";
 import {
   fetchAllCategories,
   getModsByParams,
+  getModsCategorizedWithPaging,
   getModsCategorizied,
   getNotPublishedMods,
   getPublishedMods,
@@ -30,6 +31,7 @@ router.get(
 );
 
 router.get("/category/:subCategory", getModsCategorizied);
+router.get("/all/category/:subCategory/:page", getModsCategorizedWithPaging)
 
 router.get("/params", getModsByParams);
 

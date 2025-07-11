@@ -5,7 +5,7 @@ import Link from "next/link";
 export default function PreviewMod({ mod }) {
   return (
     <div className={styles.mod}>
-      <Link href={`/${mod.slug}`}>
+      <Link href={`/review/${mod.slug}`}>
         <div className={styles.hWrapper}>
           <h3>{mod.name}</h3>
         </div>

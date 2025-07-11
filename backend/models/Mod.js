@@ -193,10 +193,11 @@ modSchema.statics.getModsNotPublishedPagingAndSorting = async function ({
   return mods;
 };
 
-modSchema.statics.getModsByCategorie = async function ({
+// TODO: refactor to return mods with totalDocuments value
+modSchema.statics.getModsByCategory = async function ({
   subCategory,
   page = 1,
-  limit = 10,
+  limit = 6,
 }) {
   const mods = await this.find({
     isPublished: true,

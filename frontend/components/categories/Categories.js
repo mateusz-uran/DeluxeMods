@@ -52,7 +52,7 @@ export default function Categories() {
             >
               {category.subCategory.map((sub, subIndex) => (
                 <li key={subIndex} className={styles.subCatItem}>
-                  <Link href={`/${sub.slug}`}>
+                  <Link href={`/mods/category/${sub.slug}`}>
                     <p
                       className={styles.singleSubCat}
                       onClick={(e) => e.stopPropagation()}

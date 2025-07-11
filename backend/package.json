@@ -4,11 +4,11 @@
   "main": "server.js",
   "scripts": {
     "dev": "nodemon server.js",
-    "test": "mocha tests/*.test.js"
+    "test": "mocha tests/**/*.test.js"
   },
   "type": "module",
   "keywords": [],
-  "author": "",
+  "author": "letmecook",
   "license": "ISC",
   "description": "",
   "dependencies": {

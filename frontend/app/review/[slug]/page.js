@@ -1,7 +1,7 @@
 import { BACKEND_URL } from "@/utils/config.server";
 import { notFound } from "next/navigation";
 import React from "react";
-import styles from './slug.module.css'
+import styles from './reviewMod.module.css'
 
 export default async function ReviewMod({ params }) {
   const { slug } = await params;

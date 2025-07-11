@@ -58,7 +58,7 @@ export const updateModSpec = async (req, res) => {
 export const getPublishedMods = async (req, res) => {
   const { page, limit } = req.params;
   try {
-    const mod = await Mod.getLastSixPublishedModsPaging({ page});
+    const mod = await Mod.getLastSixPublishedModsPaging({ page });
 
     return res.status(200).json(mod);
   } catch (error) {
@@ -79,12 +79,29 @@ export const getNotPublishedMods = async (req, res) => {
 
 export const getModsCategorizied = async (req, res) => {
   const { subCategory } = req.params;
-  const { page = 1, limit = 10 } = req.query;
+  const { page = 1, limit = 6 } = req.query;
   try {
-    const mods = await Mod.getModsByCategorie({
+    const mods = await Mod.getModsByCategory({
       subCategory,
       page: parseInt(page),
       limit: parseInt(limit),
+    });
+
+    return res.status(200).json(mods);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const getModsCategorizedWithPaging = async (req, res) => {
+  const { subCategory, page } = req.params;
+  console.log(`Calling controller with params: ${subCategory}, ${page}`);
+  
+
+  try {
+    const mods = await Mod.getModsByCategory({
+      subCategory,
+      page: parseInt(page),
     });
 
     return res.status(200).json(mods);

@@ -314,11 +314,15 @@ describe("Mod model test", () => {
     });
   });
 
-  describe("getModsByCategorie", () => {
-    const fakeMods = Array.from({ length: limit }, (_, i) => ({
-      name: `M${i}`,
-      isPublished: true,
-    }));
+  describe("getModsByCategory", () => {
+    const fakeMods = [
+      { name: "M0", isPublished: true, categories: ["baler"] },
+      { name: "M1", isPublished: true, categories: ["baler", "tractor"] },
+      { name: "M2", isPublished: true, categories: ["plow"] },
+      { name: "M3", isPublished: true, categories: ["baler"] },
+      { name: "M4", isPublished: true, categories: ["tractor"] },
+    ];
+
     beforeEach(() => {
       const sortStub = sandbox.stub().resolves(fakeMods);
       const skipStub = sandbox.stub().returns({ sort: sortStub });
@@ -328,7 +332,7 @@ describe("Mod model test", () => {
     });
 
     it("should filter by slug, project, paginate, and sort", async () => {
-      const result = await Mod.getModsByCategorie({
+      const result = await Mod.getModsByCategory({
         subCategory: "baler",
         page,
         limit,

@@ -163,6 +163,14 @@ form .error {
   color: var(--font-gray-dark-0);
 }
 
+.paging-btn {
+  border-radius: 50%;
+  padding: 10px;
+  margin: 0 15px;
+  border: 0;
+  background-color: #fff;
+}
+
 /*inputs styles*/
 input[type="text"],
 input[type="password"] {
