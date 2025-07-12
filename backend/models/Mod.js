@@ -2,18 +2,18 @@ import mongoose from "mongoose";
 import ModCategories from "./ModCategories.js";
 import { uploadImageToCloudinary } from "../utils/cloudinaryUpload.util.js";
 import { createLongerSlug } from "../utils/slug.utils.js";
-import Review from "./Review.js";
+// import Review from "./Review.js";
 
 const modSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
     previewPhoto: { type: String, required: true },
     specification: {
-      isDeluxe: { type: Boolean, required: true, default: false },
       link: { type: String, required: true },
       modAuthor: { type: String, required: true },
     },
     isPublished: { type: Boolean, required: true, default: false },
+    isDeluxe: { type: Boolean, required: true, default: false },
     categories: [
       {
         type: String,
@@ -158,7 +158,7 @@ modSchema.statics.updateModSpecification = async function ({
 modSchema.statics.getLastSixPublishedModsPaging = async function ({
   page = 1,
 }) {
-  const limit = 6
+  const limit = 6;
 
   const [mods, totalCount] = await Promise.all([
     this.find({ isPublished: true })

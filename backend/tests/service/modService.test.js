@@ -1,7 +1,10 @@
 import { expect } from "chai";
 import sinon from "sinon";
 import Mod from "../../models/Mod.js";
-import { getPerSixMods } from "../../service/mod.service.js";
+import {
+  createModWithPreviewPhoto,
+  getPerSixMods,
+} from "../../service/mod.service.js";
 import { createFakeMods } from "../helpers/mods.helper.js";
 
 describe("Mod service unit tests", () => {
@@ -57,6 +60,101 @@ describe("Mod service unit tests", () => {
         mods,
         totalCount: fakeTotalCount,
       });
+    });
+  });
+
+  describe("createModWithPreviewPhoto", () => {
+    const fakeUrl = "https://cloudinary.com/fake-image.jpg";
+    const fakeSlug = "john-doe-john-deere-6r";
+    const fakeValidCategories = ["small"];
+
+    const modInput = {
+      name: "John Deere 6R",
+      previewPhoto: { buffer: Buffer.from("img") },
+      specification: {
+        link: "https://some-random-url.com",
+        modAuthor: "John Doe",
+      },
+      categorySlugs: ["small"],
+    };
+
+    let sandbox;
+
+    beforeEach(() => {
+      sandbox = sinon.createSandbox();
+      sandbox.stub(Mod, "create").resolvesArg(0);
+    });
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("should successfully create a mod", async () => {
+      const fakeUpload = sandbox.stub().resolves(fakeUrl);
+      const fakeCategories = sandbox.stub().resolves(fakeValidCategories);
+      const fakeSlugCreated = sandbox.stub().returns(fakeSlug);
+
+      const result = await createModWithPreviewPhoto(
+        modInput,
+        fakeUpload,
+        fakeCategories,
+        fakeSlugCreated
+      );
+
+      expect(fakeUpload.calledOnceWithExactly(modInput.previewPhoto.buffer)).to
+        .be.true;
+      expect(fakeCategories.calledOnceWithExactly(modInput.categorySlugs)).to.be
+        .true;
+      expect(
+        fakeSlugCreated.calledOnceWithExactly(
+          modInput.name,
+          modInput.specification.modAuthor
+        )
+      ).to.be.true;
+
+      expect(result.previewPhoto).to.equal(fakeUrl);
+      expect(result.categories).to.deep.equal(fakeValidCategories);
+      expect(result.slug).to.equal(fakeSlug);
+    });
+
+    it("should throw an error if no valid categories are found", async () => {
+      const fakeUpload = sandbox.stub().resolves(fakeUrl);
+      const fakeCheckCategories = sandbox.stub().resolves([]);
+      const fakeCreateSlug = sandbox.stub().returns(fakeSlug);
+
+      try {
+        await createModWithPreviewPhoto(
+          modInput,
+          fakeUpload,
+          fakeCheckCategories,
+          fakeCreateSlug
+        );
+        throw new Error("Test failed — should have thrown");
+      } catch (err) {
+        expect(err.message).to.equal(
+          "No valid subCategory slugs found for provided slugs."
+        );
+      }
+    });
+
+    it("should throw an error if image upload fails", async () => {
+      const fakeUpload = sandbox.stub().rejects(new Error("Upload failed"));
+      const fakeCheckCategories = sandbox.stub();
+      const fakeCreateSlug = sandbox.stub();
+
+      try {
+        await createModWithPreviewPhoto(
+          modInput,
+          fakeUpload,
+          fakeCheckCategories,
+          fakeCreateSlug
+        );
+        throw new Error("Test failed — should have thrown");
+      } catch (err) {
+        expect(err.message).to.equal("Upload failed");
+        expect(fakeCheckCategories.notCalled).to.be.true;
+        expect(fakeCreateSlug.notCalled).to.be.true;
+      }
     });
   });
 });

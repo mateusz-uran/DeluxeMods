@@ -1,4 +1,7 @@
 import Mod from "../models/Mod.js";
+import { uploadImageToCloudinary } from "../utils/cloudinaryUpload.util.js";
+import { createLongerSlug } from "../utils/slug.utils.js";
+import { checkIfCategoryExists } from "./modCategories.service.js";
 
 export async function getPerSixMods({ subCategory = null, page = 1 }) {
   const limit = 6;
@@ -26,6 +29,27 @@ export async function getPerSixMods({ subCategory = null, page = 1 }) {
   return { mods, totalCount };
 }
 
-export async function createMod({name, previewPhoto, specification}) {
+export async function createModWithPreviewPhoto(
+  { name, previewPhoto, specification, categorySlugs },
+  uploadImage = uploadImageToCloudinary,
+  checkCategories = checkIfCategoryExists,
+  createSlug = createLongerSlug
+) {
+  const previewPhotoUrl = await uploadImage(previewPhoto.buffer);
 
+  const validateCategories = await checkCategories(categorySlugs);
+
+  if (!validateCategories.length) {
+    throw new Error("No valid subCategory slugs found for provided slugs.");
+  }
+
+  const modSlug = createSlug(name, specification.modAuthor);
+
+  return Mod.create({
+    name,
+    previewPhoto: previewPhotoUrl,
+    specification,
+    categories: validateCategories,
+    slug: modSlug,
+  });
 }

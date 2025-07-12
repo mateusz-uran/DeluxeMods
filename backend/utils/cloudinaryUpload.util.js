@@ -1,6 +1,6 @@
 import cloudinary from "../config/cloudinary.js";
 
-export function uploadImageToCloudinary(buffer) {
+export async function uploadImageToCloudinary(buffer) {
   return new Promise((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
       {
