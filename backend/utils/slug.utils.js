@@ -10,7 +10,7 @@ export function createSlug(text) {
     .trim();
 }
 
-export function createLongerSlug(textOne, textTwo) {
+export function createSlugFromTwoTexts(textOne, textTwo) {
   const textOneSlug = createSlug(textOne, { lower: true });
   const textTwoSlug = createSlug(textTwo, { lower: true });
   const uniquePart = nanoid(6);

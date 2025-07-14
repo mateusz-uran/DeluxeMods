@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import ModCategories from "./ModCategories.js";
-import { uploadImageToCloudinary } from "../utils/cloudinaryUpload.util.js";
+import { uploadImageToCloudinary } from "../utils/cloudinary.util.js";
 import { createLongerSlug } from "../utils/slug.utils.js";
 // import Review from "./Review.js";
 

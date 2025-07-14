@@ -1,6 +1,9 @@
 import Mod from "../models/Mod.js";
-import { uploadImageToCloudinary } from "../utils/cloudinaryUpload.util.js";
-import { createLongerSlug } from "../utils/slug.utils.js";
+import {
+  replaceImage,
+  uploadImageToCloudinary,
+} from "../utils/cloudinary.util.js";
+import { createSlugFromTwoTexts } from "../utils/slug.utils.js";
 import { checkIfCategoryExists } from "./modCategories.service.js";
 
 export async function getPerSixMods({ subCategory = null, page = 1 }) {
@@ -33,7 +36,7 @@ export async function createModWithPreviewPhoto(
   { name, previewPhoto, specification, categorySlugs },
   uploadImage = uploadImageToCloudinary,
   checkCategories = checkIfCategoryExists,
-  createSlug = createLongerSlug
+  createSlug = createSlugFromTwoTexts
 ) {
   const previewPhotoUrl = await uploadImage(previewPhoto.buffer);
 
@@ -64,4 +67,21 @@ export async function changeModStatus({ modSlug, isPublished, isDeluxe }) {
   }
 
   return await Mod.findOneAndUpdate({ slug: modSlug }, update, { new: true });
+}
+
+export async function findModByPreviewUrl(url) {
+  const mod = await Mod.findOne({ previewPhoto: url });
+  if (!mod) throw new Error("Mod not found");
+  return mod;
+}
+
+export async function replacePreviewPhoto({
+  previewPhotoUrl,
+  newPreviewPhoto,
+}) {
+  const mod = await findModByPreviewUrl(previewPhotoUrl);
+  const newUrl = await replaceImage(mod.previewPhoto, newPreviewPhoto.buffer);
+  mod.previewPhoto = newUrl;
+  await mod.save();
+  return mod;
 }
