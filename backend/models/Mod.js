@@ -21,6 +21,13 @@ const modSchema = new mongoose.Schema(
       },
     ],
     slug: { type: String, required: true },
+
+    reviewId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Review",
+      required: false,
+      unique: true,
+    },
   },
   {
     timestamps: true,

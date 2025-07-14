@@ -69,12 +69,6 @@ export async function changeModStatus({ modSlug, isPublished, isDeluxe }) {
   return await Mod.findOneAndUpdate({ slug: modSlug }, update, { new: true });
 }
 
-export async function findModByPreviewUrl(url) {
-  const mod = await Mod.findOne({ previewPhoto: url });
-  if (!mod) throw new Error("Mod not found");
-  return mod;
-}
-
 export async function replacePreviewPhoto({
   previewPhotoUrl,
   newPreviewPhoto,
@@ -84,4 +78,18 @@ export async function replacePreviewPhoto({
   mod.previewPhoto = newUrl;
   await mod.save();
   return mod;
+}
+
+export async function findModByPreviewUrl(url) {
+  const mod = await Mod.findOne({ previewPhoto: url });
+  if (!mod) throw new Error("Mod not found");
+  return mod;
+}
+
+export async function checkIfModExists(id) {
+  return !!(await Mod.exists({ _id: id }));
+}
+
+export async function updateModReviewId(modId, reviewId) {
+  await Mod.findOneAndUpdate(modId, { reviewId }, { new: true });
 }

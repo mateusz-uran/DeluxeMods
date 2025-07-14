@@ -11,12 +11,6 @@ const reviewSchema = new mongoose.Schema({
     enum: ["CREATED", "REVIEWED", "DECLINED", "UPDATED"],
     default: "CREATED",
   },
-  mod: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Mod",
-    required: true,
-    unique: true,
-  },
   slug: { type: String, required: true },
 });
 
