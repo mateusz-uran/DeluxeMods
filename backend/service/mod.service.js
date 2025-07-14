@@ -53,3 +53,15 @@ export async function createModWithPreviewPhoto(
     slug: modSlug,
   });
 }
+
+export async function changeModStatus({ modSlug, isPublished, isDeluxe }) {
+  const update = {};
+  if (typeof isPublished === "boolean") update.isPublished = isPublished;
+  if (typeof isDeluxe === "boolean") update.isDeluxe = isDeluxe;
+
+  if (Object.keys(update).length === 0) {
+    throw new Error("At least one of isPublished or isDeluxe must be provided");
+  }
+
+  return await Mod.findOneAndUpdate({ slug: modSlug }, update, { new: true });
+}

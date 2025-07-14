@@ -2,6 +2,7 @@ import { expect } from "chai";
 import sinon from "sinon";
 import Mod from "../../models/Mod.js";
 import {
+  changeModStatus,
   createModWithPreviewPhoto,
   getPerSixMods,
 } from "../../service/mod.service.js";
@@ -154,6 +155,99 @@ describe("Mod service unit tests", () => {
         expect(err.message).to.equal("Upload failed");
         expect(fakeCheckCategories.notCalled).to.be.true;
         expect(fakeCreateSlug.notCalled).to.be.true;
+      }
+    });
+  });
+
+  describe("changeModStatus", () => {
+    let sandbox;
+
+    beforeEach(() => {
+      sandbox = sinon.createSandbox();
+    });
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("should update only isPublished", async () => {
+      const slug = "some-mod";
+      const updatedMod = { slug, isPublished: true, isDeluxe: false };
+
+      const findOneAndUpdateStub = sandbox
+        .stub(Mod, "findOneAndUpdate")
+        .resolves(updatedMod);
+
+      const result = await changeModStatus({
+        modSlug: slug,
+        isPublished: true,
+      });
+
+      expect(
+        findOneAndUpdateStub.calledOnceWithExactly(
+          { slug },
+          { isPublished: true },
+          { new: true }
+        )
+      ).to.be.true;
+
+      expect(result).to.equal(updatedMod);
+    });
+
+    it("should update only isDeluxe", async () => {
+      const slug = "another-mod";
+      const updatedMod = { slug, isPublished: false, isDeluxe: true };
+
+      const findOneAndUpdateStub = sandbox
+        .stub(Mod, "findOneAndUpdate")
+        .resolves(updatedMod);
+
+      const result = await changeModStatus({ modSlug: slug, isDeluxe: true });
+
+      expect(
+        findOneAndUpdateStub.calledOnceWithExactly(
+          { slug },
+          { isDeluxe: true },
+          { new: true }
+        )
+      ).to.be.true;
+
+      expect(result).to.equal(updatedMod);
+    });
+
+    it("should update both isPublished and isDeluxe", async () => {
+      const slug = "multi-change-mod";
+      const updatedMod = { slug, isPublished: false, isDeluxe: false };
+
+      const findOneAndUpdateStub = sandbox
+        .stub(Mod, "findOneAndUpdate")
+        .resolves(updatedMod);
+
+      const result = await changeModStatus({
+        modSlug: slug,
+        isPublished: false,
+        isDeluxe: false,
+      });
+
+      expect(
+        findOneAndUpdateStub.calledOnceWithExactly(
+          { slug },
+          { isPublished: false, isDeluxe: false },
+          { new: true }
+        )
+      ).to.be.true;
+
+      expect(result).to.equal(updatedMod);
+    });
+
+    it("should throw an error when no fields are provided", async () => {
+      try {
+        await changeModStatus({ modSlug: "empty-change" });
+        throw new Error("Test failed — should have thrown");
+      } catch (err) {
+        expect(err.message).to.equal(
+          "At least one of isPublished or isDeluxe must be provided"
+        );
       }
     });
   });
