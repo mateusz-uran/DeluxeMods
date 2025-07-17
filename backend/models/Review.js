@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import Mod from "./Mod.js";
 import User from "./User.js";
-import { createLongerSlug } from "../utils/slug.utils.js";
+import { createSlugFromTwoTexts } from "../utils/slug.utils.js";
 
 const reviewSchema = new mongoose.Schema({
   author: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
@@ -36,7 +36,7 @@ reviewSchema.statics.createReview = async function ({
   const author = await User.findById(authorId);
   if (!author) throw Error("Author not found!");
 
-  const reviewSlug = createLongerSlug(author.name, mod.name);
+  const reviewSlug = createSlugFromTwoTexts(author.name, mod.name);
 
   return this.create({
     author: authorId,

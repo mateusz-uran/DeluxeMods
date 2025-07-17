@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import ModCategories from "./ModCategories.js";
 import { uploadImageToCloudinary } from "../utils/cloudinary.util.js";
-import { createLongerSlug } from "../utils/slug.utils.js";
+import { createSlugFromTwoTexts } from "../utils/slug.utils.js";
 // import Review from "./Review.js";
 
 const modSchema = new mongoose.Schema(
@@ -54,7 +54,7 @@ modSchema.statics.createMod = async function (
     throw Error("No valid subCategory slugs found for provided slugs.");
   }
 
-  const modSlug = createLongerSlug(name, specification.modAuthor);
+  const modSlug = createSlugFromTwoTexts(name, specification.modAuthor);
 
   const createMod = await this.create({
     name,

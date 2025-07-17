@@ -69,10 +69,10 @@ export async function changeModStatus({ modSlug, isPublished, isDeluxe }) {
   return await Mod.findOneAndUpdate({ slug: modSlug }, update, { new: true });
 }
 
-export async function replacePreviewPhoto({
-  previewPhotoUrl,
-  newPreviewPhoto,
-}) {
+export async function replacePreviewPhoto(
+  { previewPhotoUrl, newPreviewPhoto },
+  { findModByPreviewUrl, replaceImage }
+) {
   const mod = await findModByPreviewUrl(previewPhotoUrl);
   const newUrl = await replaceImage(mod.previewPhoto, newPreviewPhoto.buffer);
   mod.previewPhoto = newUrl;
@@ -91,5 +91,9 @@ export async function checkIfModExists(id) {
 }
 
 export async function updateModReviewId(modId, reviewId) {
-  await Mod.findOneAndUpdate(modId, { reviewId }, { new: true });
+  return await Mod.findOneAndUpdate(
+    { _id: modId },
+    { reviewId },
+    { new: true }
+  );
 }

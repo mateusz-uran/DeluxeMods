@@ -1,4 +1,4 @@
-import User from "../models/User";
+import User from "../models/User.js";
 
 export async function validateUserById(userId) {
   const user = await User.findById(userId);

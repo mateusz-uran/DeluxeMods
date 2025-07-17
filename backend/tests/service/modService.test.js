@@ -3,8 +3,12 @@ import sinon from "sinon";
 import Mod from "../../models/Mod.js";
 import {
   changeModStatus,
+  checkIfModExists,
   createModWithPreviewPhoto,
+  findModByPreviewUrl,
   getPerSixMods,
+  replacePreviewPhoto,
+  updateModReviewId,
 } from "../../service/mod.service.js";
 import { createFakeMods } from "../helpers/mods.helper.js";
 
@@ -249,6 +253,223 @@ describe("Mod service unit tests", () => {
           "At least one of isPublished or isDeluxe must be provided"
         );
       }
+    });
+  });
+
+  describe("replacePreviewPhoto", () => {
+    const oldUrl = "http://old.com/image.png";
+    const newUrl = "http://new.com/image.png";
+    const newPreviewPhoto = { buffer: Buffer.from("mock-buffer") };
+
+    let dummyMod;
+    let fakeFindMod;
+    let fakeReplaceImage;
+
+    beforeEach(() => {
+      dummyMod = {
+        _id: "mod123",
+        name: "Some Mod",
+        previewPhoto: oldUrl,
+        save: sinon.stub().resolvesThis(),
+      };
+
+      fakeFindMod = sinon.stub().resolves(dummyMod);
+      fakeReplaceImage = sinon.stub().resolves(newUrl);
+    });
+
+    afterEach(() => {
+      sinon.restore();
+    });
+
+    it("should update preview photo and save mod", async () => {
+      const result = await replacePreviewPhoto(
+        {
+          previewPhotoUrl: oldUrl,
+          newPreviewPhoto,
+        },
+        {
+          findModByPreviewUrl: fakeFindMod,
+          replaceImage: fakeReplaceImage,
+        }
+      );
+
+      expect(fakeFindMod.calledOnceWithExactly(oldUrl)).to.be.true;
+      expect(
+        fakeReplaceImage.calledOnceWithExactly(oldUrl, newPreviewPhoto.buffer)
+      ).to.be.true;
+      expect(dummyMod.save.calledOnce).to.be.true;
+
+      expect(result.previewPhoto).to.equal(newUrl);
+      expect(result).to.deep.equal(dummyMod);
+    });
+
+    it("should throw an error when mod is not found", async () => {
+      fakeFindMod.rejects(new Error("Mod not found"));
+
+      try {
+        await replacePreviewPhoto(
+          {
+            previewPhotoUrl: oldUrl,
+            newPreviewPhoto,
+          },
+          {
+            findModByPreviewUrl: fakeFindMod,
+            replaceImage: fakeReplaceImage,
+          }
+        );
+        throw new Error("Test should not reach this point");
+      } catch (err) {
+        expect(err.message).to.equal("Mod not found");
+      }
+    });
+
+    it("should throw when image replacement fails", async () => {
+      fakeReplaceImage.rejects(new Error("Cloudinary error"));
+
+      try {
+        await replacePreviewPhoto(
+          {
+            previewPhotoUrl: oldUrl,
+            newPreviewPhoto,
+          },
+          {
+            findModByPreviewUrl: fakeFindMod,
+            replaceImage: fakeReplaceImage,
+          }
+        );
+        throw new Error("Should have thrown");
+      } catch (err) {
+        expect(err.message).to.equal("Cloudinary error");
+      }
+    });
+
+    it("should throw when mod.save fails", async () => {
+      dummyMod.save.rejects(new Error("Mongo error"));
+
+      try {
+        await replacePreviewPhoto(
+          {
+            previewPhotoUrl: oldUrl,
+            newPreviewPhoto,
+          },
+          {
+            findModByPreviewUrl: fakeFindMod,
+            replaceImage: fakeReplaceImage,
+          }
+        );
+        throw new Error("Should have thrown");
+      } catch (err) {
+        expect(err.message).to.equal("Mongo error");
+      }
+    });
+  });
+
+  describe("findModByPreviewUrl", () => {
+    const dummyMod = {
+      name: "Dummy mod",
+      previewPhoto: "http://random-url.com",
+    };
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("should return single mod by previewPhoto url", async () => {
+      sandbox.stub(Mod, "findOne").resolves(dummyMod);
+
+      const result = await findModByPreviewUrl(dummyMod.previewPhoto);
+      expect(result).to.deep.equal(dummyMod);
+    });
+
+    it("should throw error when mod not found", async () => {
+      sandbox.restore();
+      sandbox.stub(Mod, "findOne").resolves(null);
+
+      try {
+        await findModByPreviewUrl("http://wrong-url.com");
+      } catch (error) {
+        expect(error.message).to.equal("Mod not found");
+      }
+    });
+  });
+
+  describe("checkIfModExists", () => {
+    const dummyMod = {
+      _id: "random_id",
+      name: "Dummy mod",
+    };
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("should return true if mod exists", async () => {
+      sandbox.stub(Mod, "exists").resolves(dummyMod);
+
+      const result = await checkIfModExists(dummyMod._id);
+      expect(result).to.be.true;
+    });
+
+    it("should return false when mod not found", async () => {
+      sandbox.stub(Mod, "exists").resolves(null);
+
+      const result = await checkIfModExists({ id: "wrong mod ID" });
+      expect(result).to.be.false;
+    });
+
+    describe("updateModReviewId", () => {
+      let findOneAndUpdateStub;
+
+      const reviewId = "review_492";
+      const mod = {
+        _id: "randomId",
+        name: "random mod",
+        reviewId,
+      };
+
+      beforeEach(() => {
+        findOneAndUpdateStub = sandbox
+          .stub(Mod, "findOneAndUpdate")
+          .resolves(mod);
+      });
+
+      afterEach(() => {
+        sandbox.restore();
+      });
+
+      it("should update mod object with given review id", async () => {
+        const result = await updateModReviewId(mod._id, reviewId);
+
+        expect(
+          findOneAndUpdateStub.calledOnceWithExactly(
+            { _id: mod._id },
+            { reviewId },
+            { new: true }
+          )
+        ).to.be.true;
+
+        expect(result).to.deep.equal(mod);
+      });
+
+      it("should return null if mod with given ID does not exist", async () => {
+        findOneAndUpdateStub.resolves(null);
+
+        const result = await updateModReviewId("nonexistentId", "someReviewId");
+
+        expect(result).to.be.null;
+      });
+
+      it("should throw error if reviewId is already assigned to another mod", async () => {
+        const duplicateKeyError = new Error("E11000 duplicate key error");
+        findOneAndUpdateStub.rejects(duplicateKeyError);
+
+        try {
+          await updateModReviewId("someId", "existingReviewId");
+          throw new Error("Test failed – expected error was not thrown");
+        } catch (err) {
+          expect(err.message).to.include("duplicate key error");
+        }
+      });
     });
   });
 });
