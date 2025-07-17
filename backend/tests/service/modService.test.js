@@ -287,10 +287,8 @@ describe("Mod service unit tests", () => {
           previewPhotoUrl: oldUrl,
           newPreviewPhoto,
         },
-        {
-          findModByPreviewUrl: fakeFindMod,
-          replaceImage: fakeReplaceImage,
-        }
+        fakeFindMod,
+        fakeReplaceImage
       );
 
       expect(fakeFindMod.calledOnceWithExactly(oldUrl)).to.be.true;
@@ -312,10 +310,8 @@ describe("Mod service unit tests", () => {
             previewPhotoUrl: oldUrl,
             newPreviewPhoto,
           },
-          {
-            findModByPreviewUrl: fakeFindMod,
-            replaceImage: fakeReplaceImage,
-          }
+          fakeFindMod,
+          fakeReplaceImage
         );
         throw new Error("Test should not reach this point");
       } catch (err) {
@@ -332,10 +328,8 @@ describe("Mod service unit tests", () => {
             previewPhotoUrl: oldUrl,
             newPreviewPhoto,
           },
-          {
-            findModByPreviewUrl: fakeFindMod,
-            replaceImage: fakeReplaceImage,
-          }
+          fakeFindMod,
+          fakeReplaceImage
         );
         throw new Error("Should have thrown");
       } catch (err) {
@@ -352,10 +346,8 @@ describe("Mod service unit tests", () => {
             previewPhotoUrl: oldUrl,
             newPreviewPhoto,
           },
-          {
-            findModByPreviewUrl: fakeFindMod,
-            replaceImage: fakeReplaceImage,
-          }
+          fakeFindMod,
+          fakeReplaceImage
         );
         throw new Error("Should have thrown");
       } catch (err) {

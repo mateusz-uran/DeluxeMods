@@ -71,10 +71,11 @@ export async function changeModStatus({ modSlug, isPublished, isDeluxe }) {
 
 export async function replacePreviewPhoto(
   { previewPhotoUrl, newPreviewPhoto },
-  { findModByPreviewUrl, replaceImage }
+  findMod = findModByPreviewUrl,
+  reuoploadImage = replaceImage
 ) {
-  const mod = await findModByPreviewUrl(previewPhotoUrl);
-  const newUrl = await replaceImage(mod.previewPhoto, newPreviewPhoto.buffer);
+  const mod = await findMod(previewPhotoUrl);
+  const newUrl = await reuoploadImage(mod.previewPhoto, newPreviewPhoto.buffer);
   mod.previewPhoto = newUrl;
   await mod.save();
   return mod;
