@@ -1,14 +1,14 @@
 import { login } from "../service/user.service.js";
 
-export const loginUser = async (req, res) => {
-  const { email, password, rememberMe } = req.body;
-  const {
-    accessToken,
-    refreshToken,
-    email: userEmail,
-  } = await login(email, password, rememberMe);
-
+export const loginUser = async (req, res, next) => {
   try {
+    const { email, password, rememberMe } = req.body;
+    const {
+      accessToken,
+      refreshToken,
+      email: userEmail,
+    } = await login(email, password, rememberMe);
+
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
