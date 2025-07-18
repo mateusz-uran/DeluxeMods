@@ -1,4 +1,5 @@
 import cloudinary from "../config/cloudinary.js";
+import { InternalServerError } from "./errors/HttpError.js";
 
 export async function uploadImageToCloudinary(buffer) {
   return new Promise((resolve, reject) => {
@@ -44,7 +45,7 @@ export async function replaceImage(oldUrl, buffer) {
   const deleteResult = await deleteImageFromCloudinary(publicId);
 
   if (deleteResult.result !== "ok" && deleteResult.result !== "not found") {
-    throw new Error("Failed to delete image from Cloudinary");
+    throw new InternalServerError("Failed to delete image from Cloudinary");
   }
 
   return await uploadImageToCloudinary(buffer);

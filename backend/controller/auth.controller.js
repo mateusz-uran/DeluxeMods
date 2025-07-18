@@ -1,15 +1,14 @@
-import User from "../models/User.js";
-import { createAccessToken, createRefreshToken } from "../utils/auth.utils.js";
+import { login } from "../service/user.service.js";
 
 export const loginUser = async (req, res) => {
   const { email, password, rememberMe } = req.body;
+  const {
+    accessToken,
+    refreshToken,
+    email: userEmail,
+  } = await login(email, password, rememberMe);
 
   try {
-    const user = await User.login(email, password);
-
-    const accessToken = createAccessToken(user);
-    const refreshToken = createRefreshToken(user, rememberMe);
-
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
@@ -26,11 +25,11 @@ export const loginUser = async (req, res) => {
 
     res.status(200).json({
       message: "User logged in successfully!",
-      email: user.email,
+      email: userEmail,
       accessToken,
     });
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    next(error);
   }
 };
 
@@ -38,9 +37,14 @@ export const logoutUser = async (req, res) => {
   res.clearCookie("refreshToken", {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: true,
-    maxAge: 0,
+    sameSite: "strict",
   });
 
-  return res.status(200).json({ message: "User logout!" });
+  res.clearCookie("accessToken", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+  });
+
+  return res.status(200).json({ message: "User logged out!" });
 };

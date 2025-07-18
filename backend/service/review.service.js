@@ -1,4 +1,5 @@
 import Review from "../models/Review.js";
+import { NotFoundError } from "../utils/errors/HttpError.js";
 import { checkIfModExists, updateModReviewId } from "./mod.service.js";
 import { validateUserById } from "./user.service.js";
 
@@ -9,7 +10,7 @@ export async function createReview(
   validateUser = validateUserById
 ) {
   if (!(await checkMod(modId))) {
-    throw new Error("Mod not found!");
+    throw new NotFoundError("Mod not found!");
   }
 
   const user = await validateUser(author);

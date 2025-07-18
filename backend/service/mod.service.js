@@ -3,6 +3,7 @@ import {
   replaceImage,
   uploadImageToCloudinary,
 } from "../utils/cloudinary.util.js";
+import { BadRequestError, NotFoundError } from "../utils/errors/HttpError.js";
 import { createSlugFromTwoTexts } from "../utils/slug.utils.js";
 import { checkIfCategoryExists } from "./modCategories.service.js";
 
@@ -43,7 +44,7 @@ export async function createModWithPreviewPhoto(
   const validateCategories = await checkCategories(categorySlugs);
 
   if (!validateCategories.length) {
-    throw new Error("No valid subCategory slugs found for provided slugs.");
+    throw new BadRequestError("No valid subCategory slugs found for provided slugs.");
   }
 
   const modSlug = createSlug(name, specification.modAuthor);
@@ -63,7 +64,7 @@ export async function changeModStatus({ modSlug, isPublished, isDeluxe }) {
   if (typeof isDeluxe === "boolean") update.isDeluxe = isDeluxe;
 
   if (Object.keys(update).length === 0) {
-    throw new Error("At least one of isPublished or isDeluxe must be provided");
+    throw new BadRequestError("At least one of isPublished or isDeluxe must be provided.");
   }
 
   return await Mod.findOneAndUpdate({ slug: modSlug }, update, { new: true });
@@ -83,7 +84,7 @@ export async function replacePreviewPhoto(
 
 export async function findModByPreviewUrl(url) {
   const mod = await Mod.findOne({ previewPhoto: url });
-  if (!mod) throw new Error("Mod not found");
+  if (!mod) throw new NotFoundError("Mod not found");
   return mod;
 }
 

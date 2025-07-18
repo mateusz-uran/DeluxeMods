@@ -244,7 +244,7 @@ describe("Mod service unit tests", () => {
       expect(result).to.equal(updatedMod);
     });
 
-    it("should throw an error when no fields are provided", async () => {
+    it("should throw an error when no fields are provided.", async () => {
       try {
         await changeModStatus({ modSlug: "empty-change" });
         throw new Error("Test failed — should have thrown");
