@@ -1,5 +1,7 @@
 import { login } from "../service/user.service.js";
 
+// TODO: add validation schemas
+
 export const loginUser = async (req, res, next) => {
   try {
     const { email, password, rememberMe } = req.body;

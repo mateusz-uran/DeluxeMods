@@ -5,7 +5,6 @@ import {
   createMod,
   fetchAllCategories,
   getModsByParameter,
-  updatePreviewPhoto,
 } from "../controller/mod.controller.js";
 import { validateRequest } from "../middleware/validate.js";
 import {
@@ -30,15 +29,5 @@ router.post(
   cookieAuthorize(["ADD_REVIEW"]),
   createMod
 );
-
-//////////////
-router.patch(
-  "/update-preview/:modId",
-  multerUpload,
-  cookieAuthorize(["UPDATE_MOD"]),
-  updatePreviewPhoto
-);
-
-router.get("/categories", fetchAllCategories);
 
 export default router;
