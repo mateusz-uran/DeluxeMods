@@ -37,7 +37,7 @@ export async function createModWithPreviewPhoto(
   { name, previewPhoto, specification, categorySlugs },
   uploadImage = uploadImageToCloudinary,
   checkCategories = checkIfCategoryExists,
-  createSlug = createSlugFromTwoTexts
+  createSlugForMod = createSlugFromTwoTexts
 ) {
   const previewPhotoUrl = await uploadImage(previewPhoto.buffer);
 
@@ -46,8 +46,8 @@ export async function createModWithPreviewPhoto(
   if (!validateCategories.length) {
     throw new BadRequestError("No valid subCategory slugs found for provided slugs.");
   }
-
-  const modSlug = createSlug(name, specification.modAuthor);
+  
+  const modSlug = createSlugForMod(name, specification.modAuthor);
 
   return Mod.create({
     name,
@@ -82,12 +82,6 @@ export async function replacePreviewPhoto(
   return mod;
 }
 
-export async function findModByPreviewUrl(url) {
-  const mod = await Mod.findOne({ previewPhoto: url });
-  if (!mod) throw new NotFoundError("Mod not found");
-  return mod;
-}
-
 export async function checkIfModExists(id) {
   return !!(await Mod.exists({ _id: id }));
 }
@@ -98,4 +92,10 @@ export async function updateModReviewId(modId, reviewId) {
     { reviewId },
     { new: true }
   );
+}
+
+async function findModByPreviewUrl(url) {
+  const mod = await Mod.findOne({ previewPhoto: url });
+  if (!mod) throw new NotFoundError("Mod not found");
+  return mod;
 }
