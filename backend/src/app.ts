@@ -1,27 +1,19 @@
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import authRoutes from "./routes/auth.router.js";
-import userRoutes from "./routes/user.router.js";
-import reviewRoutes from "./routes/review.router.js";
-import modRoutes from "./routes/mod.router.js";
+import config from "./config/env";
 
 const app = express();
 
 app.use(
   cors({
-    origin: process.env.DEV_FRONTEND,
+    origin: config.frontendUri,
     credentials: true,
   })
 );
 
 app.use(express.json());
 app.use(cookieParser());
-
-app.use("/", authRoutes);
-app.use("/api", userRoutes);
-app.use("/api/review", reviewRoutes);
-app.use("/api/mod", modRoutes);
 
 app.use((err, req, res, next) => {
   console.error(`[${err.name}]`, err);
