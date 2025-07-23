@@ -1,6 +1,8 @@
 import {
   GetPerSixModsParams,
   GetPerSixModsResult,
+  CreateModInput,
+  CreateModOutput,
 } from '../interfaces/mod.interface';
 import Mod from '../models/Mod';
 import {
@@ -25,9 +27,7 @@ export async function getPerSixMods({
 
   const [mods, totalCount] = await Promise.all([
     Mod.find(query)
-      .select(
-        '-_id name previewPhoto specification.modAuthor isDeluxe slug',
-      )
+      .select('-_id name previewPhoto specification.modAuthor isDeluxe slug')
       .sort({ createdAt: -1 })
       .limit(limit * 1)
       .skip((page - 1) * limit)
@@ -39,11 +39,11 @@ export async function getPerSixMods({
 }
 
 export async function createModWithPreviewPhoto(
-  { name, previewPhoto, specification, categorySlugs },
+  { name, previewPhoto, specification, categorySlugs }: CreateModInput,
   uploadImage = uploadImageToCloudinary,
   checkCategories = checkIfCategoryExists,
   createSlugForMod = createSlugFromTwoTexts,
-) {
+): Promise<CreateModOutput> {
   const previewPhotoUrl = await uploadImage(previewPhoto.buffer);
 
   const validateCategories = await checkCategories(categorySlugs);

@@ -1,4 +1,4 @@
-import { Schema, Types, model } from 'mongoose';
+import { Schema, model } from 'mongoose';
 import { IMod } from '../interfaces/mod.interface';
 
 const modSchema = new Schema<IMod>(

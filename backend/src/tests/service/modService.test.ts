@@ -11,6 +11,7 @@ import {
   updateModReviewId,
 } from '../../service/mod.service';
 import { createFakeMods, IFakeMod } from '../helpers/mods.helper';
+import { CreateModInput } from '../../interfaces/mod.interface';
 
 describe('Mod service unit tests', () => {
   const sandbox = sinon.createSandbox();
@@ -77,9 +78,11 @@ describe('Mod service unit tests', () => {
     const fakeSlug = 'john-doe-john-deere-6r';
     const fakeValidCategories = ['small'];
 
-    const modInput = {
+    const modInput: CreateModInput = {
       name: 'John Deere 6R',
-      previewPhoto: { buffer: Buffer.from('img') },
+      previewPhoto: {
+        buffer: Buffer.from('img'),
+      } as Express.Multer.File,
       specification: {
         link: 'https://some-random-url.com',
         modAuthor: 'John Doe',
@@ -87,7 +90,7 @@ describe('Mod service unit tests', () => {
       categorySlugs: ['small'],
     };
 
-    let sandbox;
+    let sandbox: sinon.SinonSandbox;
 
     beforeEach(() => {
       sandbox = sinon.createSandbox();
@@ -139,7 +142,7 @@ describe('Mod service unit tests', () => {
           fakeCreateSlug,
         );
         throw new Error('Test failed — should have thrown');
-      } catch (err) {
+      } catch (err: any) {
         expect(err.message).to.equal(
           'No valid subCategory slugs found for provided slugs.',
         );
@@ -159,7 +162,7 @@ describe('Mod service unit tests', () => {
           fakeCreateSlug,
         );
         throw new Error('Test failed — should have thrown');
-      } catch (err) {
+      } catch (err: any) {
         expect(err.message).to.equal('Upload failed');
         expect(fakeCheckCategories.notCalled).to.be.true;
         expect(fakeCreateSlug.notCalled).to.be.true;
