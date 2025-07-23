@@ -1,0 +1,58 @@
+[
+  { "name": "Tractors", "subCategory": ["Small", "Medium", "Big"] },
+  { "name": "Harvesters", "subCategory": ["Combine", "Forage"] },
+  { "name": "Vehicles", "subCategory": ["Trucks", "Car"] },
+  {
+    "name": "Trailers",
+    "subCategory": [
+      "Tipper",
+      "Bale trailer",
+      "Animal transport",
+      "Mixer wagon",
+      "Slurry tank",
+      "Manure spreader",
+      "Spreader",
+      "Forage trailer"
+    ]
+  },
+  {
+    "name": "Implements",
+    "subCategory": [
+      "Mower",
+      "Windrower",
+      "Tedder",
+      "Plow/Subsoiler",
+      "Cultivator",
+      "Seeder/Planter",
+      "Sprayer"
+    ]
+  },
+  {
+    "name": "Bailing",
+    "subCategory": ["Baler", "Wrapper"]
+  },
+  {
+    "name": "Loaders",
+    "subCategory": ["Telehandler", "Wheel loader"]
+  },
+  {
+    "name": "Maps",
+    "subCategory": ["EU", "US", "Other"]
+  },
+  {
+    "name": "Buildings",
+    "subCategory": ["Shed", "Silo", "House"]
+  },
+  {
+    "name": "Animals",
+    "subCategory": ["Cows", "Pigs", "Sheep/Goats", "Chickens", "Bees"]
+  },
+  {
+    "name": "Productions",
+    "subCategory": ["Factory", "Selling point", "Green house"]
+  },
+  {
+    "name": "Misc",
+    "subCategory": ["Driveable"]
+  }
+]
