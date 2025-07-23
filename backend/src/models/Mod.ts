@@ -1,6 +1,7 @@
-import mongoose from "mongoose";
+import { Schema, Types, model } from 'mongoose';
+import { IMod } from '../interfaces/mod.interface';
 
-const modSchema = new mongoose.Schema(
+const modSchema = new Schema<IMod>(
   {
     name: { type: String, required: true },
     previewPhoto: { type: String, required: true },
@@ -19,16 +20,16 @@ const modSchema = new mongoose.Schema(
     slug: { type: String, required: true },
 
     reviewId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Review",
+      type: Schema.Types.ObjectId,
+      ref: 'Review',
       required: false,
       unique: true,
     },
   },
   {
     timestamps: true,
-  }
+  },
 );
 
-const Mod = mongoose.model("Mod", modSchema);
+const Mod = model<IMod>('Mod', modSchema);
 export default Mod;
