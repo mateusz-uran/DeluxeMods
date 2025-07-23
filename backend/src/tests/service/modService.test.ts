@@ -415,7 +415,7 @@ describe('Mod service unit tests', () => {
   });
 
   describe('updateModReviewId', () => {
-    let findOneAndUpdateStub;
+    let findOneAndUpdateStub: sinon.SinonStub;
 
     const reviewId = 'review_492';
     const mod = {
@@ -425,9 +425,7 @@ describe('Mod service unit tests', () => {
     };
 
     beforeEach(() => {
-      findOneAndUpdateStub = sandbox
-        .stub(Mod, 'findOneAndUpdate')
-        .resolves(mod);
+      findOneAndUpdateStub = sandbox.stub(Mod, 'findOneAndUpdate');
     });
 
     afterEach(() => {
@@ -435,7 +433,7 @@ describe('Mod service unit tests', () => {
     });
 
     it('should update mod object with given review id', async () => {
-      const result = await updateModReviewId(mod._id, reviewId);
+      await updateModReviewId(mod._id, reviewId);
 
       expect(
         findOneAndUpdateStub.calledOnceWithExactly(
@@ -444,16 +442,26 @@ describe('Mod service unit tests', () => {
           { new: true },
         ),
       ).to.be.true;
-
-      expect(result).to.deep.equal(mod);
     });
 
     it('should return null if mod with given ID does not exist', async () => {
       findOneAndUpdateStub.resolves(null);
 
-      const result = await updateModReviewId('nonexistentId', 'someReviewId');
+      let error: unknown;
+      try {
+        await updateModReviewId('nonexistentId', 'someReviewId');
+      } catch (err) {
+        error = err;
+      }
 
-      expect(result).to.be.null;
+      expect(error).to.be.undefined;
+      expect(
+        findOneAndUpdateStub.calledOnceWithExactly(
+          { _id: 'nonexistentId' },
+          { reviewId: 'someReviewId' },
+          { new: true },
+        ),
+      ).to.be.true;
     });
 
     it('should throw error if reviewId is already assigned to another mod', async () => {
@@ -463,7 +471,7 @@ describe('Mod service unit tests', () => {
       try {
         await updateModReviewId('someId', 'existingReviewId');
         throw new Error('Test failed – expected error was not thrown');
-      } catch (err) {
+      } catch (err: any) {
         expect(err.message).to.include('duplicate key error');
       }
     });
