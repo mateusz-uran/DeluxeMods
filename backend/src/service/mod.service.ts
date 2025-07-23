@@ -93,23 +93,26 @@ export async function changeModStatus({
     .select(fieldsToSelect.join(' '))
     .lean();
 
-    if (!updated) {
-      throw new NotFoundError("Mod not found.")
-    }
+  if (!updated) {
+    throw new NotFoundError('Mod not found.');
+  }
 
-    return updated as ChangeModStatusOutput
+  return updated as ChangeModStatusOutput;
 }
 
 export async function replacePreviewPhoto(
-  { previewPhotoUrl, newPreviewPhoto },
-  findMod = findModByPreviewUrl,
+  {
+    modId,
+    newPreviewPhoto,
+  }: { modId: string; newPreviewPhoto: Express.Multer.File },
+  findMod = findModById,
   reuoploadImage = replaceImage,
 ) {
-  const mod = await findMod(previewPhotoUrl);
+  const mod = await findMod(modId);
   const newUrl = await reuoploadImage(mod.previewPhoto, newPreviewPhoto.buffer);
   mod.previewPhoto = newUrl;
   await mod.save();
-  return mod;
+  return { _id: mod._id, previewPhotoUrl: mod.previewPhoto };
 }
 
 export async function checkIfModExists(id) {
@@ -122,6 +125,12 @@ export async function updateModReviewId(modId, reviewId) {
     { reviewId },
     { new: true },
   );
+}
+
+async function findModById(_id: string) {
+  const mod = await Mod.findById(_id);
+  if (!mod) throw new NotFoundError('Mod not found');
+  return mod;
 }
 
 async function findModByPreviewUrl(url) {

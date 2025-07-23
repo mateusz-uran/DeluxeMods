@@ -290,11 +290,13 @@ describe('Mod service unit tests', () => {
   describe('replacePreviewPhoto', () => {
     const oldUrl = 'http://old.com/image.png';
     const newUrl = 'http://new.com/image.png';
-    const newPreviewPhoto = { buffer: Buffer.from('mock-buffer') };
+    const newPreviewPhoto = {
+      buffer: Buffer.from('mock-buffer'),
+    } as Express.Multer.File;
 
-    let dummyMod;
-    let fakeFindMod;
-    let fakeReplaceImage;
+    let dummyMod: any;
+    let fakeFindMod: sinon.SinonStub;
+    let fakeReplaceImage: sinon.SinonStub;
 
     beforeEach(() => {
       dummyMod = {
@@ -315,21 +317,23 @@ describe('Mod service unit tests', () => {
     it('should update preview photo and save mod', async () => {
       const result = await replacePreviewPhoto(
         {
-          previewPhotoUrl: oldUrl,
+          modId: dummyMod._id,
           newPreviewPhoto,
         },
         fakeFindMod,
         fakeReplaceImage,
       );
 
-      expect(fakeFindMod.calledOnceWithExactly(oldUrl)).to.be.true;
+      expect(fakeFindMod.calledOnceWithExactly(dummyMod._id)).to.be.true;
       expect(
         fakeReplaceImage.calledOnceWithExactly(oldUrl, newPreviewPhoto.buffer),
       ).to.be.true;
       expect(dummyMod.save.calledOnce).to.be.true;
 
-      expect(result.previewPhoto).to.equal(newUrl);
-      expect(result).to.deep.equal(dummyMod);
+      expect(result).to.deep.equal({
+        _id: dummyMod._id,
+        previewPhotoUrl: newUrl,
+      });
     });
 
     it('should throw an error when mod is not found', async () => {
@@ -338,14 +342,14 @@ describe('Mod service unit tests', () => {
       try {
         await replacePreviewPhoto(
           {
-            previewPhotoUrl: oldUrl,
+            modId: dummyMod._id,
             newPreviewPhoto,
           },
           fakeFindMod,
           fakeReplaceImage,
         );
         throw new Error('Test should not reach this point');
-      } catch (err) {
+      } catch (err: any) {
         expect(err.message).to.equal('Mod not found');
       }
     });
@@ -356,14 +360,14 @@ describe('Mod service unit tests', () => {
       try {
         await replacePreviewPhoto(
           {
-            previewPhotoUrl: oldUrl,
+            modId: dummyMod._id,
             newPreviewPhoto,
           },
           fakeFindMod,
           fakeReplaceImage,
         );
         throw new Error('Should have thrown');
-      } catch (err) {
+      } catch (err: any) {
         expect(err.message).to.equal('Cloudinary error');
       }
     });
@@ -374,14 +378,14 @@ describe('Mod service unit tests', () => {
       try {
         await replacePreviewPhoto(
           {
-            previewPhotoUrl: oldUrl,
+            modId: dummyMod._id,
             newPreviewPhoto,
           },
           fakeFindMod,
           fakeReplaceImage,
         );
         throw new Error('Should have thrown');
-      } catch (err) {
+      } catch (err: any) {
         expect(err.message).to.equal('Mongo error');
       }
     });
