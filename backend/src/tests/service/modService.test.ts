@@ -11,7 +11,10 @@ import {
   updateModReviewId,
 } from '../../service/mod.service';
 import { createFakeMods, IFakeMod } from '../helpers/mods.helper';
-import { CreateModInput } from '../../interfaces/mod.interface';
+import {
+  ChangeModStatusOutput,
+  CreateModInput,
+} from '../../interfaces/mod.interface';
 
 describe('Mod service unit tests', () => {
   const sandbox = sinon.createSandbox();
@@ -171,7 +174,7 @@ describe('Mod service unit tests', () => {
   });
 
   describe('changeModStatus', () => {
-    let sandbox;
+    let sandbox: sinon.SinonSandbox;
 
     beforeEach(() => {
       sandbox = sinon.createSandbox();
@@ -183,14 +186,21 @@ describe('Mod service unit tests', () => {
 
     it('should update only isPublished', async () => {
       const slug = 'some-mod';
-      const updatedMod = { slug, isPublished: true, isDeluxe: false };
+      const updatedMod: ChangeModStatusOutput = {
+        slug,
+        name: 'Test mod',
+        isPublished: true,
+        isDeluxe: false,
+      };
 
+      const leanStub = sandbox.stub().resolves(updatedMod);
+      const selectStub = sandbox.stub().returns({ lean: leanStub });
       const findOneAndUpdateStub = sandbox
         .stub(Mod, 'findOneAndUpdate')
-        .resolves(updatedMod);
+        .returns({ select: selectStub } as any);
 
       const result = await changeModStatus({
-        modSlug: slug,
+        slug,
         isPublished: true,
       });
 
@@ -202,18 +212,25 @@ describe('Mod service unit tests', () => {
         ),
       ).to.be.true;
 
-      expect(result).to.equal(updatedMod);
+      expect(result).to.deep.equal(updatedMod);
     });
 
     it('should update only isDeluxe', async () => {
       const slug = 'another-mod';
-      const updatedMod = { slug, isPublished: false, isDeluxe: true };
+      const updatedMod: ChangeModStatusOutput = {
+        slug,
+        name: 'Test mod',
+        isPublished: false,
+        isDeluxe: true,
+      };
 
+      const leanStub = sandbox.stub().resolves(updatedMod);
+      const selectStub = sandbox.stub().returns({ lean: leanStub });
       const findOneAndUpdateStub = sandbox
         .stub(Mod, 'findOneAndUpdate')
-        .resolves(updatedMod);
+        .returns({ select: selectStub } as any);
 
-      const result = await changeModStatus({ modSlug: slug, isDeluxe: true });
+      const result = await changeModStatus({ slug, isDeluxe: true });
 
       expect(
         findOneAndUpdateStub.calledOnceWithExactly(
@@ -228,14 +245,21 @@ describe('Mod service unit tests', () => {
 
     it('should update both isPublished and isDeluxe', async () => {
       const slug = 'multi-change-mod';
-      const updatedMod = { slug, isPublished: false, isDeluxe: false };
+      const updatedMod: ChangeModStatusOutput = {
+        slug,
+        name: 'Mod C',
+        isPublished: false,
+        isDeluxe: false,
+      };
 
+      const leanStub = sandbox.stub().resolves(updatedMod);
+      const selectStub = sandbox.stub().returns({ lean: leanStub });
       const findOneAndUpdateStub = sandbox
         .stub(Mod, 'findOneAndUpdate')
-        .resolves(updatedMod);
+        .returns({ select: selectStub } as any);
 
       const result = await changeModStatus({
-        modSlug: slug,
+        slug,
         isPublished: false,
         isDeluxe: false,
       });
@@ -253,11 +277,11 @@ describe('Mod service unit tests', () => {
 
     it('should throw an error when no fields are provided.', async () => {
       try {
-        await changeModStatus({ modSlug: 'empty-change' });
+        await changeModStatus({ slug: 'empty-change' });
         throw new Error('Test failed — should have thrown');
-      } catch (err) {
+      } catch (err: any) {
         expect(err.message).to.equal(
-          'At least one of isPublished or isDeluxe must be provided',
+          'At least one of isPublished or isDeluxe must be provided.',
         );
       }
     });

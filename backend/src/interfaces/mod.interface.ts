@@ -16,29 +16,45 @@ export interface IMod {
   reviewId?: Types.ObjectId;
 }
 
-export interface CreateModInput {
-  name: string;
-  previewPhoto: Express.Multer.File;
-  specification: ISpecification;
-  categorySlugs: string[]
-}
-
-export interface CreateModOutput {
-    name: string;
-    previewPhoto: string;
-    specification: ISpecification;
-    categories: string[];
-    slug: string;
-}
-
-export interface GetPerSixModsParams {
+export interface GetPerSixModsInput {
   subCategory?: string | null;
   page?: number;
 }
 
-export interface GetPerSixModsResult {
+export interface GetPerSixModsOutput {
   mods: ModPreview[];
   totalCount: number;
+}
+
+export interface CreateModInput {
+  name: string;
+  previewPhoto: Express.Multer.File;
+  specification: ISpecification;
+  categorySlugs: string[];
+}
+
+export interface CreateModOutput {
+  name: string;
+  previewPhoto: string;
+  specification: ISpecification;
+  categories: string[];
+  slug: string;
+}
+
+export interface ChangModStatusBase {
+    slug: string;
+    name: string;
+}
+
+export interface ChangeModStatusInput {
+  slug: string;
+  isPublished?: boolean;
+  isDeluxe?: boolean;
+}
+
+export interface ChangeModStatusOutput extends ChangModStatusBase {
+    isPublished?: boolean;
+    isDeluxe?: boolean;
 }
 
 export interface ModPreview {

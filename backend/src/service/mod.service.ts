@@ -1,8 +1,10 @@
 import {
-  GetPerSixModsParams,
-  GetPerSixModsResult,
+  GetPerSixModsInput,
+  GetPerSixModsOutput,
   CreateModInput,
   CreateModOutput,
+  ChangeModStatusInput,
+  ChangeModStatusOutput,
 } from '../interfaces/mod.interface';
 import Mod from '../models/Mod';
 import {
@@ -16,7 +18,7 @@ import { checkIfCategoryExists } from './modCategories.service.js';
 export async function getPerSixMods({
   subCategory = null,
   page = 1,
-}: GetPerSixModsParams): Promise<GetPerSixModsResult> {
+}: GetPerSixModsInput): Promise<GetPerSixModsOutput> {
   const limit = 6;
 
   const query: Record<string, any> = { isPublished: true };
@@ -65,8 +67,13 @@ export async function createModWithPreviewPhoto(
   });
 }
 
-export async function changeModStatus({ modSlug, isPublished, isDeluxe }) {
-  const update = {};
+export async function changeModStatus({
+  slug,
+  isPublished,
+  isDeluxe,
+}: ChangeModStatusInput): Promise<ChangeModStatusOutput> {
+  const update: Partial<{ isPublished: boolean; isDeluxe: boolean }> = {};
+
   if (typeof isPublished === 'boolean') update.isPublished = isPublished;
   if (typeof isDeluxe === 'boolean') update.isDeluxe = isDeluxe;
 
@@ -76,7 +83,21 @@ export async function changeModStatus({ modSlug, isPublished, isDeluxe }) {
     );
   }
 
-  return await Mod.findOneAndUpdate({ slug: modSlug }, update, { new: true });
+  const fieldsToSelect = ['slug', 'name'];
+  if (isPublished !== undefined) fieldsToSelect.push('isPublished');
+  if (isDeluxe !== undefined) fieldsToSelect.push('isDeluxe');
+
+  const updated = await Mod.findOneAndUpdate({ slug }, update, {
+    new: true,
+  })
+    .select(fieldsToSelect.join(' '))
+    .lean();
+
+    if (!updated) {
+      throw new NotFoundError("Mod not found.")
+    }
+
+    return updated as ChangeModStatusOutput
 }
 
 export async function replacePreviewPhoto(
