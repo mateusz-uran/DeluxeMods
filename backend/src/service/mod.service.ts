@@ -115,7 +115,7 @@ export async function replacePreviewPhoto(
   return { _id: mod._id, previewPhotoUrl: mod.previewPhoto };
 }
 
-export async function checkIfModExists(id) {
+export async function checkIfModExists(id: string): Promise<boolean> {
   return !!(await Mod.exists({ _id: id }));
 }
 
@@ -129,12 +129,6 @@ export async function updateModReviewId(modId, reviewId) {
 
 async function findModById(_id: string) {
   const mod = await Mod.findById(_id);
-  if (!mod) throw new NotFoundError('Mod not found');
-  return mod;
-}
-
-async function findModByPreviewUrl(url) {
-  const mod = await Mod.findOne({ previewPhoto: url });
   if (!mod) throw new NotFoundError('Mod not found');
   return mod;
 }
