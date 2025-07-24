@@ -13,7 +13,7 @@ import {
 } from '../utils/cloudinary.util.js';
 import { BadRequestError, NotFoundError } from '../utils/errors/HttpError';
 import { createSlugFromTwoTexts } from '../utils/slug.utils';
-import { checkIfCategoryExists } from './modCategories.service.js';
+import { checkIfCategoryExists } from './modCategories.service';
 
 export async function getPerSixMods({
   subCategory = null,
