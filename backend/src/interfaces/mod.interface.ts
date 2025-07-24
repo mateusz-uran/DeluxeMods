@@ -1,11 +1,11 @@
-import { Types } from 'mongoose';
+import { Document, Types } from 'mongoose';
 
 interface ISpecification {
   link: string;
   modAuthor: string;
 }
 
-export interface IMod {
+export interface IMod extends Document {
   name: string;
   previewPhoto: string;
   specification: ISpecification;

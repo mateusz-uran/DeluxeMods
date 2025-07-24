@@ -1,4 +1,8 @@
-import ModCategories from '../models/ModCategories.js';
+import {
+  GetCategoriesResponse,
+  SubCategory,
+} from '../interfaces/modCategory.interface';
+import ModCategories from '../models/ModCategories';
 
 export async function checkIfCategoryExists(
   subCategorySlugs: string[],
@@ -9,19 +13,19 @@ export async function checkIfCategoryExists(
 
   return categories.flatMap((cat) =>
     cat.subCategory
-      .filter((sub) => subCategorySlugs.includes(sub.slug))
-      .map((sub) => sub.slug),
+      .filter((sub: SubCategory) => subCategorySlugs.includes(sub.slug))
+      .map((sub: SubCategory) => sub.slug),
   );
 }
 
-export async function getAllCategories(): Promise<CategoryResponse> {
-  const categories = await ModCategories.find().select(
-    '-_id name subCategory.name',
-  );
+export async function getAllCategories(): Promise<GetCategoriesResponse> {
+  const categories = await ModCategories.find()
+    .select('-_id name subCategory.name')
+    .lean();
 
   return categories.map((cat) => ({
-    categoryName: cat.name,
-    subCategory: cat.subCategory.map((sub) => ({
+    name: cat.name,
+    subCategory: cat.subCategory.map((sub: SubCategory) => ({
       name: sub.name,
       slug: sub.slug,
     })),
