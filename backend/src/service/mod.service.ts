@@ -11,8 +11,8 @@ import {
   replaceImage,
   uploadImageToCloudinary,
 } from '../utils/cloudinary.util.js';
-import { BadRequestError, NotFoundError } from '../utils/errors/HttpError.js';
-import { createSlugFromTwoTexts } from '../utils/slug.utils.js';
+import { BadRequestError, NotFoundError } from '../utils/errors/HttpError';
+import { createSlugFromTwoTexts } from '../utils/slug.utils';
 import { checkIfCategoryExists } from './modCategories.service.js';
 
 export async function getPerSixMods({
