@@ -1,4 +1,4 @@
-import { BadRequestError } from "../utils/errors/HttpError.js";
+import { BadRequestError } from '../utils/errors/HttpError.js';
 
 export const validateRequest =
   ({ paramsSchema, querySchema, bodySchema }) =>
@@ -9,9 +9,16 @@ export const validateRequest =
       if (bodySchema) req.validatedBody = bodySchema.parse(req.body);
       next();
     } catch (err) {
-      console.log(`[Error: ${err.message}]`)
-      if (err.name === "ZodError") {
-        throw new BadRequestError(JSON.stringify(err.errors));
+      console.log(`[Error: ${err.message}]`);
+      if (err.name === 'ZodError') {
+        const formattedErrors = err.errors.map((e) => ({
+          message: e.message,
+          path: e.path.join('.'),
+        }));
+        throw new BadRequestError({
+          message: 'Validation failed',
+          context: { issues: formattedErrors },
+        });
       }
       next(err);
     }
