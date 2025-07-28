@@ -1,10 +1,14 @@
-export interface IFakeMod {
+import { IReview } from '../../interfaces/review.interface';
+
+export type IFakeMod = {
   name: string;
   previewPhoto: string;
   isPublished: boolean;
   isDeluxe: boolean;
   categories: string[];
-}
+};
+
+export type IFakeReview = Partial<IReview>;
 
 export function createFakeMods(
   size: number,

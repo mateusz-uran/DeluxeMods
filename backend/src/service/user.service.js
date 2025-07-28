@@ -6,7 +6,7 @@ import {
   BadRequestError,
   NotFoundError,
   UnauthorizedError,
-} from "../utils/errors/HttpError.js";
+} from "../utils/errors/CustomError.js";
 import { createAccessToken, createRefreshToken } from "../utils/auth.utils.js";
 
 export async function validateUserById(userId) {

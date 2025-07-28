@@ -1,3 +1,4 @@
+import { Types } from 'mongoose';
 import {
   GetPerSixModsInput,
   GetPerSixModsOutput,
@@ -11,7 +12,7 @@ import {
   replaceImage,
   uploadImageToCloudinary,
 } from '../utils/cloudinary.util.js';
-import { BadRequestError, NotFoundError } from '../utils/errors/HttpError';
+import { BadRequestError, NotFoundError } from '../utils/errors/CustomError';
 import { createSlugFromTwoTexts } from '../utils/slug.utils';
 import { checkIfCategoryExists } from './modCategories.service';
 
@@ -129,7 +130,7 @@ export async function checkIfModExists(id: string): Promise<boolean> {
 
 export async function updateModReviewId(
   modId: string,
-  reviewId: string,
+  reviewId: Types.ObjectId,
 ): Promise<void> {
   await Mod.findOneAndUpdate({ _id: modId }, { reviewId }, { new: true });
 }

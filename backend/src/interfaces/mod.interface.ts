@@ -16,6 +16,7 @@ export interface IMod extends Document {
   reviewId?: Types.ObjectId;
 }
 
+// TODO: replace interface to type
 export interface GetPerSixModsInput {
   subCategory?: string | null;
   page?: number;

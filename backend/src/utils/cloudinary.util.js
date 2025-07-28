@@ -1,5 +1,5 @@
 import cloudinary from "../config/cloudinary.js";
-import { InternalServerError } from "./errors/HttpError.js";
+import { InternalServerError } from "./errors/CustomError.js";
 
 export async function uploadImageToCloudinary(buffer) {
   return new Promise((resolve, reject) => {

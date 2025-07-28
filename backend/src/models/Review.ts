@@ -1,15 +1,16 @@
-import mongoose from "mongoose";
+import { model, Schema } from 'mongoose';
+import { IReview, STATUS_TYPES } from '../interfaces/review.interface';
 
-const reviewSchema = new mongoose.Schema({
-  author: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+const reviewSchema = new Schema<IReview>({
+  author: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   text: { type: String, required: true },
   status: {
     type: String,
-    enum: ["CREATED", "REVIEWED", "DECLINED", "UPDATED"],
-    default: "CREATED",
+    enum: Object.values(STATUS_TYPES),
+    default: STATUS_TYPES.CREATED,
   },
   slug: { type: String, required: true },
 });
 
-const Review = mongoose.model("Review", reviewSchema);
+const Review = model<IReview>('Review', reviewSchema);
 export default Review;
