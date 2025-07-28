@@ -30,5 +30,5 @@ export async function updateReviewStatus(
   reviewId: string,
   status: string,
 ): Promise<void> {
-  await Review.findOneAndUpdate({_id: reviewId}, { status }, { new: true });
+  await Review.findOneAndUpdate({ _id: reviewId }, { status }, { new: true });
 }

@@ -129,8 +129,8 @@ export async function checkIfModExists(id: string): Promise<boolean> {
 }
 
 export async function updateModReviewId(
-  modId: string,
-  reviewId: Types.ObjectId,
+  modId: string | Types.ObjectId,
+  reviewId: string | Types.ObjectId,
 ): Promise<void> {
   await Mod.findOneAndUpdate({ _id: modId }, { reviewId }, { new: true });
 }
