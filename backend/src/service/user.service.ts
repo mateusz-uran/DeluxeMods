@@ -28,6 +28,10 @@ export async function login(
   email: string,
   password: string,
   rememberMe: boolean,
+  {
+    accessTokenCreator = createAccessToken,
+    refreshTokenCreator = createRefreshToken,
+  },
 ): Promise<LoginOutput> {
   if (!password || !email)
     throw new BadRequestError('All fields must be filled.');
@@ -45,8 +49,8 @@ export async function login(
     throw new UnauthorizedError('Invalid email or password.');
   }
 
-  const accessToken = createAccessToken(user);
-  const refreshToken = createRefreshToken(user, rememberMe);
+  const accessToken = accessTokenCreator(user);
+  const refreshToken = refreshTokenCreator(user, rememberMe);
 
   return { accessToken, refreshToken, email: user.email };
 }
@@ -71,7 +75,7 @@ export async function register(
 
   const salt = await bcrypt.genSalt(15);
   const hash = await bcrypt.hash(password, salt);
-  const userRole = await Role.findOne({ name: 'REVIEWER' });
+  const userRole = await Role.findOne({ name: 'REVIEWER' }).exec();
 
   if (!userRole) throw new NotFoundError('Role not found.');
 
