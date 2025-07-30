@@ -46,12 +46,11 @@ describe('Review service unit tests', () => {
       fakeUpdateMod = sandbox.stub();
       fakeValidateUser = sandbox.stub().resolves(fakeUser);
 
-      const result = await createReview(
-        reviewInput,
-        fakeCheckMod,
-        fakeUpdateMod,
-        fakeValidateUser,
-      );
+      const result = await createReview(reviewInput, {
+        checkMod: fakeCheckMod,
+        updateMod: fakeUpdateMod,
+        validateUser: fakeValidateUser,
+      });
 
       expect(fakeCheckMod.calledOnceWithExactly(reviewInput.modId)).to.be.true;
       expect(fakeValidateUser.calledOnceWithExactly(reviewInput.userId)).to.be
@@ -74,12 +73,11 @@ describe('Review service unit tests', () => {
       fakeValidateUser = sandbox.stub().resolves(fakeUser);
 
       try {
-        await createReview(
-          reviewInput,
-          fakeCheckMod,
-          fakeUpdateMod,
-          fakeValidateUser,
-        );
+        await createReview(reviewInput, {
+          checkMod: fakeCheckMod,
+          updateMod: fakeUpdateMod,
+          validateUser: fakeValidateUser,
+        });
         throw new Error('Expected error was not thrown');
       } catch (err: any) {
         expect(err.message).to.equal('Mod not found.');
@@ -102,8 +100,7 @@ describe('Review service unit tests', () => {
     });
 
     it('should update review status with correct arguments', async () => {
-      findOneAndUpdateStub.resolves(); // no need to return value, function returns void
-
+      findOneAndUpdateStub.resolves();
       await updateReviewStatus(reviewId, status);
 
       expect(
