@@ -2,10 +2,8 @@ import { RequestHandler } from 'express';
 import { CreateRevieOutput } from '../interfaces/review.interface';
 import { createReview, updateReviewStatus } from '../service/review.service';
 
-// TODO: add validated schemas
-
 export const addReview: RequestHandler = async (req, res, next) => {
-  const { userId, text, modId } = req.body;
+  const { userId, text, modId } = req.validated?.body;
 
   try {
     const review: CreateRevieOutput = await createReview({
@@ -20,7 +18,7 @@ export const addReview: RequestHandler = async (req, res, next) => {
 };
 
 export const updateReview: RequestHandler = async (req, res, next) => {
-  const { reviewId, status } = req.body;
+  const { reviewId, status } = req.validated?.body;
 
   try {
     await updateReviewStatus(reviewId, status);

@@ -15,3 +15,11 @@ export const registerSchema = z.object({
     password: z.string().min(3, { message: 'Password is required' }),
   }),
 });
+
+export const updateRoleSchema = z.object({
+  body: z.object({
+    email: z.email({ message: 'Invalid email address' }),
+    newRole: z.string().min(3, { message: 'New role is required' }),
+    oldRole: z.string().min(3, { message: 'Old role is required' }),
+  }),
+});
