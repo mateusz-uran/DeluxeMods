@@ -1,3 +1,4 @@
+import { Types } from 'mongoose';
 import {
   GetPerSixModsInput,
   GetPerSixModsOutput,
@@ -11,9 +12,9 @@ import {
   replaceImage,
   uploadImageToCloudinary,
 } from '../utils/cloudinary.util.js';
-import { BadRequestError, NotFoundError } from '../utils/errors/HttpError.js';
-import { createSlugFromTwoTexts } from '../utils/slug.utils.js';
-import { checkIfCategoryExists } from './modCategories.service.js';
+import { BadRequestError, NotFoundError } from '../utils/errors/CustomError';
+import { createSlugFromTwoTexts } from '../utils/slug.utils';
+import { checkIfCategoryExists } from './modCategories.service';
 
 export async function getPerSixMods({
   subCategory = null,
@@ -53,6 +54,8 @@ export async function createModWithPreviewPhoto(
   if (!validateCategories.length) {
     throw new BadRequestError(
       'No valid subCategory slugs found for provided slugs.',
+      undefined,
+      true,
     );
   }
 
@@ -80,6 +83,8 @@ export async function changeModStatus({
   if (Object.keys(update).length === 0) {
     throw new BadRequestError(
       'At least one of isPublished or isDeluxe must be provided.',
+      undefined,
+      true,
     );
   }
 
@@ -94,7 +99,11 @@ export async function changeModStatus({
     .lean();
 
   if (!updated) {
-    throw new NotFoundError('Mod not found.');
+    throw new NotFoundError(
+      'Mod with given slug not found.',
+      { slug: slug },
+      true,
+    );
   }
 
   return updated as ChangeModStatusOutput;
@@ -105,8 +114,7 @@ export async function replacePreviewPhoto(
     modId,
     newPreviewPhoto,
   }: { modId: string; newPreviewPhoto: Express.Multer.File },
-  findMod = findModById,
-  reuoploadImage = replaceImage,
+  { findMod = findModById, reuoploadImage = replaceImage } = {},
 ) {
   const mod = await findMod(modId);
   const newUrl = await reuoploadImage(mod.previewPhoto, newPreviewPhoto.buffer);
@@ -119,16 +127,20 @@ export async function checkIfModExists(id: string): Promise<boolean> {
   return !!(await Mod.exists({ _id: id }));
 }
 
-export async function updateModReviewId(modId: string, reviewId: string): Promise<void> {
-  await Mod.findOneAndUpdate(
-    { _id: modId },
-    { reviewId },
-    { new: true },
-  );
+export async function updateModReviewId(
+  modId: string | Types.ObjectId,
+  reviewId: string | Types.ObjectId,
+): Promise<void> {
+  await Mod.findOneAndUpdate({ _id: modId }, { reviewId }, { new: true });
 }
 
 async function findModById(_id: string) {
   const mod = await Mod.findById(_id);
-  if (!mod) throw new NotFoundError('Mod not found');
+  if (!mod)
+    throw new NotFoundError(
+      'Mod with given id not found.',
+      { modId: _id },
+      true,
+    );
   return mod;
 }
