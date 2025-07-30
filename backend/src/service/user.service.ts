@@ -31,7 +31,7 @@ export async function login(
   {
     accessTokenCreator = createAccessToken,
     refreshTokenCreator = createRefreshToken,
-  },
+  } = {},
 ): Promise<LoginOutput> {
   if (!password || !email)
     throw new BadRequestError('All fields must be filled.');

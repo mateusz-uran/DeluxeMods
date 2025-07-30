@@ -114,8 +114,7 @@ export async function replacePreviewPhoto(
     modId,
     newPreviewPhoto,
   }: { modId: string; newPreviewPhoto: Express.Multer.File },
-  findMod = findModById,
-  reuoploadImage = replaceImage,
+  { findMod = findModById, reuoploadImage = replaceImage } = {},
 ) {
   const mod = await findMod(modId);
   const newUrl = await reuoploadImage(mod.previewPhoto, newPreviewPhoto.buffer);

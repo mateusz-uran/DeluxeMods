@@ -9,9 +9,11 @@ import { validateUserById } from './user.service.js';
 
 export async function createReview(
   { userId, text, modId }: CreateReviewInput,
-  checkMod = checkIfModExists,
-  updateMod = updateModReviewId,
-  validateUser = validateUserById,
+  {
+    checkMod = checkIfModExists,
+    updateMod = updateModReviewId,
+    validateUser = validateUserById,
+  } = {},
 ): Promise<CreateRevieOutput> {
   if (!(await checkMod(modId))) {
     throw new NotFoundError(`Mod not found.`, { modId }, true);
