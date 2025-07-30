@@ -1,7 +1,7 @@
-import mongoose, { Schema } from 'mongoose';
+import { model, Schema } from 'mongoose';
 import { ICategory } from '../interfaces/modCategory.interface';
 
-const categoriesSchema = new Schema({
+const categoriesSchema = new Schema<ICategory>({
   name: { type: String, required: true, unique: true },
   subCategory: [
     {
@@ -11,8 +11,5 @@ const categoriesSchema = new Schema({
   ],
 });
 
-const ModCategories = mongoose.model<ICategory>(
-  'ModCategories',
-  categoriesSchema,
-);
+const ModCategories = model<ICategory>('ModCategories', categoriesSchema);
 export default ModCategories;

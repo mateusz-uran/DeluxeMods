@@ -1,18 +1,17 @@
 import { Document } from 'mongoose';
 
-export type SubCategory = {
-  name: string;
-  slug: string;
-};
-
-export type Category = {
-  name: string;
-  subCategory: SubCategory[];
-};
-
-export type GetCategoriesResponse = Category[];
-
 export interface ICategory extends Document {
   name: string;
-  subCategory: SubCategory[];
+  subCategory: Array<{
+    name: string;
+    slug: string;
+  }>;
 }
+
+export type GetCategoriesResponse = Array<{
+  name: string;
+  subCategory: Array<{
+    name: string;
+    slug: string;
+  }>;
+}>;

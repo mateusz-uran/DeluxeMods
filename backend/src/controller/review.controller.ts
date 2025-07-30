@@ -2,6 +2,8 @@ import { RequestHandler } from 'express';
 import { CreateRevieOutput } from '../interfaces/review.interface';
 import { createReview, updateReviewStatus } from '../service/review.service';
 
+// TODO: add validated schemas
+
 export const addReview: RequestHandler = async (req, res, next) => {
   const { userId, text, modId } = req.body;
 

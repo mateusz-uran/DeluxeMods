@@ -16,49 +16,48 @@ export interface IMod extends Document {
   reviewId?: Types.ObjectId;
 }
 
-// TODO: replace interface to type
-export interface GetPerSixModsInput {
+export type GetPerSixModsInput = {
   subCategory?: string | null;
   page?: number;
-}
+};
 
-export interface GetPerSixModsOutput {
+export type GetPerSixModsOutput = {
   mods: ModPreview[];
   totalCount: number;
-}
+};
 
-export interface CreateModInput {
+export type CreateModInput = {
   name: string;
   previewPhoto: Express.Multer.File;
   specification: ISpecification;
   categorySlugs: string[];
-}
+};
 
-export interface CreateModOutput {
+export type CreateModOutput = {
   name: string;
   previewPhoto: string;
   specification: ISpecification;
   categories: string[];
   slug: string;
-}
+};
 
-export interface ChangModStatusBase {
-    slug: string;
-    name: string;
-}
+export type ChangModStatusBase = {
+  slug: string;
+  name: string;
+};
 
-export interface ChangeModStatusInput {
+export type ChangeModStatusInput = {
   slug: string;
   isPublished?: boolean;
   isDeluxe?: boolean;
-}
+};
 
-export interface ChangeModStatusOutput extends ChangModStatusBase {
-    isPublished?: boolean;
-    isDeluxe?: boolean;
-}
+export type ChangeModStatusOutput = ChangModStatusBase & {
+  isPublished?: boolean;
+  isDeluxe?: boolean;
+};
 
-export interface ModPreview {
+export type ModPreview = {
   name: string;
   previewPhoto: string;
   specification: {

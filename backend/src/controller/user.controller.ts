@@ -2,7 +2,7 @@ import { RequestHandler } from 'express';
 import { register, updateRole } from '../service/user.service';
 import { UserOutput } from '../interfaces/user.interface';
 
-// TODO: add validation schemas
+// TODO: add validated schemas
 
 export const registerUser: RequestHandler = async (req, res, next) => {
   const { name, email, password } = req.body;
