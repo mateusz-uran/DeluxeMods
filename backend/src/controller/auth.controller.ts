@@ -2,11 +2,9 @@ import { RequestHandler } from 'express';
 import { login } from '../service/user.service';
 import { LoginOutput } from '../interfaces/user.interface';
 
-// TODO: add validated schemas
-
 export const loginUser: RequestHandler = async (req, res, next) => {
   try {
-    const { email, password, rememberMe } = req.body;
+    const { email, password, rememberMe } = req.validated?.body;
 
     const result: LoginOutput = await login(email, password, rememberMe);
 
