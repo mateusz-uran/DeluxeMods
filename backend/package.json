@@ -6,6 +6,7 @@
     "dev": "nodemon --watch src --exec tsx src/server.ts",
     "build": "tsc",
     "test": "mocha -r tsx --timeout 10000 \"src/tests/**/*.test.ts\"",
+    "test:it": "DOTENV_CONFIG_PATH=.env.it NODE_ENV=test mocha -r tsx --timeout 20000 \"src/tests/integration/**/*.test.ts\"",
     "lint": "eslint 'src/**/*.ts'"
   },
   "type": "module",
@@ -45,9 +46,11 @@
     "chai": "^5.2.0",
     "eslint": "^9.31.0",
     "mocha": "^11.1.0",
+    "mongodb-memory-server": "^10.1.4",
     "nodemon": "^3.1.9",
     "prettier": "^3.6.2",
     "sinon": "^20.0.0",
+    "supertest": "^7.1.4",
     "tsx": "^4.20.3",
     "typescript": "^5.8.3"
   }
