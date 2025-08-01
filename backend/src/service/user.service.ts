@@ -103,6 +103,7 @@ export async function register(
   };
 }
 
+// add or removes role, can do both at the same time
 export async function updateRole(
   email: string,
   newRole: string,
