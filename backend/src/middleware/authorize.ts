@@ -44,7 +44,7 @@ export const cookieAuthorize =
     const refreshToken = req.cookies.refreshToken;
 
     if (!token) {
-      throw new UnauthorizedError();
+      return next(new UnauthorizedError());
     }
 
     try {
@@ -64,7 +64,7 @@ export const cookieAuthorize =
       );
 
       if (!hasPermission) {
-        throw new ForbiddenError();
+        return next(new ForbiddenError());
       }
 
       req.user = decodedAccessToken;
@@ -75,14 +75,13 @@ export const cookieAuthorize =
           const decodedRefreshToken = jwt.verify(
             refreshToken,
             config.refreshSecret,
-          ) as TokenPayload
-          ;
+          ) as TokenPayload;
           const user = await User.findById(decodedRefreshToken._id).populate(
             'roles',
           );
 
           if (!user) {
-            throw new UnauthorizedError('User not found.');
+            return next(new UnauthorizedError('User not found.'));
           }
 
           const payload: TokenPayload = {
@@ -106,11 +105,11 @@ export const cookieAuthorize =
           next();
         } catch (error) {
           res.clearCookie('refreshToken');
-          throw new ForbiddenError('Invalid refresh token');
+          return next(new ForbiddenError('Invalid refresh token'));
         }
       } else {
         console.error(`Token error: ${error.message}`);
-        throw new UnauthorizedError('Invalid token');
+        return next(new UnauthorizedError('Invalid token'));
       }
     }
   };

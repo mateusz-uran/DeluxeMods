@@ -60,24 +60,32 @@ export async function register(
   email: string,
   password: string,
 ): Promise<UserOutput> {
-  if (!name || !password || !email)
+  if (!name || !password || !email) {
+    console.log('Logging from service');
     throw new BadRequestError('All fields must be filled.');
+  }
 
-  if (!validator.isEmail(email))
+  if (!validator.isEmail(email)) {
     throw new BadRequestError('Given email is not valid.');
+  }
 
-  if (!validator.isStrongPassword(password))
+  if (!validator.isStrongPassword(password)) {
     throw new BadRequestError('Given password is not strong enough.');
+  }
 
   const userExists = await User.findOne({ email }).exec();
 
-  if (userExists) throw new BadRequestError('User alredy exists.');
+  if (userExists) {
+    throw new BadRequestError('User alredy exists.');
+  }
 
   const salt = await bcrypt.genSalt(15);
   const hash = await bcrypt.hash(password, salt);
   const userRole = await Role.findOne({ name: 'REVIEWER' }).exec();
 
-  if (!userRole) throw new NotFoundError('Role not found.');
+  if (!userRole) {
+    throw new NotFoundError('Role not found.');
+  }
 
   const createdUser = await User.create({
     name,

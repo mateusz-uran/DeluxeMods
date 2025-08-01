@@ -10,7 +10,7 @@ export interface IUser extends Document<Types.ObjectId> {
 export interface IRole extends Document {
   _id: Types.ObjectId;
   name: string;
-  permissions: string;
+  permissions: string[];
 }
 
 export type LoginOutput = {

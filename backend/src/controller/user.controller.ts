@@ -4,7 +4,6 @@ import { UserOutput } from '../interfaces/user.interface';
 
 export const registerUser: RequestHandler = async (req, res, next) => {
   const { name, email, password } = req.validated?.body;
-
   try {
     const user: UserOutput = await register(name, email, password);
     return res.status(201).json(user);
