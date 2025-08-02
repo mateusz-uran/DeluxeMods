@@ -1,5 +1,6 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import { faker } from '@faker-js/faker';
 import config from '../../config/env';
 import Role from '../../models/Role';
 import { IUser } from '../../interfaces/user.interface';
@@ -30,8 +31,8 @@ export const createTestUserWithRole = async (
   const results: CreateUserOutput[] = [];
 
   for (const {
-    name = 'TestUser',
-    email = 'testUser@gmail.com',
+    name = faker.internet.username(),
+    email = faker.internet.email(),
     password = 'StrongPassword_123',
     roleName = 'REVIEWER',
   } of usersToCreate) {

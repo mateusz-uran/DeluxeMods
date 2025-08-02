@@ -1,5 +1,6 @@
 import '../setup/global';
 import request from 'supertest';
+import { faker } from '@faker-js/faker';
 import { expect } from 'chai';
 import app from '../../app';
 import { createTestRole } from '../helpers/role.helper';
@@ -23,8 +24,8 @@ describe('User controller integration test', () => {
     });
 
     it('should allow admin with ADD_USER permission to register a user', async () => {
-      const name = 'JohnDoe';
-      const email = 'john@example.com';
+      const name = faker.internet.username();
+      const email = faker.internet.email();
 
       const res = await request(app)
         .post(endpoint)
@@ -112,7 +113,7 @@ describe('User controller integration test', () => {
 
   describe('updateUserRole', () => {
     const endpoint = '/user/update-role';
-    const email = 'jonhdoe@example.com';
+    const email = faker.internet.email();
     const newRole = 'EDITOR';
     const oldRole = 'REVIEWER';
 
