@@ -147,5 +147,94 @@ describe('User controller integration test', () => {
         .to.have.nested.property('user.roles')
         .that.includes('EDITOR');
     });
+
+    it('should update user by removing old role', async () => {
+      const res = await request(app)
+        .post(endpoint)
+        .set('Cookie', admin.cookies)
+        .send({
+          email,
+          oldRole,
+        });
+
+      expect(res.body).to.have.property('message', 'User roles updated');
+
+      expect(res.body)
+        .to.have.nested.property('user.roles')
+        .that.not.includes('EDITOR');
+    });
+
+    it('should update user by removing old role and adding new one', async () => {
+      const res = await request(app)
+        .post(endpoint)
+        .set('Cookie', admin.cookies)
+        .send({
+          email,
+          newRole,
+          oldRole,
+        });
+
+      expect(res.body).to.have.property('message', 'User roles updated');
+
+      expect(res.body)
+        .to.have.nested.property('user.roles')
+        .that.not.includes('REVIEWER');
+      expect(res.body)
+        .to.have.nested.property('user.roles')
+        .that.includes('EDITOR');
+    });
+
+    it('should return 400 when email is missing', async () => {
+      const res = await request(app)
+        .post(endpoint)
+        .set('Cookie', admin.cookies)
+        .send({
+          newRole,
+        });
+
+      expect(res.status).to.equal(400);
+      expect(res.body).to.deep.include({
+        status: 'error',
+        message: 'Validation failed',
+      });
+      expect(res.body.errors[0]).to.include({
+        path: 'body.email',
+        message: 'Invalid email address',
+      });
+    });
+
+    it('should return 404 when user is not found', async () => {
+      const res = await request(app)
+        .post(endpoint)
+        .set('Cookie', admin.cookies)
+        .send({
+          email: 'nonexistent@example.com',
+          newRole,
+        });
+
+      expect(res.status).to.equal(404);
+      expect(res.body).to.have.property('errors').that.is.an('array');
+      expect(res.body.errors[0]).to.have.property('message', 'User not found.');
+    });
+
+    it('should return 400 when email format is invalid', async () => {
+      const res = await request(app)
+        .post(endpoint)
+        .set('Cookie', admin.cookies)
+        .send({
+          email: 'invalid-email',
+          newRole,
+        });
+
+      expect(res.status).to.equal(400);
+      expect(res.body).to.deep.include({
+        status: 'error',
+        message: 'Validation failed',
+      });
+      expect(res.body.errors[0]).to.include({
+        path: 'body.email',
+        message: 'Invalid email address',
+      });
+    });
   });
 });

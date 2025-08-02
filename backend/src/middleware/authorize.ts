@@ -11,20 +11,25 @@ export interface TokenPayload extends JwtPayload {
   roles: string[];
 }
 
-const roleCache = new Map<string, string[]>();
+const CACHE_TTL_MS = process.env.NODE_ENV === 'test' ? 0 : 5000;
+const roleCache = new Map<string, { perms: string[]; timestamp: number }>();
 
 const fetchPermissions = async (roleName: string): Promise<string[]> => {
-  if (roleCache.has(roleName)) {
-    return roleCache.get(roleName)!;
+  const now = Date.now();
+  const cached = roleCache.get(roleName);
+
+  if (cached && CACHE_TTL_MS > 0 && now - cached.timestamp < CACHE_TTL_MS) {
+    return cached.perms;
   }
 
   const role = await Role.findOne({ name: roleName }).lean();
-  if (!role || !Array.isArray(role.permissions)) {
-    return [];
+  const perms = role?.permissions ?? [];
+
+  if (CACHE_TTL_MS > 0) {
+    roleCache.set(roleName, { perms, timestamp: now });
   }
 
-  roleCache.set(roleName, role.permissions);
-  return role.permissions;
+  return perms;
 };
 
 export const cookieAuthorize =

@@ -2,7 +2,8 @@ import { expect } from 'chai';
 import app from '../../app';
 import '../setup/global';
 import request from 'supertest';
-import { createTestUserWithRole } from '../helpers/authUser.helper';
+import { createTestUserWithRole } from '../helpers/user.helper';
+import { createTestRole } from '../helpers/role.helper';
 
 describe('Auth controller integration test', () => {
   describe('loginUser', () => {
@@ -10,6 +11,8 @@ describe('Auth controller integration test', () => {
     const email = 'johndoe@gmail.com';
 
     it('should login user and return json with message, email and accessToken', async () => {
+      await createTestRole({ name: 'REVIEWER' });
+
       await createTestUserWithRole({
         email: email,
         password: plainPassword,

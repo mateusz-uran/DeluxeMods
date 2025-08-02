@@ -16,6 +16,7 @@ type CreateUserInput = CreateUser | CreateUser[];
 
 export type CreateUserOutput = {
   name: string;
+  email: string;
   role: string;
   cookies: string[];
   accessToken: string;
@@ -35,7 +36,7 @@ export const createTestUserWithRole = async (
     roleName = 'REVIEWER',
   } of usersToCreate) {
     const role = await Role.findOne({ name: roleName });
-    
+
     if (!role)
       throw new Error(`Role ${roleName} not found. Use createTestRole first.`);
 
@@ -68,6 +69,7 @@ export const createTestUserWithRole = async (
 
     results.push({
       name: user.name,
+      email: user.email,
       role: role.name,
       cookies,
       accessToken,
