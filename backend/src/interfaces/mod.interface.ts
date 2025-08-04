@@ -64,5 +64,6 @@ export type ModPreview = {
     modAuthor: string;
   };
   isDeluxe: boolean;
+  categories: string[];
   slug: string;
 }

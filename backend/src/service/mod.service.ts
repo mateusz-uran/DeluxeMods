@@ -30,7 +30,7 @@ export async function getPerSixMods({
 
   const [mods, totalCount] = await Promise.all([
     Mod.find(query)
-      .select('-_id name previewPhoto specification.modAuthor isDeluxe slug')
+      .select('-_id name previewPhoto specification.modAuthor isDeluxe categories slug')
       .sort({ createdAt: -1 })
       .limit(limit * 1)
       .skip((page - 1) * limit)

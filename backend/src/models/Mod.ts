@@ -24,6 +24,7 @@ const modSchema = new Schema<IMod>(
       ref: 'Review',
       required: false,
       unique: true,
+      sparse: true
     },
   },
   {
