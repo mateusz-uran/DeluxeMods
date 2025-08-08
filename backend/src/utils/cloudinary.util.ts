@@ -1,6 +1,6 @@
 import { UploadApiResponse } from 'cloudinary';
-import cloudinary from '../config/cloudinary.js';
-import { InternalServerError, NotFoundError } from './errors/CustomError.js';
+import cloudinary from '../config/cloudinary';
+import { InternalServerError, NotFoundError } from './errors/CustomError';
 
 type CloudinaryDeleteResponse = {
   result: 'ok' | 'not found' | string;
@@ -11,6 +11,10 @@ type CloudinaryDeleteResponse = {
 };
 
 export async function uploadImageToCloudinary(buffer: Buffer): Promise<string> {
+  if (process.env.NODE_ENV === 'test') {
+    return 'https://fake.cloudinary.com/fakeimage.jpg';
+  }
+
   return new Promise((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
       {
@@ -29,7 +33,9 @@ export async function uploadImageToCloudinary(buffer: Buffer): Promise<string> {
   });
 }
 
-async function deleteImageFromCloudinary(publicId: string): Promise<CloudinaryDeleteResponse> {
+async function deleteImageFromCloudinary(
+  publicId: string,
+): Promise<CloudinaryDeleteResponse> {
   return new Promise((resolve, reject) => {
     cloudinary.uploader.destroy(
       publicId,
@@ -51,7 +57,10 @@ function extractPublicIdFromUrl(url: string): string {
   return publicIdWithExt.replace(/\.[^/.]+$/, '');
 }
 
-export async function replaceImage(oldUrl: string, buffer: Buffer): Promise<string> {
+export async function replaceImage(
+  oldUrl: string,
+  buffer: Buffer,
+): Promise<string> {
   const publicId = extractPublicIdFromUrl(oldUrl);
   const deleteResult = await deleteImageFromCloudinary(publicId);
 

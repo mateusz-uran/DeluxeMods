@@ -1,5 +1,7 @@
+import { ICategory } from '../../interfaces/modCategory.interface';
 import { IReview } from '../../interfaces/review.interface';
 import Mod from '../../models/Mod';
+import ModCategories from '../../models/ModCategories';
 
 export type IFakeMod = {
   name: string;
@@ -23,6 +25,22 @@ export type FullFakeMod = {
 
 type ValueOrFactor<T> = T | ((index: number) => T);
 
+export const createFakeCategoriesInsideDB = async (
+  categories: { name: string; subCategories: string[] }[],
+): Promise<ICategory[]> => {
+  return Promise.all(
+    categories.map((category) =>
+      ModCategories.create({
+        name: category.name,
+        subCategory: category.subCategories.map((subCategory, j) => ({
+          name: subCategory,
+          slug: `${subCategory.toLowerCase().replace(/\s+/g, '-')}-${j + 1}`,
+        })),
+      }),
+    ),
+  );
+};
+
 export function createFakeMods(
   size: number,
   isDeluxe: boolean,
@@ -37,30 +55,6 @@ export function createFakeMods(
     categories: subCategory,
   }));
 }
-
-export const createFakeModsInsideMemoryDB = async (
-  size: number,
-  isDeluxe: ValueOrFactor<boolean>,
-  isPublished: ValueOrFactor<boolean>,
-  subCategory: ValueOrFactor<string[]>,
-): Promise<any> => {
-  const mods = Array.from({ length: size }, (_, i) => ({
-    name: `Mod number ${i + 1}`,
-    previewPhoto: `Preview image ${i + 1}`,
-    specification: {
-      link: `https://example.com/mod-${i + 1}`,
-      modAuthor: `Author ${i + 1}`,
-    },
-    isPublished:
-      typeof isPublished === 'function' ? isPublished(i) : isPublished,
-    isDeluxe: typeof isDeluxe === 'function' ? isDeluxe(i) : isDeluxe,
-    categories:
-      typeof subCategory === 'function' ? subCategory(i) : subCategory,
-    slug: `mod[${i + 1}]createby[${i + 1}]`,
-  }));
-
-  return await Mod.insertMany(mods);
-};
 
 export const createFakeModsInsideDB = (
   size: number,

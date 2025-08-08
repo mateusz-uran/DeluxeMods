@@ -11,7 +11,7 @@ import Mod from '../models/Mod';
 import {
   replaceImage,
   uploadImageToCloudinary,
-} from '../utils/cloudinary.util.js';
+} from '../utils/cloudinary.util';
 import { BadRequestError, NotFoundError } from '../utils/errors/CustomError';
 import { createSlugFromTwoTexts } from '../utils/slug.utils';
 import { checkIfCategoryExists } from './modCategories.service';
