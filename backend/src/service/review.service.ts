@@ -2,7 +2,7 @@ import {
   CreateRevieOutput,
   CreateReviewInput,
 } from '../interfaces/review.interface';
-import Review from '../models/Review.js';
+import Review from '../models/Review';
 import { NotFoundError } from '../utils/errors/CustomError';
 import { checkIfModExists, updateModReviewId } from './mod.service';
 import { validateUserById } from './user.service';
