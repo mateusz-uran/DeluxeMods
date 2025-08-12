@@ -1,9 +1,9 @@
-import { expect } from 'chai';
 import app from '../../app';
-import '../setup/global';
 import request from 'supertest';
 import { createTestUserWithRole } from '../helpers/user.helper';
 import { createTestRole } from '../helpers/role.helper';
+
+import { describe, expect, it } from 'vitest';
 
 describe('Auth controller integration test', () => {
   describe('loginUser', () => {
@@ -29,9 +29,9 @@ describe('Auth controller integration test', () => {
         .send(loginInput)
         .expect(200);
 
-      expect(response.body).to.have.property('accessToken');
-      expect(response.body).to.have.property('email', email);
-      expect(response.body).to.have.property(
+      expect(response.body).toHaveProperty('accessToken');
+      expect(response.body).toHaveProperty('email', email);
+      expect(response.body).toHaveProperty(
         'message',
         'User logged in successfully!',
       );
@@ -42,15 +42,17 @@ describe('Auth controller integration test', () => {
     it('should clear auth cookies and return a success message', async () => {
       const response = await request(app).post('/logout').expect(200);
 
-      expect(response.body).to.have.property('message', 'User logged out!');
+      expect(response.body).toHaveProperty('message', 'User logged out!');
 
       const cookies = response.headers['set-cookie'];
-      expect(cookies).to.satisfy((arr: string[]) =>
-        arr.some(
-          (cookie) =>
-            cookie.includes('accessToken=') && cookie.includes('Expires=Thu'),
-        ),
-      );
+      expect(cookies).toBeDefined();
+      expect(Array.isArray(cookies)).toBe(true);
+
+      const cookiesArray = Array.isArray(cookies) ? cookies : [cookies];
+
+      cookiesArray.forEach((cookie) => {
+        expect(cookie).toMatch(/Expires=Thu, 01 Jan 1970 00:00:00 GMT/);
+      });
     });
   });
 });

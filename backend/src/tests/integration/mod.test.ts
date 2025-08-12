@@ -1,17 +1,16 @@
-import '../setup/global';
 import request from 'supertest';
-import sinon from 'sinon';
 import app from '../../app';
 import {
   createFakeCategoriesInsideDB,
   createFakeModsInsideDB,
 } from '../helpers/mods.helper';
-import { expect } from 'chai';
 import { createTestRole } from '../helpers/role.helper';
 import {
   createTestUserWithRole,
   CreateUserOutput,
 } from '../helpers/user.helper';
+
+import { beforeEach, describe, expect, it } from 'vitest';
 
 describe('Mod controller integration test', () => {
   describe('GET getModsByParameter', () => {
@@ -34,33 +33,32 @@ describe('Mod controller integration test', () => {
 
     it('should return last six mods', async () => {
       const res = await request(app).get(endpoint);
-      expect(res.status).to.equal(200);
-      expect(res.body).to.have.property('mods');
-      expect(res.body.mods).to.be.an('array');
-      expect(res.body.mods).to.have.lengthOf.at.most(6);
+      expect(res.status).toEqual(200);
+      expect(res.body).toHaveProperty('mods');
+      expect(res.body.mods).toBeInstanceOf(Array);
+      
+      expect(res.body.mods.length).toBeLessThanOrEqual(6);
     });
 
     it('should return last six mods by category small', async () => {
       const res = await request(app).get(endpoint).query({ category: 'small' });
-      expect(res.status).to.equal(200);
-      expect(res.body).to.have.property('mods');
-      expect(res.body.mods).to.be.an('array');
-      expect(res.body.mods).to.have.lengthOf.at.most(6);
-      expect(res.body.mods.every((m: any) => m.categories.includes('small'))).to
-        .be.true;
+      expect(res.status).toEqual(200);
+      expect(res.body).toHaveProperty('mods');
+      expect(res.body.mods).toBeInstanceOf(Array);
+      expect(res.body.mods.length).toBeLessThanOrEqual(6);
+      expect(res.body.mods.every((m: any) => m.categories.includes('small'))).toBe(true);
     });
 
     it('should return mods from 2nd page', async () => {
       const res = await request(app)
         .get(endpoint)
         .query({ category: 'small', page: 2 });
-      expect(res.status).to.equal(200);
-      expect(res.body).to.have.property('mods');
-      expect(res.body.mods).to.be.an('array');
-      expect(res.body.mods.length).to.equal(2);
-      expect(res.body.mods.every((m: any) => m.categories.includes('small'))).to
-        .be.true;
-      expect(res.body.totalCount).to.equal(8);
+      expect(res.status).toEqual(200);
+      expect(res.body).toHaveProperty('mods');
+      expect(res.body.mods).toBeInstanceOf(Array);
+      expect(res.body.mods.length).toEqual(2);
+      expect(res.body.mods.every((m: any) => m.categories.includes('small'))).toBe(true);
+      expect(res.body.totalCount).toEqual(8);
     });
 
     it('should return empty array for non-existing category', async () => {
@@ -68,9 +66,10 @@ describe('Mod controller integration test', () => {
         .get(endpoint)
         .query({ category: 'nonexistent' });
 
-      expect(res.status).to.equal(200);
-      expect(res.body.mods).to.be.an('array').that.is.empty;
-      expect(res.body.totalCount).to.equal(0);
+      expect(res.status).toEqual(200);
+      expect(res.body.mods).toBeInstanceOf(Array);
+      expect(res.body.mods).toHaveLength(0);
+      expect(res.body.totalCount).toEqual(0);
     });
 
     it('should return empty array for page number with no results', async () => {
@@ -78,22 +77,23 @@ describe('Mod controller integration test', () => {
         .get(endpoint)
         .query({ category: 'small', page: 10 });
 
-      expect(res.status).to.equal(200);
-      expect(res.body.mods).to.be.an('array').that.is.empty;
-      expect(res.body.totalCount).to.equal(8);
+      expect(res.status).toEqual(200);
+      expect(res.body.mods).toBeInstanceOf(Array);
+      expect(res.body.mods).toHaveLength(0);
+      expect(res.body.totalCount).toEqual(8);
     });
 
     it('should return 400 for invalid page parameter', async () => {
       const res = await request(app).get(endpoint).query({ page: 'abc' });
 
-      expect(res.status).to.equal(400);
-      expect(res.body).to.have.property('errors');
+      expect(res.status).toEqual(400);
+      expect(res.body).toHaveProperty('errors');
     });
 
     it('should return 400 for negative page number', async () => {
       const res = await request(app).get(endpoint).query({ page: '-1' });
 
-      expect(res.status).to.equal(400);
+      expect(res.status).toEqual(400);
     });
   });
 
@@ -111,26 +111,20 @@ describe('Mod controller integration test', () => {
       ]);
     });
 
-    afterEach(() => {
-      sinon.restore();
-    });
-
-    it('should create a mod', async () => {
-      const res = await request(app)
-        .post(endpoint)
-        .set('Cookie', admin.cookies.join('; '))
-        .attach('photo', Buffer.from('fakeimage'), 'mod.jpg')
-        .field('name', 'Test Mod')
-        .field(
-          'specification',
-          JSON.stringify({
-            link: 'http://some-link.com',
-            modAuthor: 'JohnDoe',
-          }),
-        )
-        .field('categories', ['small']);
-
-      console.log(res.body);
-    });
+    // it('should create a mod', async () => {
+    //   const res = await request(app)
+    //     .post(endpoint)
+    //     .set('Cookie', admin.cookies.join('; '))
+    //     .attach('photo', Buffer.from('fakeimage'), 'mod.jpg')
+    //     .field('name', 'Test Mod')
+    //     .field(
+    //       'specification',
+    //       JSON.stringify({
+    //         link: 'http://some-link.com',
+    //         modAuthor: 'JohnDoe',
+    //       }),
+    //     )
+    //     .field('categories', ['small']);
+    // });
   });
 });

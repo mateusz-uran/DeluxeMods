@@ -1,13 +1,13 @@
-import '../setup/global';
 import request from 'supertest';
 import { faker } from '@faker-js/faker';
-import { expect } from 'chai';
 import app from '../../app';
 import { createTestRole } from '../helpers/role.helper';
 import {
   createTestUserWithRole,
   CreateUserOutput,
 } from '../helpers/user.helper';
+
+import { beforeEach, describe, expect, it } from 'vitest';
 
 describe('User controller integration test', () => {
   describe('registerUser', () => {
@@ -36,14 +36,16 @@ describe('User controller integration test', () => {
           password: 'StrongPassword_123%^&',
         });
 
-      expect(res.body).to.have.property(
+      expect(res.body).toHaveProperty(
         'message',
         'User registered with default role.',
       );
 
-      expect(res.body).to.deep.include({
-        user: { email, name },
-      });
+      expect(res.body).toEqual(
+        expect.objectContaining({
+          user: { email, name },
+        }),
+      );
     });
 
     it('should reject if missing required fields', async () => {
@@ -54,8 +56,8 @@ describe('User controller integration test', () => {
           email: 'missingname@example.com',
         });
 
-      expect(res.status).to.equal(400);
-      expect(res.body.errors[0].message).to.include(
+      expect(res.status).toEqual(400);
+      expect(res.body.errors[0].message).toEqual(
         'Invalid input: expected string, received undefined',
       );
     });
@@ -70,8 +72,10 @@ describe('User controller integration test', () => {
           password: '123',
         });
 
-      expect(res.status).to.equal(400);
-      expect(res.body.errors[0].message).to.include('password is not strong');
+      expect(res.status).toEqual(400);
+      expect(res.body.errors[0].message).toEqual(
+        'Given password is not strong enough.',
+      );
     });
 
     it('should reject duplicate email', async () => {
@@ -88,8 +92,8 @@ describe('User controller integration test', () => {
         .set('Cookie', admin.cookies)
         .send(payload);
 
-      expect(res.status).to.equal(400);
-      expect(res.body.errors[0].message).to.include('User alredy exists');
+      expect(res.status).toEqual(400);
+      expect(res.body.errors[0].message).toEqual('User alredy exists.');
     });
 
     it('should reject if user lacks ADD_USER permission', async () => {
@@ -106,8 +110,8 @@ describe('User controller integration test', () => {
           password: 'StrongPassword_123%^&',
         });
 
-      expect(res.status).to.equal(403);
-      expect(res.body.errors[0].message).to.include('Forbidden');
+      expect(res.status).toEqual(403);
+      expect(res.body.errors[0].message).toEqual('Forbidden: no permission');
     });
   });
 
@@ -142,11 +146,9 @@ describe('User controller integration test', () => {
           newRole,
         });
 
-      expect(res.body).to.have.property('message', 'User roles updated');
+      expect(res.body).toHaveProperty('message', 'User roles updated');
 
-      expect(res.body)
-        .to.have.nested.property('user.roles')
-        .that.includes('EDITOR');
+      expect(res.body.user.roles).toContain('EDITOR');
     });
 
     it('should update user by removing old role', async () => {
@@ -157,12 +159,9 @@ describe('User controller integration test', () => {
           email,
           oldRole,
         });
+      expect(res.body).toHaveProperty('message', 'User roles updated');
 
-      expect(res.body).to.have.property('message', 'User roles updated');
-
-      expect(res.body)
-        .to.have.nested.property('user.roles')
-        .that.not.includes('EDITOR');
+      expect(res.body.user.roles).lengthOf(0);
     });
 
     it('should update user by removing old role and adding new one', async () => {
@@ -175,14 +174,10 @@ describe('User controller integration test', () => {
           oldRole,
         });
 
-      expect(res.body).to.have.property('message', 'User roles updated');
+      expect(res.body).toHaveProperty('message', 'User roles updated');
 
-      expect(res.body)
-        .to.have.nested.property('user.roles')
-        .that.not.includes('REVIEWER');
-      expect(res.body)
-        .to.have.nested.property('user.roles')
-        .that.includes('EDITOR');
+      expect(res.body.user.roles).not.toContain('REVIEWER');
+      expect(res.body.user.roles).toContain('EDITOR');
     });
 
     it('should return 400 when email is missing', async () => {
@@ -193,15 +188,19 @@ describe('User controller integration test', () => {
           newRole,
         });
 
-      expect(res.status).to.equal(400);
-      expect(res.body).to.deep.include({
-        status: 'error',
-        message: 'Validation failed',
-      });
-      expect(res.body.errors[0]).to.include({
-        path: 'body.email',
-        message: 'Invalid email address',
-      });
+      expect(res.status).toEqual(400);
+      expect(res.body).toEqual(
+        expect.objectContaining({
+          status: 'error',
+          message: 'Validation failed',
+        }),
+      );
+      expect(res.body.errors[0]).toEqual(
+        expect.objectContaining({
+          path: 'body.email',
+          message: 'Invalid email address',
+        }),
+      );
     });
 
     it('should return 404 when user is not found', async () => {
@@ -213,9 +212,9 @@ describe('User controller integration test', () => {
           newRole,
         });
 
-      expect(res.status).to.equal(404);
-      expect(res.body).to.have.property('errors').that.is.an('array');
-      expect(res.body.errors[0]).to.have.property('message', 'User not found.');
+      expect(res.status).toEqual(404);
+      expect(res.body.errors).toEqual(expect.any(Array));
+      expect(res.body.errors[0]).toHaveProperty('message', 'User not found.');
     });
 
     it('should return 400 when email format is invalid', async () => {
@@ -227,15 +226,19 @@ describe('User controller integration test', () => {
           newRole,
         });
 
-      expect(res.status).to.equal(400);
-      expect(res.body).to.deep.include({
-        status: 'error',
-        message: 'Validation failed',
-      });
-      expect(res.body.errors[0]).to.include({
-        path: 'body.email',
-        message: 'Invalid email address',
-      });
+      expect(res.status).toEqual(400);
+      expect(res.body).toEqual(
+        expect.objectContaining({
+          status: 'error',
+          message: 'Validation failed',
+        }),
+      );
+      expect(res.body.errors[0]).toEqual(
+        expect.objectContaining({
+          path: 'body.email',
+          message: 'Invalid email address',
+        }),
+      );
     });
   });
 });
