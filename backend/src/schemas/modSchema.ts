@@ -35,11 +35,13 @@ export const createModBodySchema = z.object({
         if (typeof val === 'string') return [val];
         return val;
       },
-      z.array(
-        z
-          .string()
-          .min(3, 'Each category slug must be at least 3 characters long'),
-      ),
+      z
+        .array(
+          z
+            .string()
+            .min(3, 'Each category slug must be at least 3 characters long'),
+        )
+        .transform((arr) => arr.map((slug) => slug.toLowerCase())),
     ),
   }),
 });

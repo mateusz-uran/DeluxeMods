@@ -4,9 +4,8 @@ import {
   getPerSixMods,
 } from '../service/mod.service';
 import { BadRequestError } from '../utils/errors/CustomError';
+import { ACCEPTED_IMAGE_TYPES, MAX_FILE_SIZE } from '../utils/constants';
 
-const MAX_FILE_SIZE: number = 5 * 1024 * 1024; // 5MB
-const ACCEPTED_IMAGE_TYPES: string[] = ['image/jpeg', 'image/jpg', 'image/png'];
 
 const formatBytes = (bytes: number, decimals: number = 2): number | string => {
   if (bytes === 0) return '0 Bytes';

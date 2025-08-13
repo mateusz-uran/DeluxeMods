@@ -34,7 +34,7 @@ export const createFakeCategoriesInsideDB = async (
         name: category.name,
         subCategory: category.subCategories.map((subCategory, j) => ({
           name: subCategory,
-          slug: `${subCategory.toLowerCase().replace(/\s+/g, '-')}-${j + 1}`,
+          slug: `${subCategory.toLowerCase().replace(/\s+/g, '-')}`,
         })),
       }),
     ),

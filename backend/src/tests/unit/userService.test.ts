@@ -2,23 +2,13 @@ import bcrypt from 'bcrypt';
 import { login, register, validateUserById } from '../../service/user.service';
 import {
   BadRequestError,
-  NotFoundError,
   UnauthorizedError,
 } from '../../utils/errors/CustomError';
 import User from '../../models/User';
 import Role from '../../models/Role';
 import { Types } from 'mongoose';
 
-import {
-  beforeEach,
-  afterEach,
-  describe,
-  expect,
-  it,
-  vi,
-  type Mock,
-  MockInstance,
-} from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 describe('User service unit tests', () => {
   afterEach(() => vi.restoreAllMocks());

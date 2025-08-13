@@ -11,10 +11,6 @@ type CloudinaryDeleteResponse = {
 };
 
 export async function uploadImageToCloudinary(buffer: Buffer): Promise<string> {
-  if (process.env.NODE_ENV === 'test') {
-    return 'https://fake.cloudinary.com/fakeimage.jpg';
-  }
-
   return new Promise((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
       {
