@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "nodemon --watch src --exec tsx src/server.ts",
     "build": "tsc",
-    "test": "vitest",
+    "test": "npm run test:unit && npm run test:it",
     "test:unit": "vitest run --config vitest.config.unit.ts",
     "test:it": "cross-env DOTENV_CONFIG_PATH=.env.it NODE_ENV=test vitest run --config vitest.config.it.ts",
     "lint": "eslint 'src/**/*.ts'"

@@ -1,17 +1,14 @@
 import { ICategory } from '../../interfaces/modCategory.interface';
-import { IReview } from '../../interfaces/review.interface';
 import Mod from '../../models/Mod';
 import ModCategories from '../../models/ModCategories';
 
-export type IFakeMod = {
+export type FakeMod = {
   name: string;
   previewPhoto: string;
   isPublished: boolean;
   isDeluxe: boolean;
   categories: string[];
 };
-
-export type IFakeReview = Partial<IReview>;
 
 export type FullFakeMod = {
   name: string;
@@ -46,7 +43,7 @@ export function createFakeMods(
   isDeluxe: boolean,
   isPublished: boolean,
   subCategory: string[],
-): IFakeMod[] {
+): FakeMod[] {
   return Array.from({ length: size }, (_, i) => ({
     name: `M${i}`,
     previewPhoto: `u${i}`,

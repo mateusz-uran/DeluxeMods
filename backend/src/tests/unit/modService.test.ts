@@ -7,7 +7,7 @@ import {
   replacePreviewPhoto,
   updateModReviewId,
 } from '../../service/mod.service';
-import { createFakeMods, IFakeMod } from '../helpers/mods.helper';
+import { createFakeMods, FakeMod } from '../helpers/mods.helper';
 import {
   ChangeModStatusOutput,
   CreateModInput,
@@ -32,7 +32,7 @@ describe('Mod service unit tests', () => {
   const modCategory = 'small';
 
   const fakeTotalCount = 42;
-  const mods: IFakeMod[] = createFakeMods(
+  const mods: FakeMod[] = createFakeMods(
     arraySize,
     deluxeStatus,
     publishedMod,

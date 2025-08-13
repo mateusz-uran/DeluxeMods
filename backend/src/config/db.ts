@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import Role from '../models/Role';
-import ModCategories from '../models/ModCategories.js';
-import { createSlug } from '../utils/slug.utils.js';
+import ModCategories from '../models/ModCategories';
+import { createSlug } from '../utils/slug.utils';
 import config from './env';
 import { RoleData } from '../types/Role';
 import { readRolesFile } from './readJson';

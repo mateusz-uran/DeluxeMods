@@ -1,20 +1,20 @@
 import bcrypt from 'bcrypt';
 import validator from 'validator';
-import User from '../models/User.js';
-import Role from '../models/Role.js';
+import User from '../models/User';
+import Role from '../models/Role';
 import {
   BadRequestError,
   NotFoundError,
   UnauthorizedError,
-} from '../utils/errors/CustomError.js';
-import { createAccessToken, createRefreshToken } from '../utils/auth.utils.js';
+} from '../utils/errors/CustomError';
+import { createAccessToken, createRefreshToken } from '../utils/auth.utils';
 import { Types } from 'mongoose';
 import {
   IRole,
   IUser,
   LoginOutput,
   UserOutput,
-} from '../interfaces/user.interface.js';
+} from '../interfaces/user.interface';
 
 export async function validateUserById(
   userId: string | Types.ObjectId,
@@ -61,7 +61,6 @@ export async function register(
   password: string,
 ): Promise<UserOutput> {
   if (!name || !password || !email) {
-    console.log('Logging from service');
     throw new BadRequestError('All fields must be filled.');
   }
 
