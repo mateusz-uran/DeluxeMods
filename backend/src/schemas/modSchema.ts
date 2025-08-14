@@ -12,11 +12,34 @@ export const modQuerySchema = z.object({
   }),
 });
 
+export type ModQueryValidated = z.infer<typeof modQuerySchema>;
+
+interface ISpecification {
+  link: string;
+  modAuthor: string;
+}
+
 export const createModBodySchema = z.object({
   body: z.object({
+    categories: z.preprocess(
+      (val) => {
+        if (typeof val === 'string') return [val];
+        return val;
+      },
+      z
+        .array(
+          z
+            .string()
+            .min(3, 'Each category slug must be at least 3 characters long'),
+        )
+        .transform((arr) => arr.map((slug) => slug.toLowerCase())),
+    ),
     name: z.string().min(5),
     specification: z
-      .transform((val: string) => JSON.parse(val))
+      .transform((val: string) => {
+        const parsed: { link: string; modAuthor: string } = JSON.parse(val) as ISpecification;
+        return parsed;
+      })
       .pipe(
         z
           .object({
@@ -30,16 +53,7 @@ export const createModBodySchema = z.object({
             'Link must start with http or https.',
           ),
       ),
-    categories: z.preprocess(
-      (val) => {
-        if (typeof val === 'string') return [val];
-        return val;
-      },
-      z.array(
-        z
-          .string()
-          .min(3, 'Each category slug must be at least 3 characters long'),
-      ),
-    ),
   }),
 });
+
+export type CreateModValidated = z.infer<typeof createModBodySchema>;

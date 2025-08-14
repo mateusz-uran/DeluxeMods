@@ -2,13 +2,13 @@ import {
   CreateRevieOutput,
   CreateReviewInput,
 } from '../interfaces/review.interface';
-import Review from '../models/Review.js';
-import { NotFoundError } from '../utils/errors/CustomError.js';
-import { checkIfModExists, updateModReviewId } from './mod.service.js';
-import { validateUserById } from './user.service.js';
+import Review from '../models/Review';
+import { NotFoundError } from '../utils/errors/CustomError';
+import { checkIfModExists, updateModReviewId } from './mod.service';
+import { validateUserById } from './user.service';
 
 export async function createReview(
-  { userId, text, modId }: CreateReviewInput,
+  { modId, text, userId }: CreateReviewInput,
   {
     checkMod = checkIfModExists,
     updateMod = updateModReviewId,

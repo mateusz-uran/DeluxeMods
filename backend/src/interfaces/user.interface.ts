@@ -1,31 +1,31 @@
 import { Document, Types } from 'mongoose';
 
-export interface IUser extends Document<Types.ObjectId> {
-  name: string;
-  password: string;
-  email: string;
-  roles: (IRole | Types.ObjectId)[];
-}
-
 export interface IRole extends Document {
   _id: Types.ObjectId;
   name: string;
-  permissions: string;
+  permissions: string[];
 }
 
-export type LoginOutput = {
-  accessToken: string;
-  refreshToken: string;
+export interface IUser extends Document<Types.ObjectId> {
   email: string;
-};
+  name: string;
+  password: string;
+  roles: (IRole | Types.ObjectId)[];
+}
 
-export type UserOutput = {
+export interface LoginOutput {
+  accessToken: string;
+  email: string;
+  refreshToken: string;
+}
+
+export interface UserOutput {
   message: string;
   user: UserInformation;
-};
+}
 
-type UserInformation = {
-  name: string;
+interface UserInformation {
   email: string;
+  name: string;
   roles?: string[];
-};
+}

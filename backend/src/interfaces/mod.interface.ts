@@ -1,68 +1,69 @@
 import { Document, Types } from 'mongoose';
 
-interface ISpecification {
-  link: string;
-  modAuthor: string;
-}
-
-export interface IMod extends Document {
-  name: string;
-  previewPhoto: string;
-  specification: ISpecification;
-  isPublished: boolean;
-  isDeluxe: boolean;
-  categories: string[];
+export interface ChangeModStatusInput {
+  isDeluxe?: boolean;
+  isPublished?: boolean;
   slug: string;
-  reviewId?: Types.ObjectId;
 }
 
-export type GetPerSixModsInput = {
-  subCategory?: string | null;
-  page?: number;
+export type ChangeModStatusOutput = ChangModStatusBase & {
+  isDeluxe?: boolean;
+  isPublished?: boolean;
 };
 
-export type GetPerSixModsOutput = {
-  mods: ModPreview[];
-  totalCount: number;
-};
+export interface ChangModStatusBase {
+  name: string;
+  slug: string;
+}
 
-export type CreateModInput = {
+export interface CreateModInput {
+  categorySlugs: string[];
   name: string;
   previewPhoto: Express.Multer.File;
   specification: ISpecification;
-  categorySlugs: string[];
-};
+}
 
-export type CreateModOutput = {
-  name: string;
-  previewPhoto: string;
-  specification: ISpecification;
+export interface CreateModOutput {
   categories: string[];
-  slug: string;
-};
-
-export type ChangModStatusBase = {
-  slug: string;
-  name: string;
-};
-
-export type ChangeModStatusInput = {
-  slug: string;
-  isPublished?: boolean;
-  isDeluxe?: boolean;
-};
-
-export type ChangeModStatusOutput = ChangModStatusBase & {
-  isPublished?: boolean;
-  isDeluxe?: boolean;
-};
-
-export type ModPreview = {
   name: string;
   previewPhoto: string;
+  slug: string;
+  specification: ISpecification;
+}
+
+export interface GetPerSixModsInput {
+  page?: number;
+  subCategory?: null | string;
+}
+
+export interface GetPerSixModsOutput {
+  mods: ModPreview[];
+  totalCount: number;
+}
+
+export interface IMod extends Document {
+  categories: string[];
+  isDeluxe: boolean;
+  isPublished: boolean;
+  name: string;
+  previewPhoto: string;
+  reviewId?: Types.ObjectId;
+  slug: string;
+  specification: ISpecification;
+}
+
+export interface ModPreview {
+  categories: string[];
+  isDeluxe: boolean;
+  name: string;
+  previewPhoto: string;
+  slug: string;
   specification: {
     modAuthor: string;
   };
-  isDeluxe: boolean;
-  slug: string;
+}
+
+interface ISpecification {
+  link: string;
+  modAuthor: string;
 }

@@ -1,27 +1,28 @@
 import { RequestHandler } from 'express';
+
+import { CreateModValidated, ModQueryValidated } from '../schemas/modSchema';
 import {
   createModWithPreviewPhoto,
   getPerSixMods,
 } from '../service/mod.service';
+import { ACCEPTED_IMAGE_TYPES, MAX_FILE_SIZE } from '../utils/constants';
 import { BadRequestError } from '../utils/errors/CustomError';
 
-const MAX_FILE_SIZE: number = 5 * 1024 * 1024; // 5MB
-const ACCEPTED_IMAGE_TYPES: string[] = ['image/jpeg', 'image/jpg', 'image/png'];
-
-const formatBytes = (bytes: number, decimals: number = 2): number | string => {
+const formatBytes = (bytes: number, decimals = 2): string => {
   if (bytes === 0) return '0 Bytes';
   const k = 1024;
   const dm = decimals < 0 ? 0 : decimals;
   const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+  const value = (bytes / Math.pow(k, i)).toFixed(dm);
+  return `${value} ${sizes[i]}`;
 };
 
 export const getModsByParameter: RequestHandler = async (req, res, next) => {
-  const { category, page } = req.validated!.query;
+  const { category, page } = (req.validated as ModQueryValidated).query;
 
   try {
-    const mods = await getPerSixMods({ subCategory: category, page });
+    const mods = await getPerSixMods({ page, subCategory: category });
     return res.status(200).json(mods);
   } catch (error) {
     next(error);
@@ -29,7 +30,9 @@ export const getModsByParameter: RequestHandler = async (req, res, next) => {
 };
 
 export const createMod: RequestHandler = async (req, res, next) => {
-  const { name, specification, categories } = req.validated!.body;
+  const { categories, name, specification } = (
+    req.validated as CreateModValidated
+  ).body;
   const photo = req.file;
 
   try {
@@ -52,10 +55,10 @@ export const createMod: RequestHandler = async (req, res, next) => {
     }
 
     const mod = await createModWithPreviewPhoto({
+      categorySlugs: categories,
       name,
       previewPhoto: photo,
       specification,
-      categorySlugs: categories,
     });
 
     return res.status(200).json(mod);

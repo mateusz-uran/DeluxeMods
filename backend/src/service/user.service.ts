@@ -1,28 +1,21 @@
 import bcrypt from 'bcrypt';
-import validator from 'validator';
-import User from '../models/User.js';
-import Role from '../models/Role.js';
-import {
-  BadRequestError,
-  NotFoundError,
-  UnauthorizedError,
-} from '../utils/errors/CustomError.js';
-import { createAccessToken, createRefreshToken } from '../utils/auth.utils.js';
 import { Types } from 'mongoose';
+import validator from 'validator';
+
 import {
   IRole,
   IUser,
   LoginOutput,
   UserOutput,
-} from '../interfaces/user.interface.js';
-
-export async function validateUserById(
-  userId: string | Types.ObjectId,
-): Promise<IUser> {
-  const user = await User.findById(userId);
-  if (!user) throw new UnauthorizedError();
-  return user;
-}
+} from '../interfaces/user.interface';
+import Role from '../models/Role';
+import User from '../models/User';
+import { createAccessToken, createRefreshToken } from '../utils/auth.utils';
+import {
+  BadRequestError,
+  NotFoundError,
+  UnauthorizedError,
+} from '../utils/errors/CustomError';
 
 export async function login(
   email: string,
@@ -52,7 +45,7 @@ export async function login(
   const accessToken = accessTokenCreator(user);
   const refreshToken = refreshTokenCreator(user, rememberMe);
 
-  return { accessToken, refreshToken, email: user.email };
+  return { accessToken, email: user.email, refreshToken };
 }
 
 export async function register(
@@ -60,28 +53,35 @@ export async function register(
   email: string,
   password: string,
 ): Promise<UserOutput> {
-  if (!name || !password || !email)
+  if (!name || !password || !email) {
     throw new BadRequestError('All fields must be filled.');
+  }
 
-  if (!validator.isEmail(email))
+  if (!validator.isEmail(email)) {
     throw new BadRequestError('Given email is not valid.');
+  }
 
-  if (!validator.isStrongPassword(password))
+  if (!validator.isStrongPassword(password)) {
     throw new BadRequestError('Given password is not strong enough.');
+  }
 
   const userExists = await User.findOne({ email }).exec();
 
-  if (userExists) throw new BadRequestError('User alredy exists.');
+  if (userExists) {
+    throw new BadRequestError('User alredy exists.');
+  }
 
   const salt = await bcrypt.genSalt(15);
   const hash = await bcrypt.hash(password, salt);
   const userRole = await Role.findOne({ name: 'REVIEWER' }).exec();
 
-  if (!userRole) throw new NotFoundError('Role not found.');
+  if (!userRole) {
+    throw new NotFoundError('Role not found.');
+  }
 
   const createdUser = await User.create({
-    name,
     email,
+    name,
     password: hash,
     roles: [userRole._id],
   });
@@ -89,16 +89,17 @@ export async function register(
   return {
     message: 'User registered with default role.',
     user: {
-      name: createdUser.name,
       email: createdUser.email,
+      name: createdUser.name,
     },
   };
 }
 
+// add or removes role, can do both at the same time
 export async function updateRole(
   email: string,
-  newRole: string,
-  oldRole: string,
+  newRole?: string,
+  oldRole?: string,
 ): Promise<UserOutput> {
   if (!email) throw new BadRequestError('All fields must be field.');
 
@@ -120,8 +121,8 @@ export async function updateRole(
   return {
     message: 'User roles updated',
     user: {
-      name: updatedUser.name,
       email: updatedUser.email,
+      name: updatedUser.name,
       roles: updatedUser.roles
         .filter(
           (role): role is IRole => typeof role !== 'string' && 'name' in role,
@@ -131,17 +132,12 @@ export async function updateRole(
   };
 }
 
-function getRoleId(role: IRole | Types.ObjectId): Types.ObjectId {
-  return typeof role === 'object' && '_id' in role ? role._id : role;
-}
-
-async function removeUserRole(user: IUser, roleName: string) {
-  const roleToRemove = await Role.findOne({ name: roleName }).exec();
-  if (!roleToRemove) return;
-
-  user.roles = user.roles.filter(
-    (r) => getRoleId(r).toString() !== roleToRemove._id.toString(),
-  );
+export async function validateUserById(
+  userId: string | Types.ObjectId,
+): Promise<IUser> {
+  const user = await User.findById(userId);
+  if (!user) throw new UnauthorizedError();
+  return user;
 }
 
 async function addUserRole(user: IUser, roleName: string) {
@@ -158,4 +154,17 @@ async function addUserRole(user: IUser, roleName: string) {
   if (!alreadyHasRole) {
     user.roles.push(roleToAdd._id);
   }
+}
+
+function getRoleId(role: IRole | Types.ObjectId): Types.ObjectId {
+  return typeof role === 'object' && '_id' in role ? role._id : role;
+}
+
+async function removeUserRole(user: IUser, roleName: string) {
+  const roleToRemove = await Role.findOne({ name: roleName }).exec();
+  if (!roleToRemove) return;
+
+  user.roles = user.roles.filter(
+    (r) => getRoleId(r).toString() !== roleToRemove._id.toString(),
+  );
 }

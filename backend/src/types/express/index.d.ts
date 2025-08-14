@@ -5,9 +5,9 @@ declare global {
     interface Request {
       user?: TokenPayload;
       validated?: {
-        body?: any;
-        query?: any;
-        params?: any;
+        body?: unknown;
+        params?: unknown;
+        query?: unknown;
       };
     }
   }

@@ -1,17 +1,21 @@
-export type CustomErrorContent = {
+export interface CustomErrorContent {
+  context?: Record<string, unknown>;
   message: string;
-  context?: { [key: string]: any };
-};
+}
 
 export abstract class CustomError extends Error {
-  readonly statusCode: number;
+  readonly context: Record<string, unknown>;
   readonly logging: boolean;
-  readonly context: { [key: string]: any };
+  readonly statusCode: number;
+
+  get errors(): CustomErrorContent[] {
+    return [{ context: this.context, message: this.message }];
+  }
 
   constructor(
     message: string,
     statusCode: number,
-    context: { [key: string]: any } = {},
+    context: Record<string, unknown> = {},
     logging = false,
   ) {
     super(message);
@@ -22,16 +26,12 @@ export abstract class CustomError extends Error {
 
     Object.setPrototypeOf(this, CustomError.prototype);
   }
-
-  get errors(): CustomErrorContent[] {
-    return [{ message: this.message, context: this.context }];
-  }
 }
 
 export class BadRequestError extends CustomError {
   constructor(
     message = 'Bad request',
-    context?: { [key: string]: any },
+    context?: Record<string, unknown>,
     logging = false,
   ) {
     super(message, 400, context, logging);
@@ -39,21 +39,10 @@ export class BadRequestError extends CustomError {
   }
 }
 
-export class UnauthorizedError extends CustomError {
-  constructor(
-    message = 'Unauthorized',
-    context?: { [key: string]: any },
-    logging = false,
-  ) {
-    super(message, 401, context, logging);
-    Object.setPrototypeOf(this, UnauthorizedError.prototype);
-  }
-}
-
 export class ForbiddenError extends CustomError {
   constructor(
     message = 'Forbidden: no permission',
-    context?: { [key: string]: any },
+    context?: Record<string, unknown>,
     logging = false,
   ) {
     super(message, 403, context, logging);
@@ -61,10 +50,21 @@ export class ForbiddenError extends CustomError {
   }
 }
 
+export class InternalServerError extends CustomError {
+  constructor(
+    message = 'Internal Server Error',
+    context?: Record<string, unknown>,
+    logging = false,
+  ) {
+    super(message, 500, context, logging);
+    Object.setPrototypeOf(this, InternalServerError.prototype);
+  }
+}
+
 export class NotFoundError extends CustomError {
   constructor(
     message = 'Not Found',
-    context?: { [key: string]: any },
+    context?: Record<string, unknown>,
     logging = false,
   ) {
     super(message, 404, context, logging);
@@ -72,13 +72,13 @@ export class NotFoundError extends CustomError {
   }
 }
 
-export class InternalServerError extends CustomError {
+export class UnauthorizedError extends CustomError {
   constructor(
-    message = 'Internal Server Error',
-    context?: { [key: string]: any },
+    message = 'Unauthorized',
+    context?: Record<string, unknown>,
     logging = false,
   ) {
-    super(message, 500, context, logging);
-    Object.setPrototypeOf(this, InternalServerError.prototype);
+    super(message, 401, context, logging);
+    Object.setPrototypeOf(this, UnauthorizedError.prototype);
   }
 }

@@ -1,81 +1,29 @@
-import { Types } from 'mongoose';
+import { FilterQuery, Types } from 'mongoose';
+
 import {
-  GetPerSixModsInput,
-  GetPerSixModsOutput,
-  CreateModInput,
-  CreateModOutput,
   ChangeModStatusInput,
   ChangeModStatusOutput,
+  CreateModInput,
+  CreateModOutput,
+  GetPerSixModsInput,
+  GetPerSixModsOutput,
+  IMod,
 } from '../interfaces/mod.interface';
 import Mod from '../models/Mod';
 import {
   replaceImage,
   uploadImageToCloudinary,
-} from '../utils/cloudinary.util.js';
+} from '../utils/cloudinary.util';
 import { BadRequestError, NotFoundError } from '../utils/errors/CustomError';
 import { createSlugFromTwoTexts } from '../utils/slug.utils';
 import { checkIfCategoryExists } from './modCategories.service';
 
-export async function getPerSixMods({
-  subCategory = null,
-  page = 1,
-}: GetPerSixModsInput): Promise<GetPerSixModsOutput> {
-  const limit = 6;
-
-  const query: Record<string, any> = { isPublished: true };
-
-  if (subCategory) {
-    query.categories = { $in: [subCategory] };
-  }
-
-  const [mods, totalCount] = await Promise.all([
-    Mod.find(query)
-      .select('-_id name previewPhoto specification.modAuthor isDeluxe slug')
-      .sort({ createdAt: -1 })
-      .limit(limit * 1)
-      .skip((page - 1) * limit)
-      .lean(),
-    Mod.countDocuments(query),
-  ]);
-
-  return { mods, totalCount };
-}
-
-export async function createModWithPreviewPhoto(
-  { name, previewPhoto, specification, categorySlugs }: CreateModInput,
-  uploadImage = uploadImageToCloudinary,
-  checkCategories = checkIfCategoryExists,
-  createSlugForMod = createSlugFromTwoTexts,
-): Promise<CreateModOutput> {
-  const previewPhotoUrl = await uploadImage(previewPhoto.buffer);
-
-  const validateCategories = await checkCategories(categorySlugs);
-
-  if (!validateCategories.length) {
-    throw new BadRequestError(
-      'No valid subCategory slugs found for provided slugs.',
-      undefined,
-      true,
-    );
-  }
-
-  const modSlug = createSlugForMod(name, specification.modAuthor);
-
-  return Mod.create({
-    name,
-    previewPhoto: previewPhotoUrl,
-    specification,
-    categories: validateCategories,
-    slug: modSlug,
-  });
-}
-
 export async function changeModStatus({
-  slug,
-  isPublished,
   isDeluxe,
+  isPublished,
+  slug,
 }: ChangeModStatusInput): Promise<ChangeModStatusOutput> {
-  const update: Partial<{ isPublished: boolean; isDeluxe: boolean }> = {};
+  const update: Partial<{ isDeluxe: boolean; isPublished: boolean }> = {};
 
   if (typeof isPublished === 'boolean') update.isPublished = isPublished;
   if (typeof isDeluxe === 'boolean') update.isDeluxe = isDeluxe;
@@ -109,6 +57,68 @@ export async function changeModStatus({
   return updated as ChangeModStatusOutput;
 }
 
+export async function checkIfModExists(id: string): Promise<boolean> {
+  return !!(await Mod.exists({ _id: id }));
+}
+
+export async function createModWithPreviewPhoto(
+  { categorySlugs, name, previewPhoto, specification }: CreateModInput,
+  {
+    checkCategories = checkIfCategoryExists,
+    createSlugForMod = createSlugFromTwoTexts,
+    uploadImage = uploadImageToCloudinary,
+  } = {},
+): Promise<CreateModOutput> {
+  const previewPhotoUrl = await uploadImage(previewPhoto.buffer);
+
+  const validateCategories = await checkCategories(categorySlugs);
+
+  if (!validateCategories.length) {
+    throw new BadRequestError(
+      'No valid subCategory slugs found for provided slugs.',
+      undefined,
+      true,
+    );
+  }
+
+  const modSlug = createSlugForMod(name, specification.modAuthor);
+
+  return Mod.create({
+    categories: validateCategories,
+    name,
+    previewPhoto: previewPhotoUrl,
+    slug: modSlug,
+    specification,
+  });
+}
+
+export async function getPerSixMods({
+  page = 1,
+  subCategory = null,
+}: GetPerSixModsInput): Promise<GetPerSixModsOutput> {
+  const limit = 6;
+
+  const query: FilterQuery<IMod> = { isPublished: true };
+
+  if (subCategory) {
+    query.categories = { $in: [subCategory] };
+  }
+
+  const [mods, totalCount] = await Promise.all([
+    Mod.find(query)
+      .select(
+        '-_id name previewPhoto specification.modAuthor isDeluxe categories slug',
+      )
+      .sort({ createdAt: -1 })
+      .limit(limit * 1)
+      .skip((page - 1) * limit)
+      .lean(),
+    Mod.countDocuments(query),
+  ]);
+
+  return { mods, totalCount };
+}
+
 export async function replacePreviewPhoto(
   {
     modId,
@@ -121,10 +131,6 @@ export async function replacePreviewPhoto(
   mod.previewPhoto = newUrl;
   await mod.save();
   return { _id: mod._id, previewPhotoUrl: mod.previewPhoto };
-}
-
-export async function checkIfModExists(id: string): Promise<boolean> {
-  return !!(await Mod.exists({ _id: id }));
 }
 
 export async function updateModReviewId(

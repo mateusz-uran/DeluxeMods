@@ -1,29 +1,31 @@
-import { Schema, model } from 'mongoose';
+import { model, Schema } from 'mongoose';
+
 import { IMod } from '../interfaces/mod.interface';
 
 const modSchema = new Schema<IMod>(
   {
-    name: { type: String, required: true },
-    previewPhoto: { type: String, required: true },
-    specification: {
-      link: { type: String, required: true },
-      modAuthor: { type: String, required: true },
-    },
-    isPublished: { type: Boolean, required: true, default: false },
-    isDeluxe: { type: Boolean, required: true, default: false },
     categories: [
       {
-        type: String,
         required: true,
+        type: String,
       },
     ],
-    slug: { type: String, required: true },
-
+    isDeluxe: { default: false, required: true, type: Boolean },
+    isPublished: { default: false, required: true, type: Boolean },
+    name: { required: true, type: String },
+    previewPhoto: { required: true, type: String },
     reviewId: {
-      type: Schema.Types.ObjectId,
       ref: 'Review',
       required: false,
-      unique: true,
+      sparse: true,
+      type: Schema.Types.ObjectId,
+      unique: true
+    },
+    slug: { required: true, type: String },
+
+    specification: {
+      link: { required: true, type: String },
+      modAuthor: { required: true, type: String },
     },
   },
   {
