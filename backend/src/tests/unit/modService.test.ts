@@ -1,3 +1,19 @@
+import { Types } from 'mongoose';
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  type Mock,
+  MockInstance,
+  vi,
+} from 'vitest';
+
+import {
+  ChangeModStatusOutput,
+  CreateModInput,
+} from '../../interfaces/mod.interface';
 import Mod from '../../models/Mod';
 import {
   changeModStatus,
@@ -8,22 +24,6 @@ import {
   updateModReviewId,
 } from '../../service/mod.service';
 import { createFakeMods, FakeMod } from '../helpers/mods.helper';
-import {
-  ChangeModStatusOutput,
-  CreateModInput,
-} from '../../interfaces/mod.interface';
-import { Types } from 'mongoose';
-
-import {
-  beforeEach,
-  afterEach,
-  describe,
-  expect,
-  it,
-  vi,
-  type Mock,
-  MockInstance,
-} from 'vitest';
 
 describe('Mod service unit tests', () => {
   const arraySize = 6;
@@ -71,8 +71,8 @@ describe('Mod service unit tests', () => {
     it('should return last six mods by category', async () => {
       const page = 1;
       const result = await getPerSixMods({
-        subCategory: modCategory,
         page,
+        subCategory: modCategory,
       });
 
       expect(result.mods).to.have.lengthOf(arraySize);
@@ -91,6 +91,7 @@ describe('Mod service unit tests', () => {
     const fakeValidCategories = ['small'];
 
     const modInput: CreateModInput = {
+      categorySlugs: ['small'],
       name: 'John Deere 6R',
       previewPhoto: {
         buffer: Buffer.from('img'),
@@ -99,16 +100,15 @@ describe('Mod service unit tests', () => {
         link: 'https://some-random-url.com',
         modAuthor: 'John Doe',
       },
-      categorySlugs: ['small'],
     };
 
     beforeEach(() => {
       vi.spyOn(Mod, 'create').mockResolvedValue({
+        categories: fakeValidCategories,
         name: modInput.name,
         previewPhoto: fakeUrl,
-        specification: modInput.specification,
-        categories: fakeValidCategories,
         slug: fakeSlug,
+        specification: modInput.specification,
       } as any);
     });
 
@@ -121,12 +121,11 @@ describe('Mod service unit tests', () => {
       const fakeCategories = vi.fn().mockResolvedValue(fakeValidCategories);
       const fakeSlugCreated = vi.fn().mockResolvedValue(fakeSlug);
 
-      const result = await createModWithPreviewPhoto(
-        modInput,
-        fakeUpload,
-        fakeCategories,
-        fakeSlugCreated,
-      );
+      const result = await createModWithPreviewPhoto(modInput, {
+        checkCategories: fakeCategories,
+        createSlugForMod: fakeSlugCreated,
+        uploadImage: fakeUpload,
+      });
 
       expect(fakeUpload).toHaveBeenCalledOnce();
       expect(fakeUpload).toHaveBeenCalledWith(modInput.previewPhoto.buffer);
@@ -151,12 +150,11 @@ describe('Mod service unit tests', () => {
       const fakeCreateSlug = vi.fn().mockReturnValue(fakeSlug);
 
       await expect(
-        createModWithPreviewPhoto(
-          modInput,
-          fakeUpload,
-          fakeCheckCategories,
-          fakeCreateSlug,
-        ),
+        createModWithPreviewPhoto(modInput, {
+          checkCategories: fakeCheckCategories,
+          createSlugForMod: fakeCreateSlug,
+          uploadImage: fakeUpload,
+        }),
       ).rejects.toThrow('No valid subCategory slugs found for provided slugs.');
     });
 
@@ -166,12 +164,11 @@ describe('Mod service unit tests', () => {
       const fakeCreateSlug = vi.fn();
 
       await expect(
-        createModWithPreviewPhoto(
-          modInput,
-          fakeUpload,
-          fakeCheckCategories,
-          fakeCreateSlug,
-        ),
+        createModWithPreviewPhoto(modInput, {
+          checkCategories: fakeCheckCategories,
+          createSlugForMod: fakeCreateSlug,
+          uploadImage: fakeUpload,
+        }),
       ).rejects.toThrow('Upload failed');
 
       expect(fakeCheckCategories).not.toHaveBeenCalled();
@@ -189,10 +186,10 @@ describe('Mod service unit tests', () => {
     it('should update only isPublished', async () => {
       const slug = 'some-mod';
       const updatedMod: ChangeModStatusOutput = {
-        slug,
-        name: 'Test mod',
-        isPublished: true,
         isDeluxe: false,
+        isPublished: true,
+        name: 'Test mod',
+        slug,
       };
 
       const leanMock = vi.fn().mockResolvedValue(updatedMod);
@@ -202,8 +199,8 @@ describe('Mod service unit tests', () => {
         .mockReturnValue({ select: selectMock } as any);
 
       const result = await changeModStatus({
-        slug,
         isPublished: true,
+        slug,
       });
 
       expect(findOneAndUpdateMock).toBeCalledWith(
@@ -218,10 +215,10 @@ describe('Mod service unit tests', () => {
     it('should update only isDeluxe', async () => {
       const slug = 'another-mod';
       const updatedMod: ChangeModStatusOutput = {
-        slug,
-        name: 'Test mod',
-        isPublished: false,
         isDeluxe: true,
+        isPublished: false,
+        name: 'Test mod',
+        slug,
       };
 
       const leanMock = vi.fn().mockResolvedValue(updatedMod);
@@ -230,7 +227,7 @@ describe('Mod service unit tests', () => {
         .spyOn(Mod, 'findOneAndUpdate')
         .mockReturnValue({ select: selectMock } as any);
 
-      const result = await changeModStatus({ slug, isDeluxe: true });
+      const result = await changeModStatus({ isDeluxe: true, slug });
 
       expect(findOneAndUpdateStub).toBeCalledWith(
         { slug },
@@ -244,10 +241,10 @@ describe('Mod service unit tests', () => {
     it('should update both isPublished and isDeluxe', async () => {
       const slug = 'multi-change-mod';
       const updatedMod: ChangeModStatusOutput = {
-        slug,
-        name: 'Mod C',
-        isPublished: false,
         isDeluxe: false,
+        isPublished: false,
+        name: 'Mod C',
+        slug,
       };
 
       const leanMock = vi.fn().mockResolvedValue(updatedMod);
@@ -257,14 +254,14 @@ describe('Mod service unit tests', () => {
         .mockReturnValue({ select: selectMock } as any);
 
       const result = await changeModStatus({
-        slug,
-        isPublished: false,
         isDeluxe: false,
+        isPublished: false,
+        slug,
       });
 
       expect(findOneAndUpdateMock).toBeCalledWith(
         { slug },
-        { isPublished: false, isDeluxe: false },
+        { isDeluxe: false, isPublished: false },
         { new: true },
       );
 

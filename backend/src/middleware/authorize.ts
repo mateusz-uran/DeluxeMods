@@ -1,14 +1,26 @@
-import jwt, { JwtPayload } from 'jsonwebtoken';
-import User from '../models/User';
-import Role from '../models/Role';
-import { ForbiddenError, UnauthorizedError } from '../utils/errors/CustomError';
 import type { NextFunction, Request, Response } from 'express';
+
+import jwt, { JwtPayload } from 'jsonwebtoken';
+
 import config from '../config/env';
+import { IRole } from '../interfaces/user.interface';
+import Role from '../models/Role';
+import User from '../models/User';
+import { ForbiddenError, UnauthorizedError } from '../utils/errors/CustomError';
 
 export interface TokenPayload extends JwtPayload {
   _id: string;
   email: string;
   roles: string[];
+}
+
+interface AuthenticatedRequest extends Request {
+  cookies: {
+    [key: string]: string | undefined;
+    accessToken?: string;
+    refreshToken?: string;
+  };
+  user?: TokenPayload;
 }
 
 const CACHE_TTL_MS = process.env.NODE_ENV === 'test' ? 0 : 5000;
@@ -22,8 +34,8 @@ const fetchPermissions = async (roleName: string): Promise<string[]> => {
     return cached.perms;
   }
 
-  const role = await Role.findOne({ name: roleName }).lean();
-  const perms = role?.permissions ?? [];
+  const role = await Role.findOne({ name: roleName }).lean<IRole>();
+  const perms: string[] = role?.permissions ?? [];
 
   if (CACHE_TTL_MS > 0) {
     roleCache.set(roleName, { perms, timestamp: now });
@@ -34,13 +46,10 @@ const fetchPermissions = async (roleName: string): Promise<string[]> => {
 
 export const cookieAuthorize =
   (requiredPermissions: string[]) =>
-  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    let token: string | null = null;
+  async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+    let token: null | string = null;
 
-    if (
-      req.headers.authorization &&
-      req.headers.authorization.startsWith('Bearer ')
-    ) {
+    if (req.headers.authorization?.startsWith('Bearer ')) {
       token = req.headers.authorization.split(' ')[1];
     } else if (req.cookies.accessToken) {
       token = req.cookies.accessToken;
@@ -49,7 +58,8 @@ export const cookieAuthorize =
     const refreshToken = req.cookies.refreshToken;
 
     if (!token) {
-      return next(new UnauthorizedError());
+      next(new UnauthorizedError());
+      return;
     }
 
     try {
@@ -69,30 +79,35 @@ export const cookieAuthorize =
       );
 
       if (!hasPermission) {
-        return next(new ForbiddenError());
+        next(new ForbiddenError());
+        return;
       }
 
       req.user = decodedAccessToken;
       next();
-    } catch (error: any) {
-      if (error.name === 'TokenExpiredError' && refreshToken) {
+    } catch (error: unknown) {
+      if (isTokenExpiredError(error) && refreshToken) {
         try {
           const decodedRefreshToken = jwt.verify(
             refreshToken,
             config.refreshSecret,
           ) as TokenPayload;
-          const user = await User.findById(decodedRefreshToken._id).populate(
-            'roles',
-          );
+
+          const user = await User.findById(decodedRefreshToken._id).populate<
+            IRole[]
+          >('roles');
 
           if (!user) {
-            return next(new UnauthorizedError('User not found.'));
+            next(new UnauthorizedError('User not found.'));
+            return;
           }
+
+          const roles = (user.roles as IRole[]).map((r) => r.name);
 
           const payload: TokenPayload = {
             _id: user._id.toString(),
             email: user.email,
-            roles: user.roles.map((r: any) => r.name),
+            roles,
           };
 
           const newAccessToken = jwt.sign(payload, config.tokenSecret, {
@@ -101,20 +116,33 @@ export const cookieAuthorize =
 
           res.cookie('accessToken', newAccessToken, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
+            maxAge: 15 * 60 * 1000,
             sameSite: 'strict',
-            maxAge: 15 * 60 * 1000, // 15 minutes
+            secure: process.env.NODE_ENV === 'production',
           });
 
           req.user = payload;
           next();
-        } catch (error) {
+        } catch {
           res.clearCookie('refreshToken');
-          return next(new ForbiddenError('Invalid refresh token'));
+          next(new ForbiddenError('Invalid refresh token'));
         }
-      } else {
+      } else if (error instanceof Error) {
         console.error(`Token error: ${error.message}`);
-        return next(new UnauthorizedError('Invalid token'));
+        next(new UnauthorizedError('Invalid token'));
+      } else {
+        next(new UnauthorizedError('Invalid token'));
       }
     }
   };
+
+function isTokenExpiredError(
+  err: unknown,
+): err is { message: string; name: 'TokenExpiredError'; } {
+  return (
+    typeof err === 'object' &&
+    err !== null &&
+    'name' in err &&
+    (err as { name?: unknown }).name === 'TokenExpiredError'
+  );
+}

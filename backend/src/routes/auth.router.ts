@@ -1,4 +1,5 @@
 import express from "express";
+
 import { loginUser, logoutUser } from "../controller/auth.controller";
 import { validateRequest } from "../middleware/validate";
 import { loginSchema } from "../schemas/userSchema";

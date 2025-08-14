@@ -1,4 +1,5 @@
 import express from 'express';
+
 import { registerUser, updateUserRole } from '../controller/user.controller';
 import { cookieAuthorize } from '../middleware/authorize';
 import { validateRequest } from '../middleware/validate';

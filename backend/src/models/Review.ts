@@ -1,15 +1,16 @@
 import { model, Schema } from 'mongoose';
+
 import { IReview, STATUS_TYPES } from '../interfaces/review.interface';
 
 const reviewSchema = new Schema<IReview>({
-  author: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-  text: { type: String, required: true },
+  author: { ref: 'User', required: true, type: Schema.Types.ObjectId },
+  slug: { required: true, type: String },
   status: {
-    type: String,
-    enum: Object.values(STATUS_TYPES),
     default: STATUS_TYPES.CREATED,
+    enum: Object.values(STATUS_TYPES),
+    type: String,
   },
-  slug: { type: String, required: true },
+  text: { required: true, type: String },
 });
 
 const Review = model<IReview>('Review', reviewSchema);

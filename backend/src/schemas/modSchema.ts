@@ -12,24 +12,15 @@ export const modQuerySchema = z.object({
   }),
 });
 
+export type ModQueryValidated = z.infer<typeof modQuerySchema>;
+
+interface ISpecification {
+  link: string;
+  modAuthor: string;
+}
+
 export const createModBodySchema = z.object({
   body: z.object({
-    name: z.string().min(5),
-    specification: z
-      .transform((val: string) => JSON.parse(val))
-      .pipe(
-        z
-          .object({
-            link: z.url('Must be a valid URL.'),
-            modAuthor: z
-              .string()
-              .min(2, 'Mod author must be at least 2 characters.'),
-          })
-          .refine(
-            (spec) => spec.link.startsWith('http'),
-            'Link must start with http or https.',
-          ),
-      ),
     categories: z.preprocess(
       (val) => {
         if (typeof val === 'string') return [val];
@@ -43,5 +34,26 @@ export const createModBodySchema = z.object({
         )
         .transform((arr) => arr.map((slug) => slug.toLowerCase())),
     ),
+    name: z.string().min(5),
+    specification: z
+      .transform((val: string) => {
+        const parsed: { link: string; modAuthor: string } = JSON.parse(val) as ISpecification;
+        return parsed;
+      })
+      .pipe(
+        z
+          .object({
+            link: z.url('Must be a valid URL.'),
+            modAuthor: z
+              .string()
+              .min(2, 'Mod author must be at least 2 characters.'),
+          })
+          .refine(
+            (spec) => spec.link.startsWith('http'),
+            'Link must start with http or https.',
+          ),
+      ),
   }),
 });
+
+export type CreateModValidated = z.infer<typeof createModBodySchema>;

@@ -1,27 +1,28 @@
-import { createReview, updateReviewStatus } from '../../service/review.service';
-import Review from '../../models/Review';
-import { IReview, STATUS_TYPES } from '../../interfaces/review.interface';
-import { Types } from 'mongoose';
-
-import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
 import type { MockInstance } from 'vitest';
+
+import { Types } from 'mongoose';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { IReview, STATUS_TYPES } from '../../interfaces/review.interface';
+import Review from '../../models/Review';
+import { createReview, updateReviewStatus } from '../../service/review.service';
 
 describe('Review service unit tests', () => {
   describe('createReview', () => {
     const fakeUser = { _id: new Types.ObjectId(), name: 'John Doe' };
 
     const reviewInput = {
-      userId: 'user123',
-      text: 'Great mod!',
       modId: 'mod789',
+      text: 'Great mod!',
+      userId: 'user123',
     };
 
     const reviewOutput: IReview = {
       _id: new Types.ObjectId(),
       author: fakeUser._id,
-      text: 'Great mod!',
-      status: STATUS_TYPES.CREATED,
       slug: 'test-slug',
+      status: STATUS_TYPES.CREATED,
+      text: 'Great mod!',
     } as unknown as IReview;
 
     beforeEach(() => {

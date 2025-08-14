@@ -2,25 +2,25 @@ import { ICategory } from '../../interfaces/modCategory.interface';
 import Mod from '../../models/Mod';
 import ModCategories from '../../models/ModCategories';
 
-export type FakeMod = {
+export interface FakeMod {
+  categories: string[];
+  isDeluxe: boolean;
+  isPublished: boolean;
   name: string;
   previewPhoto: string;
-  isPublished: boolean;
-  isDeluxe: boolean;
-  categories: string[];
-};
+}
 
-export type FullFakeMod = {
+export interface FullFakeMod {
+  categories: string[];
+  isDeluxe: boolean;
+  isPublished: boolean;
   name: string;
   previewPhoto: string;
-  specification: { link: string; modAuthor: string };
-  isPublished: boolean;
-  isDeluxe: boolean;
-  categories: string[];
   slug: string;
-};
+  specification: { link: string; modAuthor: string };
+}
 
-type ValueOrFactor<T> = T | ((index: number) => T);
+type ValueOrFactor<T> = ((index: number) => T) | T;
 
 export const createFakeCategoriesInsideDB = async (
   categories: { name: string; subCategories: string[] }[],
@@ -29,9 +29,9 @@ export const createFakeCategoriesInsideDB = async (
     categories.map((category) =>
       ModCategories.create({
         name: category.name,
-        subCategory: category.subCategories.map((subCategory, j) => ({
+        subCategory: category.subCategories.map((subCategory) => ({
           name: subCategory,
-          slug: `${subCategory.toLowerCase().replace(/\s+/g, '-')}`,
+          slug: subCategory.toLowerCase().replace(/\s+/g, '-'),
         })),
       }),
     ),
@@ -45,11 +45,11 @@ export function createFakeMods(
   subCategory: string[],
 ): FakeMod[] {
   return Array.from({ length: size }, (_, i) => ({
-    name: `M${i}`,
-    previewPhoto: `u${i}`,
-    isPublished,
-    isDeluxe,
     categories: subCategory,
+    isDeluxe,
+    isPublished,
+    name: `M${String(i)}`,
+    previewPhoto: `u${String(i)}`,
   }));
 }
 
@@ -61,18 +61,18 @@ export const createFakeModsInsideDB = (
 ) => {
   const promises = Array.from({ length: size }, async (_, i) => {
     await Mod.create({
-      name: `Mod number ${i + 1}`,
-      previewPhoto: `Preview image ${i + 1}`,
-      specification: {
-        link: `https://example.com/mod-${i + 1}`,
-        modAuthor: `Author ${i + 1}`,
-      },
-      isPublished:
-        typeof isPublished === 'function' ? isPublished(i) : isPublished,
-      isDeluxe: typeof isDeluxe === 'function' ? isDeluxe(i) : isDeluxe,
       categories:
         typeof subCategory === 'function' ? subCategory(i) : subCategory,
-      slug: `mod-${i + 1}-author-${i + 1}`,
+      isDeluxe: typeof isDeluxe === 'function' ? isDeluxe(i) : isDeluxe,
+      isPublished:
+        typeof isPublished === 'function' ? isPublished(i) : isPublished,
+      name: `Mod number ${String(i + 1)}`,
+      previewPhoto: `Preview image ${String(i + 1)}`,
+      slug: `mod-${String(i + 1)}-author-${String(i + 1)}`,
+      specification: {
+        link: `https://example.com/mod-${String(i + 1)}`,
+        modAuthor: `Author ${String(i + 1)}`,
+      },
     });
   });
 

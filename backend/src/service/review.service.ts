@@ -8,7 +8,7 @@ import { checkIfModExists, updateModReviewId } from './mod.service';
 import { validateUserById } from './user.service';
 
 export async function createReview(
-  { userId, text, modId }: CreateReviewInput,
+  { modId, text, userId }: CreateReviewInput,
   {
     checkMod = checkIfModExists,
     updateMod = updateModReviewId,

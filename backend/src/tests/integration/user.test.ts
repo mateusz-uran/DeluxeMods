@@ -1,13 +1,13 @@
-import request from 'supertest';
 import { faker } from '@faker-js/faker';
+import request from 'supertest';
+import { beforeEach, describe, expect, it } from 'vitest';
+
 import app from '../../app';
 import { createTestRole } from '../helpers/role.helper';
 import {
   createTestUserWithRole,
   CreateUserOutput,
 } from '../helpers/user.helper';
-
-import { beforeEach, describe, expect, it } from 'vitest';
 
 describe('User controller integration test', () => {
   describe('registerUser', () => {
@@ -31,8 +31,8 @@ describe('User controller integration test', () => {
         .post(endpoint)
         .set('Cookie', admin.cookies.join('; '))
         .send({
-          name,
           email,
+          name,
           password: 'StrongPassword_123%^&',
         });
 
@@ -67,8 +67,8 @@ describe('User controller integration test', () => {
         .post(endpoint)
         .set('Cookie', admin.cookies)
         .send({
-          name: 'WeakPass',
           email: 'weak@example.com',
+          name: 'WeakPass',
           password: '123',
         });
 
@@ -80,8 +80,8 @@ describe('User controller integration test', () => {
 
     it('should reject duplicate email', async () => {
       const payload = {
-        name: 'John Doe',
         email: 'duplicate@example.com',
+        name: 'John Doe',
         password: 'StrongPassword_123%^&',
       };
 
@@ -105,8 +105,8 @@ describe('User controller integration test', () => {
         .post(endpoint)
         .set('Cookie', fakeAdmin.cookies)
         .send({
-          name: 'Hacker',
           email: 'hacker@example.com',
+          name: 'Hacker',
           password: 'StrongPassword_123%^&',
         });
 
@@ -191,14 +191,14 @@ describe('User controller integration test', () => {
       expect(res.status).toEqual(400);
       expect(res.body).toEqual(
         expect.objectContaining({
-          status: 'error',
           message: 'Validation failed',
+          status: 'error',
         }),
       );
       expect(res.body.errors[0]).toEqual(
         expect.objectContaining({
-          path: 'body.email',
           message: 'Invalid email address',
+          path: 'body.email',
         }),
       );
     });
@@ -229,14 +229,14 @@ describe('User controller integration test', () => {
       expect(res.status).toEqual(400);
       expect(res.body).toEqual(
         expect.objectContaining({
-          status: 'error',
           message: 'Validation failed',
+          status: 'error',
         }),
       );
       expect(res.body.errors[0]).toEqual(
         expect.objectContaining({
-          path: 'body.email',
           message: 'Invalid email address',
+          path: 'body.email',
         }),
       );
     });

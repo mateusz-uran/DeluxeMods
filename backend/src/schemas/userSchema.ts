@@ -8,13 +8,17 @@ export const loginSchema = z.object({
   }),
 });
 
+export type LoginValidated = z.infer<typeof loginSchema>;
+
 export const registerSchema = z.object({
   body: z.object({
-    name: z.string().min(3, { message: 'Name must be at least 3 characters' }),
     email: z.email({ message: 'Invalid email address' }),
+    name: z.string().min(3, { message: 'Name must be at least 3 characters' }),
     password: z.string().min(3, { message: 'Password is required' }),
   }),
 });
+
+export type RegisterValidated = z.infer<typeof registerSchema>
 
 export const updateRoleSchema = z.object({
   body: z.object({
@@ -29,3 +33,5 @@ export const updateRoleSchema = z.object({
       .optional(),
   }),
 });
+
+export type UpdateRoleValidated = z.infer<typeof updateRoleSchema>

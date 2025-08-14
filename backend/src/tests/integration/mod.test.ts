@@ -1,5 +1,9 @@
 import request from 'supertest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
 import app from '../../app';
+import * as uploadUtils from '../../utils/cloudinary.util';
+import { MAX_FILE_SIZE } from '../../utils/constants';
 import {
   createFakeCategoriesInsideDB,
   createFakeModsInsideDB,
@@ -9,10 +13,6 @@ import {
   createTestUserWithRole,
   CreateUserOutput,
 } from '../helpers/user.helper';
-
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-import * as uploadUtils from '../../utils/cloudinary.util';
-import { MAX_FILE_SIZE } from '../../utils/constants';
 
 describe('Mod controller integration test', () => {
   describe('GET getModsByParameter', () => {

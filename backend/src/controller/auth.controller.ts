@@ -1,53 +1,56 @@
 import { RequestHandler } from 'express';
-import { login } from '../service/user.service';
+
 import { LoginOutput } from '../interfaces/user.interface';
+import { LoginValidated } from '../schemas/userSchema';
+import { login } from '../service/user.service';
 
 export const loginUser: RequestHandler = async (req, res, next) => {
+  const { email, password, rememberMe } = (req.validated as LoginValidated)
+    .body;
+    
   try {
-    const { email, password, rememberMe } = req.validated?.body;
-
     const result: LoginOutput = await login(email, password, rememberMe);
 
     res.cookie('accessToken', result.accessToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
       maxAge: 15 * 60 * 1000, // 15 minutes
+      sameSite: 'strict',
+      secure: process.env.NODE_ENV === 'production',
     });
 
     res.cookie('refreshToken', result.refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
       maxAge: rememberMe ? 30 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000, // 30 days or 1 day
+      sameSite: 'strict',
+      secure: process.env.NODE_ENV === 'production',
     });
 
     return res.status(200).json({
-      message: 'User logged in successfully!',
-      email: result.email,
       accessToken: result.accessToken,
+      email: result.email,
+      message: 'User logged in successfully!',
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     next(error);
   }
 };
 
-export const logoutUser: RequestHandler = async (req, res, next) => {
+export const logoutUser: RequestHandler = (req, res, next) => {
   try {
     res.clearCookie('refreshToken', {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
+      secure: process.env.NODE_ENV === 'production',
     });
 
     res.clearCookie('accessToken', {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
+      secure: process.env.NODE_ENV === 'production',
     });
 
     return res.status(200).json({ message: 'User logged out!' });
-  } catch (error: any) {
+  } catch (error: unknown) {
     next(error);
   }
 };

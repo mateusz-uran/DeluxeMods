@@ -1,28 +1,29 @@
+import { faker } from '@faker-js/faker';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { faker } from '@faker-js/faker';
+
 import config from '../../config/env';
-import Role from '../../models/Role';
 import { IUser } from '../../interfaces/user.interface';
+import Role from '../../models/Role';
 import User from '../../models/User';
 
-type CreateUser = {
-  name?: string;
+export interface CreateUserOutput {
+  accessToken: string;
+  cookies: string[];
+  email: string;
+  name: string;
+  refreshToken: string;
+  role: string;
+}
+
+interface CreateUser {
   email?: string;
+  name?: string;
   password?: string;
   roleName?: string;
-};
+}
 
 type CreateUserInput = CreateUser | CreateUser[];
-
-export type CreateUserOutput = {
-  name: string;
-  email: string;
-  role: string;
-  cookies: string[];
-  accessToken: string;
-  refreshToken: string;
-};
 
 export const createTestUserWithRole = async (
   input: CreateUserInput = {},
@@ -31,8 +32,8 @@ export const createTestUserWithRole = async (
   const results: CreateUserOutput[] = [];
 
   for (const {
-    name = faker.internet.username(),
     email = faker.internet.email(),
+    name = faker.internet.username(),
     password = 'StrongPassword_123',
     roleName = 'REVIEWER',
   } of usersToCreate) {
@@ -44,8 +45,8 @@ export const createTestUserWithRole = async (
     const hashedPassword = await bcrypt.hash(password, 2);
 
     const user: IUser = await User.create({
-      name,
       email,
+      name,
       password: hashedPassword,
       roles: [role._id],
     });
@@ -69,12 +70,12 @@ export const createTestUserWithRole = async (
     ];
 
     results.push({
-      name: user.name,
-      email: user.email,
-      role: role.name,
-      cookies,
       accessToken,
+      cookies,
+      email: user.email,
+      name: user.name,
       refreshToken,
+      role: role.name,
     });
   }
 

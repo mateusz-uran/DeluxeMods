@@ -1,7 +1,8 @@
 import express from 'express';
+
+import { createMod, getModsByParameter } from '../controller/mod.controller';
 import { cookieAuthorize } from '../middleware/authorize';
 import multerUpload from '../middleware/multer';
-import { createMod, getModsByParameter } from '../controller/mod.controller';
 import { validateRequest } from '../middleware/validate';
 import { createModBodySchema, modQuerySchema } from '../schemas/modSchema';
 

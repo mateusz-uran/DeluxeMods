@@ -1,14 +1,15 @@
 import { NextFunction, Request, Response } from 'express';
+
 import { CustomError } from '../utils/errors/CustomError';
 
 export const errorHandler = (
   err: Error,
   req: Request,
   res: Response,
-  next: NextFunction,
+  next: NextFunction, // eslint-disable-line @typescript-eslint/no-unused-vars
 ) => {
   if (err instanceof CustomError) {
-    const { statusCode, errors, logging } = err;
+    const { errors, logging, statusCode } = err;
     if (logging) {
       console.error(
         JSON.stringify(

@@ -1,9 +1,9 @@
-import app from '../../app';
 import request from 'supertest';
-import { createTestUserWithRole } from '../helpers/user.helper';
-import { createTestRole } from '../helpers/role.helper';
-
 import { describe, expect, it } from 'vitest';
+
+import app from '../../app';
+import { createTestRole } from '../helpers/role.helper';
+import { createTestUserWithRole } from '../helpers/user.helper';
 
 describe('Auth controller integration test', () => {
   describe('loginUser', () => {

@@ -1,8 +1,9 @@
 import express from 'express';
+
+import { addReview, updateReview } from '../controller/review.controller';
+import { cookieAuthorize } from '../middleware/authorize';
 import { validateRequest } from '../middleware/validate';
 import { addReviewSchema, updateReviewSchema } from '../schemas/reviewSchema';
-import { cookieAuthorize } from '../middleware/authorize';
-import { addReview, updateReview } from '../controller/review.controller';
 
 const router = express.Router();
 

@@ -1,12 +1,13 @@
 import { model, Schema } from 'mongoose';
+
 import { ICategory } from '../interfaces/modCategory.interface';
 
 const categoriesSchema = new Schema<ICategory>({
-  name: { type: String, required: true, unique: true },
+  name: { required: true, type: String, unique: true },
   subCategory: [
     {
-      name: { type: String, required: true },
-      slug: { type: String, required: true },
+      name: { required: true, type: String },
+      slug: { required: true, type: String },
     },
   ],
 });

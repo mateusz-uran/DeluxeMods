@@ -1,10 +1,10 @@
 import { IRole } from '../../interfaces/user.interface';
 import Role from '../../models/Role';
 
-type CreateRole = {
+interface CreateRole {
   name?: string;
   permissions?: string[];
-};
+}
 
 type CreateRoleInput = CreateRole | CreateRole[];
 
@@ -16,9 +16,7 @@ export const createTestRole = async (
 
   for (const { name = 'REVIEWER', permissions = [] } of rolesToCreate) {
     let role = await Role.findOne({ name });
-    if (!role) {
-      role = await Role.create({ name, permissions });
-    }
+    role ??= await Role.create({ name, permissions });
     createdRoles.push(role);
   }
 

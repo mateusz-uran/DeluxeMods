@@ -1,14 +1,14 @@
 import bcrypt from 'bcrypt';
+import { Types } from 'mongoose';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+
+import Role from '../../models/Role';
+import User from '../../models/User';
 import { login, register, validateUserById } from '../../service/user.service';
 import {
   BadRequestError,
   UnauthorizedError,
 } from '../../utils/errors/CustomError';
-import User from '../../models/User';
-import Role from '../../models/Role';
-import { Types } from 'mongoose';
-
-import { afterEach, describe, expect, it, vi } from 'vitest';
 
 describe('User service unit tests', () => {
   afterEach(() => vi.restoreAllMocks());
@@ -74,8 +74,8 @@ describe('User service unit tests', () => {
       vi.spyOn(bcrypt, 'hash').mockResolvedValue('hashedPassword' as any);
 
       const createStub = vi.spyOn(User, 'create').mockResolvedValue({
-        name: 'John',
         email: 'john@example.com',
+        name: 'John',
       } as any);
 
       const result = await register('Test', 'test@email.com', 'StrongPass123!');
@@ -86,8 +86,8 @@ describe('User service unit tests', () => {
         'User registered with default role.',
       );
       expect(result.user).toEqual({
-        name: 'John',
         email: 'john@example.com',
+        name: 'John',
       });
     });
   });
@@ -129,9 +129,9 @@ describe('User service unit tests', () => {
 
     it('should return tokens and email if login is successful', async () => {
       const fakeUser = {
+        _id: new Types.ObjectId(),
         email: 'test@email.com',
         password: 'hashed',
-        _id: new Types.ObjectId(),
         roles: [],
       };
 
@@ -154,8 +154,8 @@ describe('User service unit tests', () => {
       });
 
       expect(result).toEqual({
-        email: fakeUser.email,
         accessToken: 'mockAccessToken',
+        email: fakeUser.email,
         refreshToken: 'mockRefreshToken',
       });
 
