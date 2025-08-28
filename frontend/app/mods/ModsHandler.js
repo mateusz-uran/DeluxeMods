@@ -1,6 +1,6 @@
 "use client";
 
-import api from "@/utils/api.js";
+import api from "@/utils/api";
 import React, { useEffect, useState } from "react";
 import styles from "./modsHandler.module.css"
 import PreviewMod from "@/components/mods/PreviewMod";

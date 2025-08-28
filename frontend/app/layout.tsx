@@ -22,7 +22,7 @@ export default function RootLayout({
     <html lang="en" className={`${inter.variable}`}>
       <body>
         <Navbar />
-        <main>{children}</main>
+        <main className="min-h-[calc(100vh-200px)] flex items-center">{children}</main>
         <Footer />
       </body>
     </html>
