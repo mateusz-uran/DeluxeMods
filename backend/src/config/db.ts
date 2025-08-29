@@ -1,6 +1,4 @@
 import mongoose from 'mongoose';
-import path from 'path';
-import { fileURLToPath } from 'url';
 
 import ModCategories from '../models/ModCategories';
 import Role from '../models/Role';
@@ -9,17 +7,11 @@ import { RoleData } from '../types/Role';
 import { logError } from '../utils/errors/logError';
 import { createSlug } from '../utils/slug.utils';
 import config from './env';
-import { readRolesFile } from './readJson';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const ROLE_PATH = path.resolve(__dirname, './json/roles.json');
-const CATEGORIES_PATH = path.resolve(__dirname, './json/categories.json');
+import { readCategories, readRoles } from './readJson';
 
 async function initializeModCategories(): Promise<void> {
   try {
-    const categories: CategoryData[] =
-      await readRolesFile<CategoryData[]>(CATEGORIES_PATH);
+    const categories: CategoryData[] = await readCategories();
 
     for (const category of categories) {
       const existingCategory = await ModCategories.findOne({
@@ -75,7 +67,7 @@ async function initializeModCategories(): Promise<void> {
 
 async function initializeRoles(): Promise<void> {
   try {
-    const roles: RoleData[] = await readRolesFile<RoleData[]>(ROLE_PATH);
+    const roles: RoleData[] = await readRoles();
 
     for (const role of roles) {
       const existingRole = await Role.findOne({ name: role.name });
@@ -120,7 +112,7 @@ export const connectDB = async (): Promise<void> => {
     await initializeModCategories();
     console.log(`Connected to mongo database: ${conn.connection.host}`);
   } catch (error: unknown) {
-    logError(error)
+    logError(error);
     process.exit(1);
   }
 };
