@@ -1,16 +1,36 @@
 "use client";
 
-import api from "@/utils/api.js";
+import api from "@/utils/api";
 import React, { useEffect, useState } from "react";
-import styles from "./modsHandler.module.css"
+import styles from "./modsHandler.module.css";
 import PreviewMod from "@/components/mods/PreviewMod";
 import Categories from "@/components/categories/Categories";
 import Link from "next/link";
 
-const MODS_PER_PAGE = 6;
+type ModsHandlerTypes = {
+  url: string;
+};
 
-export default function ModsHandler({ url }) {
-  const [data, setData] = useState({ mods: [], totalCount: 0 });
+interface ModsArray {
+  categories: string[];
+  isDeluxe: boolean;
+  name: string;
+  previewPhoto: string;
+  slug: string;
+  specification: {
+    modAuthor: string;
+  };
+}
+
+interface modData {
+  mods: ModsArray[];
+  totalCount: number;
+}
+
+const MODS_PER_PAGE: number = 6;
+
+export default function ModsHandler({ url }: ModsHandlerTypes) {
+  const [data, setData] = useState<modData>({ mods: [], totalCount: 0 });
 
   useEffect(() => {
     async function fetchMods() {
@@ -30,9 +50,9 @@ export default function ModsHandler({ url }) {
   //TODO: handle response when data array is empty
 
   return (
-    <div className={styles.page}>
-      <main className={styles.content}>
-        <div className={styles.modsWrapper}>
+    <div className="flex justify-center bg-[var(--background-gray-3)]">
+      <main className="mt-2 mr-2 pt-2">
+        <div className="grid grid-cols-2 auto-rows-auto gap-6">
           {data.mods.length > 0 ? (
             data.mods.map((mod) => <PreviewMod key={mod.slug} mod={mod} />)
           ) : (
@@ -40,18 +60,16 @@ export default function ModsHandler({ url }) {
           )}
         </div>
 
-        <div className={styles.pagination}>
+        <div className="flex justify-center items-center w-100 p-2">
           {[...Array(totalPages)].map((_, i) => (
-            <Link key={i} href={`/mods/page/${i + 1}`}>
-              <button>
-                {i + 1}
-              </button>
+            <Link key={i} href={`/mods?page=${i + 1}`}>
+              <button>{i + 1}</button>
             </Link>
           ))}
         </div>
       </main>
 
-      <aside className={styles.categoriesWrapper}>
+      <aside className="pt-2 bg-white flex">
         <Categories />
       </aside>
     </div>

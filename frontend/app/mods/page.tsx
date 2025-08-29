@@ -2,12 +2,10 @@
 import React from "react";
 import ModsHandler from "./ModsHandler";
 
-const PAGE_NUMBER = 1;
+const PAGE_NUMBER: number = 1;
 
 export default function ModsMainPage() {
-  const modsUrl = `/api/mod/all/${PAGE_NUMBER}`;
-
-  console.log("Rendering ModsMainPage")
+  const modsUrl: string = `/mod/all?page=${PAGE_NUMBER}`;
 
   return <ModsHandler url={modsUrl} />;
 }

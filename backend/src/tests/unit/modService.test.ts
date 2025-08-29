@@ -59,8 +59,8 @@ describe('Mod service unit tests', () => {
       const page = 1;
       const result = await getPerSixMods({ page });
 
-      expect(result.mods).to.have.lengthOf(arraySize);
-      expect(result.totalCount).to.equal(fakeTotalCount);
+      expect(result.mods).toHaveLength(arraySize);
+      expect(result.totalCount).toEqual(fakeTotalCount);
 
       expect(result).to.deep.equal({
         mods,
@@ -75,8 +75,8 @@ describe('Mod service unit tests', () => {
         subCategory: modCategory,
       });
 
-      expect(result.mods).to.have.lengthOf(arraySize);
-      expect(result.totalCount).to.equal(fakeTotalCount);
+      expect(result.mods).toHaveLength(arraySize);
+      expect(result.totalCount).toEqual(fakeTotalCount);
 
       expect(result).to.deep.equal({
         mods,

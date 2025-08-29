@@ -1,21 +1,27 @@
 import { BACKEND_URL } from "./config.client";
 
-const { default: axios } = require("axios");
-const { Router } = require("next/router");
+import {
+  default as axios,
+  AxiosError,
+  AxiosInstance,
+  AxiosResponse,
+} from "axios";
 
-const api = axios.create({
+const api: AxiosInstance = axios.create({
   baseURL: BACKEND_URL,
   withCredentials: true,
 });
 
 api.interceptors.response.use(
-  (response) => response,
-  (error) => {
+  (response: AxiosResponse) => response,
+  (error: AxiosError) => {
     if (
       error.response &&
       (error.response.status === 401 || error.response.status === 403)
     ) {
-      Router.push("/login");
+      if (typeof window !== "undefined") {
+        window.location.href = "/login";
+      }
     }
     return Promise.reject(error);
   }
