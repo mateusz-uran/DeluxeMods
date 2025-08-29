@@ -1,6 +1,4 @@
-import { ICategory } from '../../interfaces/modCategory.interface';
 import Mod from '../../models/Mod';
-import ModCategories from '../../models/ModCategories';
 
 export interface FakeMod {
   categories: string[];
@@ -21,22 +19,6 @@ export interface FullFakeMod {
 }
 
 type ValueOrFactor<T> = ((index: number) => T) | T;
-
-export const createFakeCategoriesInsideDB = async (
-  categories: { name: string; subCategories: string[] }[],
-): Promise<ICategory[]> => {
-  return Promise.all(
-    categories.map((category) =>
-      ModCategories.create({
-        name: category.name,
-        subCategory: category.subCategories.map((subCategory) => ({
-          name: subCategory,
-          slug: subCategory.toLowerCase().replace(/\s+/g, '-'),
-        })),
-      }),
-    ),
-  );
-};
 
 export function createFakeMods(
   size: number,

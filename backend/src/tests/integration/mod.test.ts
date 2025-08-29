@@ -5,7 +5,6 @@ import app from '../../app';
 import * as uploadUtils from '../../utils/cloudinary.util';
 import { MAX_FILE_SIZE } from '../../utils/constants';
 import {
-  createFakeCategoriesInsideDB,
   createFakeModsInsideDB,
 } from '../helpers/mods.helper';
 import { createTestRole } from '../helpers/role.helper';
@@ -13,6 +12,7 @@ import {
   createTestUserWithRole,
   CreateUserOutput,
 } from '../helpers/user.helper';
+import { createFakeCategoriesInsideDB } from '../helpers/categories.helper';
 
 describe('Mod controller integration test', () => {
   describe('GET getModsByParameter', () => {

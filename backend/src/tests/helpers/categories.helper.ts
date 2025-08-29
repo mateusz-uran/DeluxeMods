@@ -1,3 +1,4 @@
+import ModCategories from '../../models/ModCategories';
 import { createSlug } from '../../utils/slug.utils';
 
 interface FakeCategory {
@@ -33,3 +34,19 @@ export function createFakeCategories(): FakeCategory[] {
     })),
   }));
 }
+
+export const createFakeCategoriesInsideDB = async (
+  categories: { name: string; subCategories: string[] }[],
+): Promise<FakeCategory[]> => {
+  return Promise.all(
+    categories.map((category) =>
+      ModCategories.create({
+        name: category.name,
+        subCategory: category.subCategories.map((subCategory) => ({
+          name: subCategory,
+          slug: subCategory.toLowerCase().replace(/\s+/g, '-'),
+        })),
+      }),
+    ),
+  );
+};
