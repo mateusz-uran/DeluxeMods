@@ -50,8 +50,8 @@ export default function ModsHandler({ url }: ModsHandlerTypes) {
   //TODO: handle response when data array is empty
 
   return (
-    <div className="flex justify-center bg-[var(--background-gray-3)]">
-      <main className="mt-2 mr-2 pt-2">
+    <div className="max-w-[1000px] flex justify-center bg-[var(--background-gray-3)]">
+      <main className="mt-2 mr-2 pt-2 w-full">
         <div className="grid grid-cols-2 auto-rows-auto gap-6">
           {data.mods.length > 0 ? (
             data.mods.map((mod) => <PreviewMod key={mod.slug} mod={mod} />)
@@ -60,16 +60,18 @@ export default function ModsHandler({ url }: ModsHandlerTypes) {
           )}
         </div>
 
-        <div className="flex justify-center items-center w-100 p-2">
+        <div className="text-center w-full p-2 my-2 flex justify-center">
           {[...Array(totalPages)].map((_, i) => (
-            <Link key={i} href={`/mods?page=${i + 1}`}>
-              <button>{i + 1}</button>
+            <Link key={i} href={`/mods?page=${i + 1}`} className="group">
+              <button className="p-4 m-1 w-5 h-5 rounded-full flex text-center items-center justify-center bg-[var(--background-gray-2)] text-white group-hover:bg-[var(--background-gray-0)] transition-colors duration-200">
+                {i + 1}
+              </button>
             </Link>
           ))}
         </div>
       </main>
 
-      <aside className="pt-2 bg-white flex">
+      <aside className="w-[180px] pt-2 bg-white">
         <Categories />
       </aside>
     </div>
