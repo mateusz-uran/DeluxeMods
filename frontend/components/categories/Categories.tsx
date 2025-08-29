@@ -11,7 +11,7 @@ export default function Categories() {
   useEffect(() => {
     async function fetchCategories() {
       try {
-        const response = await api.get("/api/mod/categories");
+        const response = await api.get("/mod/categories");
         setCategories(response.data);
       } catch (error) {
         console.error("Failed to fetch categories from backend!");
