@@ -1,11 +1,11 @@
 import api from "@/utils/api";
 import React, { useEffect, useState } from "react";
-import styles from "./categories.module.css";
 import { FaArrowDown } from "react-icons/fa6";
 import Link from "next/link";
 
 interface ICategories {
   name: string;
+  slug: string;
   subCategory: {
     name: string;
     slug: string;
@@ -18,6 +18,7 @@ export default function Categories() {
   const [visibleCategories, setVisibleCategories] = useState<boolean[]>([]);
 
   useEffect(() => {
+    // TODO: fetch categories only once when needed
     async function fetchCategories() {
       try {
         const response = await api.get("/categories/all");
@@ -66,9 +67,9 @@ export default function Categories() {
             >
               {category.subCategory.map((sub, subIndex) => (
                 <li key={subIndex}>
-                  <Link href={`/mods/category/${sub.slug}`}>
+                  <Link href={`/mods?category=${sub.slug}&page=1`}>
                     <p
-                      className="hover:text-[var(--font-gray-dark-1)] transition-colors duration-200 "
+                      className="hover:text-[var(--font-gray-dark-1)] transition-colors duration-200"
                       onClick={(e) => e.stopPropagation()}
                     >
                       {sub.name}

@@ -2,7 +2,6 @@
 
 import api from "@/utils/api";
 import React, { useEffect, useState } from "react";
-import styles from "./modsHandler.module.css";
 import PreviewMod from "@/components/mods/PreviewMod";
 import Categories from "@/components/categories/Categories";
 import Link from "next/link";
@@ -46,8 +45,6 @@ export default function ModsHandler({ url }: ModsHandlerTypes) {
   }, [url]);
 
   const totalPages = Math.ceil(data.totalCount / MODS_PER_PAGE);
-
-  //TODO: handle response when data array is empty
 
   return (
     <div className="max-w-[1000px] flex justify-center bg-[var(--background-gray-3)]">
