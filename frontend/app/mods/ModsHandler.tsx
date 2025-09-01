@@ -46,7 +46,7 @@ export default function ModsHandler({ url }: ModsHandlerTypes) {
   const totalPages = Math.ceil(data.totalCount / MODS_PER_PAGE);
 
   return (
-    <>
+    <div className="flex flex-col justify-between h-full">
       <div className="grid grid-cols-2 auto-rows-auto gap-6">
         {data.mods.length > 0 ? (
           data.mods.map((mod) => <PreviewMod key={mod.slug} mod={mod} />)
@@ -68,6 +68,6 @@ export default function ModsHandler({ url }: ModsHandlerTypes) {
           </Link>
         ))}
       </div>
-    </>
+    </div>
   );
 }
