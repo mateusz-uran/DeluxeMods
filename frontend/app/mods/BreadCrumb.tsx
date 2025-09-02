@@ -31,12 +31,13 @@ export default function BreadCrumb() {
   if (transformedCategory) items.push(transformedCategory);
 
   return (
-    <div className="flex items-center py-2 text-xs text-[var(--font-gray-dark-1)]">
-      <FaHome className="mr-2 font-light" />
+    <div className="flex items-center mt-2 py-2 text-xs">
+      <FaHome className="font-light text-[var(--font-gray-dark-2)]" />
+      <FaArrowRight className="mx-2 font-light text-[var(--font-gray-dark-2)]" />
       {items.map((item, idx) => (
         <div key={idx} className="flex items-center">
-          <span>{item}</span>
-          {idx < items.length - 1 && <FaArrowRight className="mx-2" />}
+          <span className="font-normal text-[var(--font-gray-dark-1)]">{item}</span>
+          {idx < items.length - 1 && <FaArrowRight className="mx-2 text-[var(--font-gray-dark-2)]" />}
         </div>
       ))}
     </div>

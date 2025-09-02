@@ -11,6 +11,7 @@
   --font-gray-light: #f5f5f5;
   --font-gray-dark-0: #313131;
   --font-gray-dark-1: #626262;
+  --font-gray-dark-2: #adadad;
 }
 
 @layer base {
