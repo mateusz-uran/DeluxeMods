@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker';
-import { createSlugFromTwoTexts } from './slug.utils';
+import { createSlug, createSlugFromTwoTexts } from './slug.utils';
 import { readCategories } from '../config/readJson';
 import { CategoryData } from '../types/Categories';
 import Mod from '../models/Mod';
@@ -39,6 +39,8 @@ export async function seedDummyData(size: number) {
         Math.floor(Math.random() * randomCategory.subCategory.length)
       ];
 
+    const slugCategory = createSlug(randomSubCategory);
+
     await Mod.create({
       name: modName,
       previewPhoto: randomImage,
@@ -48,7 +50,7 @@ export async function seedDummyData(size: number) {
         link: faker.internet.url(),
         modAuthor: modAuthor,
       },
-      categories: [randomSubCategory.toLowerCase()],
+      categories: [slugCategory],
 
       slug: modSlug,
     });
