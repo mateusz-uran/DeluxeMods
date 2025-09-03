@@ -10,6 +10,8 @@ import modRouter from './routes/mod.router';
 import reviewRouter from './routes/review.router';
 import userRouter from './routes/user.router';
 
+import devRouter from './routes/dev.router'
+
 const app = express();
 
 app.use(
@@ -27,6 +29,10 @@ app.use('/user', userRouter);
 app.use('/review', reviewRouter);
 app.use('/mod', modRouter);
 app.use('/categories', modCategoriesRouter);
+
+if (process.env.NODE_ENV === 'development') {
+  app.use("/dev", devRouter)
+}
 
 app.use(errorHandler);
 
