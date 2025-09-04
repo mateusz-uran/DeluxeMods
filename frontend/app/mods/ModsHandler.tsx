@@ -3,7 +3,7 @@
 import api from "@/utils/api";
 import React, { useEffect, useState } from "react";
 import PreviewMod from "@/components/mods/PreviewMod";
-import Link from "next/link";
+import Pagination from "@/components/Pagination";
 
 type ModsHandlerTypes = {
   url: string;
@@ -25,10 +25,10 @@ interface modData {
   totalCount: number;
 }
 
-const MODS_PER_PAGE: number = 6;
-
 export default function ModsHandler({ url }: ModsHandlerTypes) {
   const [data, setData] = useState<modData>({ mods: [], totalCount: 0 });
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const pageSize: number = 6;
 
   useEffect(() => {
     async function fetchMods() {
@@ -41,9 +41,7 @@ export default function ModsHandler({ url }: ModsHandlerTypes) {
     }
 
     fetchMods();
-  }, [url]);
-
-  const totalPages = Math.ceil(data.totalCount / MODS_PER_PAGE);
+  }, [currentPage]);
 
   return (
     <div className="flex flex-col justify-between h-full">
@@ -55,18 +53,14 @@ export default function ModsHandler({ url }: ModsHandlerTypes) {
         )}
       </div>
 
-      <div className="text-center w-full p-2 my-2 flex justify-center">
-        {[...Array(totalPages)].map((_, i) => (
-          <Link key={i} href={`/mods?page=${i + 1}`} className="group">
-            <button
-              className="p-4 m-1 w-5 h-5 rounded-full flex text-center items-center 
-              justify-center bg-[var(--background-gray-2)] text-white group-hover:bg-[var(--background-gray-0)] 
-              transition-colors duration-200"
-            >
-              {i + 1}
-            </button>
-          </Link>
-        ))}
+      <div>
+        <Pagination
+          totalCount={data.totalCount}
+          pageSize={pageSize}
+          currentPage={currentPage}
+          onPageChange={setCurrentPage}
+          basePath="/mods"
+        />
       </div>
     </div>
   );
