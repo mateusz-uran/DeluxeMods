@@ -20,7 +20,6 @@ export default function Categories() {
   const [visibleCategories, setVisibleCategories] = useState<boolean[]>([]);
 
   useEffect(() => {
-    // TODO: fetch categories only once when needed
     async function fetchCategories() {
       try {
         const response = await api.get("/categories/all");
