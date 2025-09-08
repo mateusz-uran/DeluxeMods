@@ -52,8 +52,11 @@ export default function ModsHandler({ url }: ModsHandlerTypes) {
       <div className="flex items-center justify-center">
         {isLoading ? null : data.mods.length > 0 ? (
           <div className="grid grid-cols-2 auto-rows-auto gap-6">
-            {data.mods.map((mod) => (
-              <PreviewMod key={mod.slug} mod={mod} />
+            {data.mods.map((mod, idx) => (
+              <div className="flex relative">
+                <p className="text-xs font-bold text-red-500 bg-gray-300 absolute z-99 p-2">{mod.slug}</p>
+                <PreviewMod key={mod.slug} mod={mod} />
+              </div>
             ))}
           </div>
         ) : (

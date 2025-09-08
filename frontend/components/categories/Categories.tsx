@@ -1,3 +1,5 @@
+"use client";
+
 import api from "@/utils/api";
 import React, { useEffect, useState } from "react";
 import { FaArrowDown } from "react-icons/fa6";
@@ -13,9 +15,13 @@ interface ICategories {
 }
 [];
 
+// export default function Categories({ initialCategories }: { initialCategories: ICategories[] }) {
 export default function Categories() {
+  // const [categories] = useState(initialCategories);
   const [categories, setCategories] = useState<ICategories[]>([]);
   const [visibleCategories, setVisibleCategories] = useState<boolean[]>([]);
+
+  console.log("Rendering Categories.tsx")
 
   useEffect(() => {
     // TODO: fetch categories only once when needed
