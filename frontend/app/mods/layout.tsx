@@ -2,19 +2,10 @@ import Categories from "@/components/categories/Categories";
 import React from "react";
 
 import BreadCrumb from "./BreadCrumb";
-import { BACKEND_URL } from "@/utils/config.server";
 
 export default async function ModsLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  console.log("Rendered layout.tsx from /mods");
-
-  // const res = await fetch(`${BACKEND_URL}/categories/all`, {
-  //   cache: "force-cache", // or "no-store" if always fresh
-  //   credentials: "include",
-  // });
-
-  // const categories = await res.json();
 
   return (
     <div>
@@ -25,7 +16,6 @@ export default async function ModsLayout({
           <h4 className="pl-2 font-bold text-[var(--font-gray-dark-1)]">
             Categories
           </h4>
-          {/* <Categories initialCategories={categories}/> */}
           <Categories/>
         </aside>
       </div>

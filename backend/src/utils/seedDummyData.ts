@@ -23,7 +23,7 @@ const images = [
 export async function seedDummyData(size: number) {
   const categories: CategoryData[] = await readCategories();
 
-  const promises = Array.from({ length: size }, async (_, i) => {
+  for (let i = 0; i < size; i++) {
     const modName = faker.word.words(2);
     const modAuthor = faker.person.middleName();
     const modSlug = createSlugFromTwoTexts(modName, modAuthor);
@@ -54,7 +54,7 @@ export async function seedDummyData(size: number) {
 
       slug: modSlug,
     });
-  });
+  }
 
-  return Promise.all(promises);
+  return size;
 }

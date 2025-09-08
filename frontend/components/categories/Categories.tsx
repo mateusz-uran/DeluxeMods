@@ -15,9 +15,7 @@ interface ICategories {
 }
 [];
 
-// export default function Categories({ initialCategories }: { initialCategories: ICategories[] }) {
 export default function Categories() {
-  // const [categories] = useState(initialCategories);
   const [categories, setCategories] = useState<ICategories[]>([]);
   const [visibleCategories, setVisibleCategories] = useState<boolean[]>([]);
 
