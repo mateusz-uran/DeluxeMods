@@ -19,8 +19,6 @@ export default function Categories() {
   const [categories, setCategories] = useState<ICategories[]>([]);
   const [visibleCategories, setVisibleCategories] = useState<boolean[]>([]);
 
-  console.log("Rendering Categories.tsx")
-
   useEffect(() => {
     // TODO: fetch categories only once when needed
     async function fetchCategories() {
