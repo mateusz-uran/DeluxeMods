@@ -16,6 +16,6 @@ export function createSlugFromTwoTexts(
 ): string {
   const textOneSlug = createSlug(textOne);
   const textTwoSlug = createSlug(textTwo);
-  const uniquePart = nanoid(6);
+  const uniquePart = nanoid(9);
   return `${textTwoSlug}-${textOneSlug}-${uniquePart}`;
 }
