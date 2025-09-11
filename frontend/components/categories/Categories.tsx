@@ -1,18 +1,31 @@
+"use client";
+
 import api from "@/utils/api";
 import React, { useEffect, useState } from "react";
-import styles from "./categories.module.css";
 import { FaArrowDown } from "react-icons/fa6";
 import Link from "next/link";
 
+interface ICategories {
+  name: string;
+  slug: string;
+  subCategory: {
+    name: string;
+    slug: string;
+  }[];
+}
+[];
+
 export default function Categories() {
-  const [categories, setCategories] = useState([]);
-  const [visibleCategories, setVisibleCategories] = useState({});
+  const [categories, setCategories] = useState<ICategories[]>([]);
+  const [visibleCategories, setVisibleCategories] = useState<boolean[]>([]);
 
   useEffect(() => {
     async function fetchCategories() {
       try {
-        const response = await api.get("/mod/categories");
+        const response = await api.get("/categories/all");
         setCategories(response.data);
+
+        setVisibleCategories(new Array(response.data.length).fill(false));
       } catch (error) {
         console.error("Failed to fetch categories from backend!");
       }
@@ -21,40 +34,43 @@ export default function Categories() {
     fetchCategories();
   }, []);
 
-  return categories.length > 0 ? (
-    <ul className={styles.categories}>
+  const toggleCategory = (index: number) => {
+    const newVisible = [...visibleCategories];
+    newVisible[index] = !newVisible[index];
+    setVisibleCategories(newVisible);
+  };
+
+  if (categories.length === 0) return <p>Categories are missing.</p>;
+
+  return (
+    <ul className="list-none flex flex-col items-left gap-4 mx-0 my-2">
       {categories.map((category, index) => (
-        <li key={index} className={styles.categoryItem}>
+        <li key={index} className="max-w-200 text-sm">
           <button
-            className={styles.btnCategory}
-            onClick={() => {
-              setVisibleCategories((prev) => ({
-                ...prev,
-                [index]: !prev[index],
-              }));
-            }}
+            className="group text-left p-1 rounded-xs"
+            onClick={() => toggleCategory(index)}
           >
-            <div className={styles.singleCat}>
+            <div className="flex items-center gap-2 group-hover:text-[var(--font-gray-dark-1)] transition-colors duration-200">
               {category.subCategory.length > 0 && (
-                <span className={styles.iconWrapper}>
+                <span className="text-gray-400 ">
                   <FaArrowDown />
                 </span>
               )}
-              <div className={styles.catNameWrapper}>
-                <p>{category.categoryName}</p>
+              <div>
+                <p>{category.name}</p>
               </div>
             </div>
             <ul
-              className={styles.subCategoryList}
+              className="[padding-left:calc(1.25rem+0.5rem)]"
               style={{
                 display: visibleCategories[index] ? "block" : "none",
               }}
             >
               {category.subCategory.map((sub, subIndex) => (
-                <li key={subIndex} className={styles.subCatItem}>
-                  <Link href={`/mods/category/${sub.slug}`}>
+                <li key={subIndex}>
+                  <Link href={`/mods?category=${sub.slug}&page=1`}>
                     <p
-                      className={styles.singleSubCat}
+                      className="hover:text-[var(--font-gray-dark-1)] transition-colors duration-200"
                       onClick={(e) => e.stopPropagation()}
                     >
                       {sub.name}
@@ -67,7 +83,5 @@ export default function Categories() {
         </li>
       ))}
     </ul>
-  ) : (
-    <p>Categories are missing.</p>
   );
 }
