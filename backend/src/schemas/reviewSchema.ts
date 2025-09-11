@@ -9,7 +9,6 @@ export const addReviewSchema = z.object({
     userId: z.string().regex(/^[a-f\d]{24}$/i, 'Invalid userId format'),
   }),
 });
-
 export type AddReviewValidated = z.infer<typeof addReviewSchema>;
 
 export const updateReviewSchema = z.object({
@@ -18,5 +17,17 @@ export const updateReviewSchema = z.object({
     status: z.enum(Object.values(STATUS_TYPES)),
   }),
 });
-
 export type UpdateReviewValidated = z.infer<typeof updateReviewSchema>;
+
+export const getReviewWithModQuerySchema = z.object({
+  query: z.object({
+    slug: z
+      .string()
+      .min(5)
+      .max(150)
+      .regex(/^[a-z0-9-]+$/),
+  }),
+});
+export type GetReviewWithModValidated = z.infer<
+  typeof getReviewWithModQuerySchema
+>;
