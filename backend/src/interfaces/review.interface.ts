@@ -20,6 +20,25 @@ export interface CreateReviewInput {
   userId: string;
 }
 
+export interface GetReviewWithMod {
+  name: string;
+  previewPhoto: string;
+  isDeluxe: boolean;
+  specification: {
+    link: string;
+    modAuthor: string;
+  };
+  username: string;
+  slug: string;
+  text: string;
+}
+
+export interface GetSingleReview {
+  author: { username: string };
+  slug: string;
+  text: string;
+}
+
 export interface IReview extends Document<Types.ObjectId> {
   author: Types.ObjectId;
   slug: string;

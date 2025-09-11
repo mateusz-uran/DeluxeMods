@@ -45,7 +45,7 @@ export interface GetSingleModOutput {
   name: string;
   previewPhoto: string;
   isDeluxe: boolean;
-  reviewId: Types.ObjectId;
+  reviewId: string;
   specification: {
     link: string;
     modAuthor: string;

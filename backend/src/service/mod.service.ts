@@ -165,5 +165,8 @@ export async function getSingleMod(slug: string): Promise<GetSingleModOutput> {
     );
   }
 
-  return mod as GetSingleModOutput;
+  return {
+    ...mod,
+    reviewId: mod.reviewId ? mod.reviewId.toString() : '',
+  } as GetSingleModOutput;
 }

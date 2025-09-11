@@ -5,7 +5,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { IReview, STATUS_TYPES } from '../../interfaces/review.interface';
 import Review from '../../models/Review';
-import { createReview, updateReviewStatus } from '../../service/review.service';
+import {
+  createReview,
+  getSingleReview,
+  updateReviewStatus,
+} from '../../service/review.service';
 
 describe('Review service unit tests', () => {
   describe('createReview', () => {
@@ -109,6 +113,42 @@ describe('Review service unit tests', () => {
       findOneAndUpdateSpy.mockRejectedValue(error);
 
       await expect(updateReviewStatus(reviewId, status)).rejects.toThrow(error);
+    });
+
+    describe('getSingleReview', () => {
+      const reviewId = '64f123456789abcdef012345';
+
+      it('should return review', async () => {
+        const reviewMock = {
+          author: { username: 'JohnDoe' },
+          slug: 'test-review-slug',
+          text: 'This is a test review',
+        };
+
+        const leanMock = vi.fn().mockResolvedValue(reviewMock);
+        const selectMock = vi.fn().mockReturnValue({ lean: leanMock });
+        const populateMock = vi.fn().mockReturnValue({ select: selectMock });
+        vi.spyOn(Review, 'findOne').mockReturnValue({
+          populate: populateMock,
+        } as any);
+
+        const result = await getSingleReview(reviewId);
+
+        expect(result).toEqual(reviewMock);
+      });
+
+      it('should throw error when mod not found', async () => {
+        const leanMock = vi.fn().mockResolvedValue(null);
+        const selectMock = vi.fn().mockReturnValue({ lean: leanMock });
+        const populateMock = vi.fn().mockReturnValue({ select: selectMock });
+        vi.spyOn(Review, 'findOne').mockReturnValue({
+          populate: populateMock,
+        } as any);
+
+        await expect(getSingleReview(reviewId)).rejects.toThrow(
+          'Review with given id not found.',
+        );
+      });
     });
   });
 });
