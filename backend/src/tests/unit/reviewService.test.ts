@@ -5,7 +5,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { IReview, STATUS_TYPES } from '../../interfaces/review.interface';
 import Review from '../../models/Review';
-import { createReview, updateReviewStatus } from '../../service/review.service';
+import {
+  createReview,
+  getSingleReview,
+  updateReviewStatus,
+} from '../../service/review.service';
+import { NotFoundError } from '../../utils/errors/CustomError';
 
 describe('Review service unit tests', () => {
   describe('createReview', () => {
@@ -13,14 +18,16 @@ describe('Review service unit tests', () => {
 
     const reviewInput = {
       modId: 'mod789',
+      modName: 'bestMODever',
       text: 'Great mod!',
       userId: 'user123',
     };
+    const reviewSlug = 'bestMODever-somedude-812ads';
 
     const reviewOutput: IReview = {
       _id: new Types.ObjectId(),
       author: fakeUser._id,
-      slug: 'test-slug',
+      slug: reviewSlug,
       status: STATUS_TYPES.CREATED,
       text: 'Great mod!',
     } as unknown as IReview;
@@ -41,11 +48,13 @@ describe('Review service unit tests', () => {
         .mockImplementation((id) =>
           id === reviewInput.userId ? fakeUser : null,
         );
+      const fakeSlugCreated = vi.fn().mockResolvedValue(reviewSlug);
 
       const result = await createReview(reviewInput, {
         checkMod: fakeCheckMod,
         updateMod: fakeUpdateMod,
         validateUser: fakeValidateUser,
+        createSlugForReview: fakeSlugCreated,
       });
 
       expect(fakeCheckMod).toHaveBeenCalledTimes(1);
@@ -58,8 +67,11 @@ describe('Review service unit tests', () => {
         reviewOutput._id,
       );
 
+      expect(fakeSlugCreated).toHaveBeenCalledTimes(1);
+
       expect(result.author).toEqual(fakeUser._id);
       expect(result.status).toBe(STATUS_TYPES.CREATED);
+      expect(result.slug).toBe(reviewSlug);
     });
 
     it('should throw error if mod does not exist', async () => {
@@ -92,7 +104,7 @@ describe('Review service unit tests', () => {
     });
 
     it('should update review status with correct arguments', async () => {
-      findOneAndUpdateSpy.mockResolvedValue(undefined);
+      findOneAndUpdateSpy.mockResolvedValue({ _id: reviewId, status });
 
       await updateReviewStatus(reviewId, status);
 
@@ -105,10 +117,49 @@ describe('Review service unit tests', () => {
     });
 
     it('should throw if Review.findOneAndUpdate throws', async () => {
-      const error = new Error('DB error');
-      findOneAndUpdateSpy.mockRejectedValue(error);
+      findOneAndUpdateSpy.mockRejectedValue(
+        new NotFoundError('Review not found.'),
+      );
 
-      await expect(updateReviewStatus(reviewId, status)).rejects.toThrow(error);
+      await expect(updateReviewStatus(reviewId, status)).rejects.toThrow(
+        'Review not found.',
+      );
+    });
+
+    describe('getSingleReview', () => {
+      const reviewId = '64f123456789abcdef012345';
+
+      it('should return review', async () => {
+        const reviewMock = {
+          author: { username: 'JohnDoe' },
+          slug: 'test-review-slug',
+          text: 'This is a test review',
+        };
+
+        const leanMock = vi.fn().mockResolvedValue(reviewMock);
+        const selectMock = vi.fn().mockReturnValue({ lean: leanMock });
+        const populateMock = vi.fn().mockReturnValue({ select: selectMock });
+        vi.spyOn(Review, 'findOne').mockReturnValue({
+          populate: populateMock,
+        } as any);
+
+        const result = await getSingleReview(reviewId);
+
+        expect(result).toEqual(reviewMock);
+      });
+
+      it('should throw error when mod not found', async () => {
+        const leanMock = vi.fn().mockResolvedValue(null);
+        const selectMock = vi.fn().mockReturnValue({ lean: leanMock });
+        const populateMock = vi.fn().mockReturnValue({ select: selectMock });
+        vi.spyOn(Review, 'findOne').mockReturnValue({
+          populate: populateMock,
+        } as any);
+
+        await expect(getSingleReview(reviewId)).rejects.toThrow(
+          'Review with given id not found.',
+        );
+      });
     });
   });
 });

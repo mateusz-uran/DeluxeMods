@@ -7,6 +7,7 @@ import {
   CreateModOutput,
   GetPerSixModsInput,
   GetPerSixModsOutput,
+  GetSingleModOutput,
   IMod,
 } from '../interfaces/mod.interface';
 import Mod from '../models/Mod';
@@ -149,4 +150,23 @@ async function findModById(_id: string) {
       true,
     );
   return mod;
+}
+
+export async function getSingleMod(slug: string): Promise<GetSingleModOutput> {
+  const mod = await Mod.findOne({ slug })
+    .select('_id name previewPhoto isDeluxe reviewId specification')
+    .lean();
+
+  if (!mod) {
+    throw new NotFoundError(
+      'Mod with given slug not found.',
+      { slug: slug },
+      true,
+    );
+  }
+
+  return {
+    ...mod,
+    reviewId: mod.reviewId ? mod.reviewId.toString() : '',
+  } as GetSingleModOutput;
 }

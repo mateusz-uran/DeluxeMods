@@ -1,3 +1,4 @@
+import { Types } from 'mongoose';
 import Mod from '../../models/Mod';
 
 export interface FakeMod {
@@ -40,9 +41,10 @@ export const createFakeModsInsideDB = (
   isDeluxe: ValueOrFactor<boolean>,
   isPublished: ValueOrFactor<boolean>,
   subCategory: ValueOrFactor<string[]>,
+  reviewId: Types.ObjectId | null,
 ) => {
   const promises = Array.from({ length: size }, async (_, i) => {
-    await Mod.create({
+    return await Mod.create({
       categories:
         typeof subCategory === 'function' ? subCategory(i) : subCategory,
       isDeluxe: typeof isDeluxe === 'function' ? isDeluxe(i) : isDeluxe,
@@ -50,6 +52,7 @@ export const createFakeModsInsideDB = (
         typeof isPublished === 'function' ? isPublished(i) : isPublished,
       name: `Mod number ${String(i + 1)}`,
       previewPhoto: `Preview image ${String(i + 1)}`,
+      reviewId: reviewId ?? undefined,
       slug: `mod-${String(i + 1)}-author-${String(i + 1)}`,
       specification: {
         link: `https://example.com/mod-${String(i + 1)}`,

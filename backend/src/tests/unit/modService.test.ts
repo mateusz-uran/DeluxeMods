@@ -20,6 +20,7 @@ import {
   checkIfModExists,
   createModWithPreviewPhoto,
   getPerSixMods,
+  getSingleMod,
   replacePreviewPhoto,
   updateModReviewId,
 } from '../../service/mod.service';
@@ -441,6 +442,68 @@ describe('Mod service unit tests', () => {
       await expect(
         updateModReviewId('someId', 'existingReviewId'),
       ).rejects.toThrow(/duplicate key error/);
+    });
+  });
+
+  describe('getSingleMod', () => {
+    const modSlug = 'test-mod-slug';
+
+    it('should return single mod', async () => {
+      const singleMod = {
+        categories: ['trailer'],
+        isDeluxe: true,
+        name: 'Test mod',
+        previewPhoto: 'https://test-mod-img-url.com',
+        reviewId: 'randomReviewId',
+        slug: modSlug,
+
+        specification: {
+          link: 'https://test-mod-download.com',
+          modAuthor: 'JohnDoe',
+        },
+      };
+      const leanMock = vi.fn().mockResolvedValue(singleMod);
+      const selectMock = vi.fn().mockReturnValue({ lean: leanMock });
+      vi.spyOn(Mod, 'findOne').mockReturnValue({ select: selectMock } as any);
+
+      const result = await getSingleMod(modSlug);
+
+      expect(result.name).toEqual(singleMod.name);
+      expect(result).toEqual(singleMod);
+    });
+
+    it('should throw error when mod not found', async () => {
+      const leanMock = vi.fn().mockResolvedValue(null);
+      const selectMock = vi.fn().mockReturnValue({ lean: leanMock });
+      vi.spyOn(Mod, 'findOne').mockReturnValue({ select: selectMock } as any);
+
+      await expect(getSingleMod(modSlug)).rejects.toThrow(
+        'Mod with given slug not found',
+      );
+    });
+
+    it('should return mod withour review', async () => {
+      const singleMod = {
+        categories: ['trailer'],
+        isDeluxe: true,
+        name: 'Test mod',
+        previewPhoto: 'https://test-mod-img-url.com',
+        reviewId: '',
+        slug: modSlug,
+
+        specification: {
+          link: 'https://test-mod-download.com',
+          modAuthor: 'JohnDoe',
+        },
+      };
+      const leanMock = vi.fn().mockResolvedValue(singleMod);
+      const selectMock = vi.fn().mockReturnValue({ lean: leanMock });
+      vi.spyOn(Mod, 'findOne').mockReturnValue({ select: selectMock } as any);
+
+      const result = await getSingleMod(modSlug);
+
+      expect(result.name).toEqual(singleMod.name);
+      expect(result).toEqual(singleMod);
     });
   });
 });

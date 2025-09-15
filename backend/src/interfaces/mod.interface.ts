@@ -41,6 +41,17 @@ export interface GetPerSixModsOutput {
   totalCount: number;
 }
 
+export interface GetSingleModOutput {
+  name: string;
+  previewPhoto: string;
+  isDeluxe: boolean;
+  reviewId: string;
+  specification: {
+    link: string;
+    modAuthor: string;
+  };
+}
+
 export interface IMod extends Document {
   categories: string[];
   isDeluxe: boolean;

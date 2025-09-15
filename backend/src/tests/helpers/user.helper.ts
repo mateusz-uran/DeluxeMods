@@ -6,6 +6,7 @@ import config from '../../config/env';
 import { IUser } from '../../interfaces/user.interface';
 import Role from '../../models/Role';
 import User from '../../models/User';
+import { Types } from 'mongoose';
 
 export interface CreateUserOutput {
   accessToken: string;
@@ -14,6 +15,7 @@ export interface CreateUserOutput {
   name: string;
   refreshToken: string;
   role: string;
+  userId: Types.ObjectId;
 }
 
 interface CreateUser {
@@ -76,6 +78,7 @@ export const createTestUserWithRole = async (
       name: user.name,
       refreshToken,
       role: role.name,
+      userId: user._id
     });
   }
 
