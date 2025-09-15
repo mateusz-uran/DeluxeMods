@@ -20,7 +20,7 @@ export async function createReview(
     checkMod = checkIfModExists,
     updateMod = updateModReviewId,
     validateUser = validateUserById,
-    createSlugForReview = createSlugFromTwoTexts
+    createSlugForReview = createSlugFromTwoTexts,
   } = {},
 ): Promise<CreateRevieOutput> {
   if (!(await checkMod(modId))) {
@@ -29,9 +29,13 @@ export async function createReview(
 
   const user = await validateUser(userId);
 
-  const reviewSlug = createSlugForReview(user.name, modName)
+  const reviewSlug = createSlugForReview(user.name, modName);
 
-  const review = await Review.create({ author: user._id, text, slug: reviewSlug });
+  const review = await Review.create({
+    author: user._id,
+    text,
+    slug: reviewSlug,
+  });
 
   await updateMod(modId, review._id);
 
@@ -42,7 +46,15 @@ export async function updateReviewStatus(
   reviewId: string,
   status: string,
 ): Promise<void> {
-  await Review.findOneAndUpdate({ _id: reviewId }, { status }, { new: true });
+  const updated = await Review.findOneAndUpdate(
+    { _id: reviewId },
+    { status },
+    { new: true },
+  );
+
+  if (!updated) {
+    throw new NotFoundError(`Review not found.`, { reviewId }, true);
+  }
 }
 
 export async function getSingleReviewWithMod(

@@ -22,15 +22,15 @@ router.post(
   addReview,
 );
 
-router.post(
-  '/update-status',
+router.patch(
+  '/update/:reviewId',
   validateRequest(updateReviewSchema),
   cookieAuthorize(['UPDATE_REVIEW']),
   updateReview,
 );
 
 router.get(
-  '/review-single',
+  '/single',
   validateRequest(getReviewWithModQuerySchema),
   getReviewByMod,
 );

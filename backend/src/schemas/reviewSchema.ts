@@ -13,8 +13,10 @@ export const addReviewSchema = z.object({
 export type AddReviewValidated = z.infer<typeof addReviewSchema>;
 
 export const updateReviewSchema = z.object({
-  body: z.object({
+  params: z.object({
     reviewId: z.string().regex(/^[a-f\d]{24}$/i, 'Invalid userId format'),
+  }),
+  body: z.object({
     status: z.enum(Object.values(STATUS_TYPES)),
   }),
 });

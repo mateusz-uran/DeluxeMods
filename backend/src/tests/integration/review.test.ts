@@ -6,6 +6,8 @@ import {
   createTestUserWithRole,
   CreateUserOutput,
 } from '../helpers/user.helper';
+import { createFakeReviewsInsideDB } from '../helpers/review.helper';
+import Review from '../../models/Review';
 
 describe('Review controller integration test', () => {
   describe('POST /review/save', () => {
@@ -87,6 +89,52 @@ describe('Review controller integration test', () => {
 
       expect(response.status).toBe(401);
       expect(response.body.errors[0].message).toBe('Unauthorized');
+    });
+  });
+
+  describe('PATCH /review/update/:reviewId', () => {
+    let admin: CreateUserOutput;
+    let reviews: any;
+
+    beforeEach(async () => {
+      const totalMods = 1;
+      await createTestRole([{ name: 'ADMIN', permissions: ['UPDATE_REVIEW'] }]);
+
+      [admin] = await createTestUserWithRole({ roleName: 'ADMIN' });
+
+      reviews = await createFakeReviewsInsideDB(1, admin.userId);
+    });
+
+    it('should change review status from CREATED to REVIEWED', async () => {
+      const reviewStatus = 'REVIEWED';
+      const endpoint = `/review/update/${reviews[0]._id}`;
+
+      const response = await request(app)
+        .patch(endpoint)
+        .set('Cookie', admin.cookies.join('; '))
+        .send({
+          status: reviewStatus,
+        });
+
+      expect(response.status).toBe(200);
+
+      const updatedReview = await Review.findById(reviews[0]._id).lean();
+      expect(updatedReview).toBeDefined();
+      expect(updatedReview?.status).toBe(reviewStatus);
+    });
+
+    it('should return error when review not found', async () => {
+      const reviewStatus = 'REVIEWED';
+      const fakeReviewID = '507f1f77bcf86cd799439011';
+      const endpoint = `/review/update/${fakeReviewID}`;
+
+      const response = await request(app)
+        .patch(endpoint)
+        .set('Cookie', admin.cookies.join('; '))
+        .send({
+          status: reviewStatus,
+        });
+      expect(response.status).toBe(404);
     });
   });
 });

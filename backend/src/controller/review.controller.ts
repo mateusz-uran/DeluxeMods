@@ -13,7 +13,8 @@ import {
 } from '../service/review.service';
 
 export const addReview: RequestHandler = async (req, res, next) => {
-  const { modId, modName, text, userId } = (req.validated as AddReviewValidated).body;
+  const { modId, modName, text, userId } = (req.validated as AddReviewValidated)
+    .body;
 
   try {
     const review: CreateRevieOutput = await createReview({
@@ -29,10 +30,12 @@ export const addReview: RequestHandler = async (req, res, next) => {
 };
 
 export const updateReview: RequestHandler = async (req, res, next) => {
-  const { reviewId, status } = (req.validated as UpdateReviewValidated).body;
+  const { reviewId } = (req.validated as UpdateReviewValidated).params;
+  const { status } = (req.validated as UpdateReviewValidated).body;
 
   try {
     await updateReviewStatus(reviewId, status);
+    return res.sendStatus(200);
   } catch (error: unknown) {
     next(error);
   }
@@ -42,7 +45,8 @@ export const getReviewByMod: RequestHandler = async (req, res, next) => {
   const { slug } = (req.validated as GetReviewWithModValidated).query;
 
   try {
-    await getSingleReviewWithMod(slug);
+    const review = await getSingleReviewWithMod(slug);
+    return res.status(200).json(review);
   } catch (error: unknown) {
     next(error);
   }

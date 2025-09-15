@@ -10,6 +10,7 @@ import {
   getSingleReview,
   updateReviewStatus,
 } from '../../service/review.service';
+import { NotFoundError } from '../../utils/errors/CustomError';
 
 describe('Review service unit tests', () => {
   describe('createReview', () => {
@@ -116,10 +117,11 @@ describe('Review service unit tests', () => {
     });
 
     it('should throw if Review.findOneAndUpdate throws', async () => {
-      const error = new Error('DB error');
-      findOneAndUpdateSpy.mockRejectedValue(error);
+      findOneAndUpdateSpy.mockRejectedValue(new NotFoundError('Review not found.'));
 
-      await expect(updateReviewStatus(reviewId, status)).rejects.toThrow(error);
+      await expect(updateReviewStatus(reviewId, status)).rejects.toThrow(
+        'Review not found.',
+      );
     });
 
     describe('getSingleReview', () => {
