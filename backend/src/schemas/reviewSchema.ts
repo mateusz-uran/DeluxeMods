@@ -5,6 +5,7 @@ import { STATUS_TYPES } from '../interfaces/review.interface';
 export const addReviewSchema = z.object({
   body: z.object({
     modId: z.string().regex(/^[a-f\d]{24}$/i, 'Invalid modId format'),
+    modName: z.string().min(5, { message: 'Mod name is too short' }),
     text: z.string().min(3, { message: 'Review text required' }),
     userId: z.string().regex(/^[a-f\d]{24}$/i, 'Invalid userId format'),
   }),

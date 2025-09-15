@@ -16,6 +16,7 @@ export interface CreateRevieOutput {
 
 export interface CreateReviewInput {
   modId: string;
+  modName: string;
   text: string;
   userId: string;
 }

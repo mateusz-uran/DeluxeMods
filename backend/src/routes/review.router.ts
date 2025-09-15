@@ -16,7 +16,7 @@ import {
 const router = express.Router();
 
 router.post(
-  '/review-add',
+  '/save',
   validateRequest(addReviewSchema),
   cookieAuthorize(['ADD_REVIEW']),
   addReview,

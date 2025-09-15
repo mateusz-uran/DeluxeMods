@@ -17,14 +17,16 @@ describe('Review service unit tests', () => {
 
     const reviewInput = {
       modId: 'mod789',
+      modName: 'bestMODever',
       text: 'Great mod!',
       userId: 'user123',
     };
+    const reviewSlug = 'bestMODever-somedude-812ads';
 
     const reviewOutput: IReview = {
       _id: new Types.ObjectId(),
       author: fakeUser._id,
-      slug: 'test-slug',
+      slug: reviewSlug,
       status: STATUS_TYPES.CREATED,
       text: 'Great mod!',
     } as unknown as IReview;
@@ -45,11 +47,13 @@ describe('Review service unit tests', () => {
         .mockImplementation((id) =>
           id === reviewInput.userId ? fakeUser : null,
         );
+      const fakeSlugCreated = vi.fn().mockResolvedValue(reviewSlug);
 
       const result = await createReview(reviewInput, {
         checkMod: fakeCheckMod,
         updateMod: fakeUpdateMod,
         validateUser: fakeValidateUser,
+        createSlugForReview: fakeSlugCreated,
       });
 
       expect(fakeCheckMod).toHaveBeenCalledTimes(1);
@@ -62,8 +66,11 @@ describe('Review service unit tests', () => {
         reviewOutput._id,
       );
 
+      expect(fakeSlugCreated).toHaveBeenCalledTimes(1);
+
       expect(result.author).toEqual(fakeUser._id);
       expect(result.status).toBe(STATUS_TYPES.CREATED);
+      expect(result.slug).toBe(reviewSlug);
     });
 
     it('should throw error if mod does not exist', async () => {

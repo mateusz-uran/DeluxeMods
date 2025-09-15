@@ -10,6 +10,7 @@ const router = express.Router();
 
 router.get('/all/', validateRequest(modQuerySchema), getModsByParameter);
 
+// TODO: change permission to match adding mod instead of review
 router.post(
   '/save',
   multerUpload,

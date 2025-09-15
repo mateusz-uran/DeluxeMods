@@ -13,11 +13,12 @@ import {
 } from '../service/review.service';
 
 export const addReview: RequestHandler = async (req, res, next) => {
-  const { modId, text, userId } = (req.validated as AddReviewValidated).body;
+  const { modId, modName, text, userId } = (req.validated as AddReviewValidated).body;
 
   try {
     const review: CreateRevieOutput = await createReview({
       modId,
+      modName,
       text,
       userId,
     });

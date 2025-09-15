@@ -6,6 +6,7 @@ import {
 } from '../interfaces/review.interface';
 import Review from '../models/Review';
 import { NotFoundError } from '../utils/errors/CustomError';
+import { createSlugFromTwoTexts } from '../utils/slug.utils';
 import {
   checkIfModExists,
   getSingleMod,
@@ -14,11 +15,12 @@ import {
 import { validateUserById } from './user.service';
 
 export async function createReview(
-  { modId, text, userId }: CreateReviewInput,
+  { modId, modName, text, userId }: CreateReviewInput,
   {
     checkMod = checkIfModExists,
     updateMod = updateModReviewId,
     validateUser = validateUserById,
+    createSlugForReview = createSlugFromTwoTexts
   } = {},
 ): Promise<CreateRevieOutput> {
   if (!(await checkMod(modId))) {
@@ -27,7 +29,9 @@ export async function createReview(
 
   const user = await validateUser(userId);
 
-  const review = await Review.create({ author: user._id, text });
+  const reviewSlug = createSlugForReview(user.name, modName)
+
+  const review = await Review.create({ author: user._id, text, slug: reviewSlug });
 
   await updateMod(modId, review._id);
 
