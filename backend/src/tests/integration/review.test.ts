@@ -8,6 +8,7 @@ import {
 } from '../helpers/user.helper';
 import { createFakeReviewsInsideDB } from '../helpers/review.helper';
 import Review from '../../models/Review';
+import { Types } from 'mongoose';
 
 describe('Review controller integration test', () => {
   describe('POST /review/save', () => {
@@ -31,6 +32,7 @@ describe('Review controller integration test', () => {
           if (i < 8) return ['small'];
           return ['plow/subsoiler', 'seeder/planter'];
         },
+        null,
       );
     });
 
@@ -97,7 +99,6 @@ describe('Review controller integration test', () => {
     let reviews: any;
 
     beforeEach(async () => {
-      const totalMods = 1;
       await createTestRole([{ name: 'ADMIN', permissions: ['UPDATE_REVIEW'] }]);
 
       [admin] = await createTestUserWithRole({ roleName: 'ADMIN' });
@@ -135,6 +136,83 @@ describe('Review controller integration test', () => {
           status: reviewStatus,
         });
       expect(response.status).toBe(404);
+    });
+  });
+
+  describe('GET /review/single', () => {
+    const totalMods = 1;
+    let admin: CreateUserOutput;
+    let mods: any;
+    let reviews: any;
+
+    beforeEach(async () => {
+      await createTestRole([{ name: 'ADMIN', permissions: ['UPDATE_REVIEW'] }]);
+
+      [admin] = await createTestUserWithRole({ roleName: 'ADMIN' });
+      reviews = await createFakeReviewsInsideDB(1, admin.userId);
+    });
+
+    it('should return single review with mod', async () => {
+      mods = await createFakeModsInsideDB(
+        totalMods,
+        () => Math.random() > 0.5,
+        (i) => i < totalMods,
+        (i) => {
+          if (i < 8) return ['small'];
+          return ['plow/subsoiler', 'seeder/planter'];
+        },
+        reviews[0]._id,
+      );
+
+      const endpoint = `/review/single?slug=${mods[0].slug}`;
+      const response = await request(app).get(endpoint);
+      expect(response.body.name).toBe(mods[0].name);
+      expect(response.body.previewPhoto).toBe(mods[0].previewPhoto);
+      expect(response.body.text).toBe(reviews[0].text);
+    });
+
+    it('should throw error when mod not found', async () => {
+      const endpoint = `/review/single?slug=${mods[0].slug}`;
+      const response = await request(app).get(endpoint);
+      expect(response.body.errors[0].message).toBe(
+        'Mod with given slug not found.',
+      );
+    });
+
+    it('should throw when mod has no review yet', async () => {
+      mods = await createFakeModsInsideDB(
+        totalMods,
+        () => Math.random() > 0.5,
+        (i) => i < totalMods,
+        (i) => {
+          if (i < 8) return ['small'];
+          return ['plow/subsoiler', 'seeder/planter'];
+        },
+        null,
+      );
+      const endpoint = `/review/single?slug=${mods[0].slug}`;
+      const response = await request(app).get(endpoint);
+      expect(response.body.errors[0].message).toBe(
+        'This does not have review yet.',
+      );
+    });
+
+    it('should throw when review not found', async () => {
+      mods = await createFakeModsInsideDB(
+        totalMods,
+        () => Math.random() > 0.5,
+        (i) => i < totalMods,
+        (i) => {
+          if (i < 8) return ['small'];
+          return ['plow/subsoiler', 'seeder/planter'];
+        },
+        new Types.ObjectId(),
+      );
+      const endpoint = `/review/single?slug=${mods[0].slug}`;
+      const response = await request(app).get(endpoint);
+      expect(response.body.errors[0].message).toBe(
+        'Review with given id not found.',
+      );
     });
   });
 });

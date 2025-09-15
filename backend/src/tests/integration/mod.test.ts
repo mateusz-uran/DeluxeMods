@@ -30,6 +30,7 @@ describe('Mod controller integration test', () => {
           if (i < 8) return ['small'];
           return ['plow/subsoiler', 'seeder/planter'];
         },
+        null
       );
     });
 

@@ -104,7 +104,7 @@ describe('Review service unit tests', () => {
     });
 
     it('should update review status with correct arguments', async () => {
-      findOneAndUpdateSpy.mockResolvedValue(undefined);
+      findOneAndUpdateSpy.mockResolvedValue({ _id: reviewId, status });
 
       await updateReviewStatus(reviewId, status);
 
@@ -117,7 +117,9 @@ describe('Review service unit tests', () => {
     });
 
     it('should throw if Review.findOneAndUpdate throws', async () => {
-      findOneAndUpdateSpy.mockRejectedValue(new NotFoundError('Review not found.'));
+      findOneAndUpdateSpy.mockRejectedValue(
+        new NotFoundError('Review not found.'),
+      );
 
       await expect(updateReviewStatus(reviewId, status)).rejects.toThrow(
         'Review not found.',

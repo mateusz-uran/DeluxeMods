@@ -154,7 +154,7 @@ async function findModById(_id: string) {
 
 export async function getSingleMod(slug: string): Promise<GetSingleModOutput> {
   const mod = await Mod.findOne({ slug })
-    .select('-_id name previewPhoto isDeluxe reviewId specification')
+    .select('_id name previewPhoto isDeluxe reviewId specification')
     .lean();
 
   if (!mod) {

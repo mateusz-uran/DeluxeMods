@@ -63,7 +63,7 @@ export async function getSingleReviewWithMod(
   const mod = await getSingleMod(slug);
 
   if (!mod.reviewId) {
-    throw new NotFoundError('Review not found for given mod.', { slug }, true);
+    throw new NotFoundError('This does not have review yet.', { slug }, true);
   }
 
   const review = await getSingleReview(mod.reviewId);
@@ -85,7 +85,7 @@ export async function getSingleReviewWithMod(
 export async function getSingleReview(id: any): Promise<GetSingleReview> {
   const review = await Review.findOne({ _id: id })
     .populate('author', 'username -_id')
-    .select('-_id author slug -status text')
+    .select('-_id -status')
     .lean<{ author: { username: string }; slug: string; text: string }>();
 
   if (!review) {

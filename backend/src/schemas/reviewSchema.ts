@@ -26,8 +26,8 @@ export const getReviewWithModQuerySchema = z.object({
   query: z.object({
     slug: z
       .string()
-      .min(5)
-      .max(150)
+      .min(5, {message: "Minimum 5 characters."})
+      .max(150, {message: "Slug is too long."})
       .regex(/^[a-z0-9-]+$/),
   }),
 });
