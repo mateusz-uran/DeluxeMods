@@ -2,12 +2,15 @@ import { BACKEND_URL } from "@/utils/config.server";
 import { notFound } from "next/navigation";
 import React from "react";
 import styles from './reviewMod.module.css'
+import api from "@/utils/api";
 
 export default async function ReviewMod({ params }) {
   const { slug } = await params;
 
   try {
-    const response = await fetch(`${BACKEND_URL}/api/mod/single/${slug}`);
+    const response = await api.get(`review/single?slug=${slug}`);
+    console.log(response);
+    
 
     if (!response.ok) {
       return notFound();
