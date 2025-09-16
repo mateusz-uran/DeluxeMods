@@ -51,7 +51,7 @@ export async function changeModStatus({
     throw new NotFoundError(
       'Mod with given slug not found.',
       { slug: slug },
-      true,
+      false,
     );
   }
 
@@ -147,7 +147,7 @@ async function findModById(_id: string) {
     throw new NotFoundError(
       'Mod with given id not found.',
       { modId: _id },
-      true,
+      false,
     );
   return mod;
 }
@@ -161,7 +161,7 @@ export async function getSingleMod(slug: string): Promise<GetSingleModOutput> {
     throw new NotFoundError(
       'Mod with given slug not found.',
       { slug: slug },
-      true,
+      false,
     );
   }
 

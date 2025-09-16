@@ -24,7 +24,7 @@ export async function createReview(
   } = {},
 ): Promise<CreateRevieOutput> {
   if (!(await checkMod(modId))) {
-    throw new NotFoundError(`Mod not found.`, { modId }, true);
+    throw new NotFoundError(`Mod not found.`, { modId }, false);
   }
 
   const user = await validateUser(userId);
@@ -53,7 +53,7 @@ export async function updateReviewStatus(
   );
 
   if (!updated) {
-    throw new NotFoundError(`Review not found.`, { reviewId }, true);
+    throw new NotFoundError(`Review not found.`, { reviewId }, false);
   }
 }
 
@@ -63,7 +63,7 @@ export async function getSingleReviewWithMod(
   const mod = await getSingleMod(slug);
 
   if (!mod.reviewId) {
-    throw new NotFoundError('This mod does not have review yet.', { slug }, true);
+    throw new NotFoundError('This mod does not have review yet.', { slug }, false);
   }
 
   const review = await getSingleReview(mod.reviewId);
@@ -92,7 +92,7 @@ export async function getSingleReview(id: any): Promise<GetSingleReview> {
     throw new NotFoundError(
       'Review with given id not found.',
       { id: id },
-      true,
+      false,
     );
   }
 
