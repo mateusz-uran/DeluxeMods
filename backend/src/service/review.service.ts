@@ -63,7 +63,7 @@ export async function getSingleReviewWithMod(
   const mod = await getSingleMod(slug);
 
   if (!mod.reviewId) {
-    throw new NotFoundError('This does not have review yet.', { slug }, true);
+    throw new NotFoundError('This mod does not have review yet.', { slug }, true);
   }
 
   const review = await getSingleReview(mod.reviewId);

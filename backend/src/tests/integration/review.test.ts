@@ -193,7 +193,7 @@ describe('Review controller integration test', () => {
       const endpoint = `/review/single?slug=${mods[0].slug}`;
       const response = await request(app).get(endpoint);
       expect(response.body.errors[0].message).toBe(
-        'This does not have review yet.',
+        'This mod does not have review yet.',
       );
     });
 
