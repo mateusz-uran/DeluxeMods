@@ -11,7 +11,7 @@ type ModPreview = {
 
 export default function PreviewMod({ mod }: Readonly<{ mod: ModPreview }>) {
   return (
-    <div className="flex items-center transition-all duration-200 ease-in-out hover:scale-[1.01]">
+    <div className="flex items-center transition-all duration-200 ease-in-out group hover:scale-[1.01]">
       <Link href={`/review/${mod.slug}`} className="relative">
         <div className="rounded p-1 text-[var(--font-gray-dark-0)] h-15 flex text-center justify-center items-center bg-white">
           <h3 className="font-bold">{mod.name}</h3>
@@ -24,7 +24,7 @@ export default function PreviewMod({ mod }: Readonly<{ mod: ModPreview }>) {
           />
         </div>
         {mod.isDeluxe ? (
-          <div className="absolute -top-3 -left-3">
+          <div className="absolute -top-3 -left-3 opacity-50 group-hover:opacity-100 transition-opacity duration-200">
             <div className="-rotate-35" title="Deluxe crown = mod is one of the best!">
               <Image
                 src="/crone4.svg"
