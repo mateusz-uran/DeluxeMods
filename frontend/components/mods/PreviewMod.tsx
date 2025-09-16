@@ -12,7 +12,7 @@ export default function PreviewMod({ mod }: Readonly<{ mod: ModPreview }>) {
     <div className="flex items-center transition-all duration-200 ease-in-out hover:scale-[1.01]">
       <Link href={`/review/${mod.slug}`}>
         <div className="rounded p-1 text-[var(--font-gray-dark-0)] h-15 flex text-center justify-center items-center bg-white">
-          <h3>{mod.name}</h3>
+          <h3 className="font-bold">{mod.name}</h3>
         </div>
         <div>
           <img

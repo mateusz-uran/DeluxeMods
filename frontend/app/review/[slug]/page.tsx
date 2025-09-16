@@ -1,26 +1,16 @@
-"use client";
-
-import React, { useEffect } from "react";
+import React from "react";
 import api from "@/utils/api";
-import { useParams } from "next/navigation";
+import { notFound } from "next/navigation";
 
-export default function ReviewMod() {
-  const params = useParams<{ slug: string}>()
-
-  useEffect(() => {
-    async function fetchReview() {
-      try {
-        const response = await api.get(`review/single?slug=${params.slug}`);
-        console.log(`Error: ${response.error}`)
-      } catch (err) {
-        console.error("Failed to fetch review", err);
-      }
-    }
-
-    fetchReview();
-  }, []);
-
-  return (
-    <div className="">review with mod {params.slug}</div> 
-  );
+export default async function ReviewMod({
+  params,
+}: {
+  params: { slug: string };
+}) {
+  try {
+    const res = await api.get(`review/single?slug=${params.slug}`);
+    return <div>{res.data}</div>;
+  } catch {
+    notFound();
+  }
 }

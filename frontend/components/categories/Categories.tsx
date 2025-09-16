@@ -2,7 +2,7 @@
 
 import api from "@/utils/api";
 import React, { useEffect, useState } from "react";
-import { FaArrowDown } from "react-icons/fa6";
+import { IoIosArrowDropdownCircle } from "react-icons/io";
 import Link from "next/link";
 
 interface ICategories {
@@ -43,45 +43,56 @@ export default function Categories() {
   if (categories.length === 0) return <p>Categories are missing.</p>;
 
   return (
-    <ul className="list-none flex flex-col items-left gap-4 mx-0 my-2">
-      {categories.map((category, index) => (
-        <li key={index} className="max-w-200 text-sm">
-          <button
-            className="group text-left p-1 rounded-xs"
-            onClick={() => toggleCategory(index)}
-          >
-            <div className="flex items-center gap-2 group-hover:text-[var(--font-gray-dark-1)] transition-colors duration-200">
-              {category.subCategory.length > 0 && (
-                <span className="text-gray-400 ">
-                  <FaArrowDown />
-                </span>
-              )}
-              <div>
-                <p>{category.name}</p>
-              </div>
-            </div>
-            <ul
-              className="[padding-left:calc(1.25rem+0.5rem)]"
-              style={{
-                display: visibleCategories[index] ? "block" : "none",
-              }}
+    <>
+      <h4 className="pl-2 font-bold text-[var(--font-gray-dark-1)]">
+        Categories
+      </h4>
+      <ul className="list-none flex flex-col items-left gap-4 mx-0 my-2">
+        {categories.map((category, index) => (
+          <li key={index} className="max-w-200 text-base">
+            <button
+              className="group text-left p-1 rounded-xs"
+              onClick={() => toggleCategory(index)}
             >
-              {category.subCategory.map((sub, subIndex) => (
-                <li key={subIndex}>
-                  <Link href={`/mods?category=${sub.slug}&page=1`}>
-                    <p
-                      className="hover:text-[var(--font-gray-dark-1)] transition-colors duration-200"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      {sub.name}
-                    </p>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </button>
-        </li>
-      ))}
-    </ul>
+              <div className="flex items-center gap-2 group-hover:text-[var(--font-gray-dark-1)] transition-colors duration-200">
+                {category.subCategory.length > 0 && (
+                  <span
+                    className={`text-gray-400  transition-all duration-300 ${
+                      visibleCategories[index]
+                        ? "-rotate-90 text-yellow-300"
+                        : ""
+                    }`}
+                  >
+                    <IoIosArrowDropdownCircle />
+                  </span>
+                )}
+                <div>
+                  <p>{category.name}</p>
+                </div>
+              </div>
+              <ul
+                className="[padding-left:calc(1.25rem+0.5rem)]"
+                style={{
+                  display: visibleCategories[index] ? "block" : "none",
+                }}
+              >
+                {category.subCategory.map((sub, subIndex) => (
+                  <li key={subIndex} className="text-sm">
+                    <Link href={`/mods?category=${sub.slug}&page=1`}>
+                      <p
+                        className="hover:text-[var(--font-gray-dark-1)] transition-colors duration-200"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {sub.name}
+                      </p>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </button>
+          </li>
+        ))}
+      </ul>
+    </>
   );
 }
