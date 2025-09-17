@@ -38,42 +38,52 @@ export default function LoginPage() {
       const redirectTo = searchParams.get("from") || "/";
       router.push(redirectTo || "/");
     } catch (error) {
-      console.error("Login failed");
+      console.error("Login failed", error);
       setIsError(true);
       setIsLoading(false);
+      setUser({ ...user, password: "" });
     }
   };
 
   return (
-    <div className="max-w-[1000px] text-center mx-auto h-full flex items-center justify-center">
+    <div className="text-center flex justify-center mt-2">
       <form onSubmit={login}>
-        <h2>Login</h2>
+        <h2 className="text-xl">Login</h2>
         <p className="error" style={{ display: isError ? "block" : "" }}>
           Wrong email or password
         </p>
-        <div className="p-3">
-          <p>Email</p>
+        <div className="p-3 flex flex-col">
+          <label htmlFor="email">Email</label>
           <input
-            type="text"
+            id="email"
+            name="email"
+            type="email"
             value={user.email}
             onChange={(e) => setUser({ ...user, email: e.target.value })}
             disabled={isLoading}
+            autoComplete="email"
+            required
           />
         </div>
 
-        <div className="p-3">
-          <p>Password</p>
+        <div className="p-3 flex flex-col">
+          <label htmlFor="password">Password</label>
           <input
+            id="password"
+            name="password"
             type="password"
             value={user.password}
             onChange={(e) => setUser({ ...user, password: e.target.value })}
             disabled={isLoading}
+            autoComplete="current-password"
+            required
           />
         </div>
 
-        <div className="p-3">
+        <div className="p-3 flex flex-col">
           <div className="flex mb-1">
             <input
+              id="rememberMe"
               type="checkbox"
               checked={user.rememberMe}
               onChange={(e) =>
@@ -81,7 +91,9 @@ export default function LoginPage() {
               }
               disabled={isLoading}
             />
-            <p className="ml-1 flex items-center">Remember me</p>
+            <label htmlFor="rememberMe" className="ml-1 flex items-center">
+              Remember me
+            </label>
           </div>
           <button type="submit" className="primary-btn" disabled={isLoading}>
             {isLoading ? "Logging in..." : "Submit"}
