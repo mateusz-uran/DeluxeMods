@@ -2,6 +2,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import Wrapper from "@/components/wrapper/Wrapper";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -22,7 +23,7 @@ export default function RootLayout({
       <body>
         <Navbar />
         <main className="flex-1 flex justify-center bg-[var(--background-gray-3)]">
-          {children}
+          <Wrapper>{children}</Wrapper>
         </main>
         <Footer />
       </body>
